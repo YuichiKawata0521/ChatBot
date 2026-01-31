@@ -23,7 +23,7 @@ CREATE TABLE sessions ( -- セッション管理用
 
 CREATE TABLE documents ( -- rag用ドキュメント
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    source TEXT NOT NULL CHECK (source IN ('pdf', 'word', 'markdown')),
+    source TEXT NOT NULL CHECK (source IN ('pdf', 'word', 'markdown', 'txt', 'csv')),
     title VARCHAR(100) NOT NULL,
     metadata JSONB,
     uploaded_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -64,9 +64,17 @@ CREATE TABLE messages (
     thread_id BIGINT NOT NULL REFERENCES threads(id),
     sender TEXT CHECK (sender IN ('user', 'assistant', 'system')),
     content TEXT NOT NULL,
-    document_id BIGINT NULLABLE REFERENCES documents(id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE TABLE message_references (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    message_id BIGINT NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+    document_id BIGINT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+    child_chunk_id BIGINT REFERENCES child_chunks(id),
+    relevance_score FLOAT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now();
+)
 
 CREATE TABLE system_logs (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
