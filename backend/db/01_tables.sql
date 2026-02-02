@@ -89,8 +89,8 @@ CREATE TABLE message_references (
     document_id BIGINT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
     child_chunk_id BIGINT REFERENCES child_chunks(id),
     relevance_score FLOAT,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now();
-)
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
 CREATE TABLE system_logs (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
