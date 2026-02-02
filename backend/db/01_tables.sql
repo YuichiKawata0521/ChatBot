@@ -1,16 +1,27 @@
+CREATE TABLE departments (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    dep1_code VARCHAR(20), -- 本部コード
+    dep1_name VARCHAR(100), -- 本部名
+    dep2_code VARCHAR(20), -- 部コード
+    dep2_name VARCHAR(100), -- 部名
+    dep3_code VARCHAR(20), -- 課コード
+    dep3_name VARCHAR(100), -- 課名
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    
+    -- 同じ部署構成が重複して登録されないようにユニーク制約を付与
+    UNIQUE (dep1_code, dep2_code, dep3_code)
+);
+
 CREATE  TABLE users ( -- ユーザーテーブル
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    employee_no VARCHAR(20) UNIQUE NOT NULL, -- 社員番号
+    employee_no VARCHAR(20) NOT NULL, -- 社員番号
     user_name VARCHAR(20) NOT NULL,
     password VARCHAR(255) NOT NULL, -- ハッシュ+ソルト+ペッパーなので255としておく
-    dep1_code VARCHAR(20),
-    dep1_name VARCHAR(100), -- 本部
-    dep2_code VARCHAR(20),
-    dep2_name VARCHAR(100), -- 部
-    dep3_code VARCHAR(20),
-    dep3_name VARCHAR(100), -- 課、グループ
+    department_id BIGINT,
     role TEXT NOT NULL CHECK (role IN ('user', 'admin')),
     registered_flag BOOLEAN DEFAULT false,
+    deleted_at TIMESTAMPTZ DEFAULT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(), -- timezoneはdocker-compose.ymlファイルのdbの環境変数としてAsia/Tokyoを定義する
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -26,6 +37,8 @@ CREATE TABLE documents ( -- rag用ドキュメント
     source TEXT NOT NULL CHECK (source IN ('pdf', 'word', 'markdown', 'txt', 'csv')),
     title VARCHAR(100) NOT NULL,
     metadata JSONB,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
+    error_message TEXT,
     uploaded_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -64,6 +77,9 @@ CREATE TABLE messages (
     thread_id BIGINT NOT NULL REFERENCES threads(id),
     sender TEXT CHECK (sender IN ('user', 'assistant', 'system')),
     content TEXT NOT NULL,
+    input_token_count INTEGER DEFAULT 0,
+    output_token_count INTEGER DEFAULT 0,
+    rating VARCHAR(10) CHECK (rating IN ('good', 'bad')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
