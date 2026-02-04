@@ -5,12 +5,12 @@ let pool;
 // DB接続情報を取得する関数
 const getPoolConfig = () => ({
     user: process.env.POSTGRES_USER,
-    host: process.env.POSTGRES_HOST || 'localhost',
+    host: process.env.POSTGRES_HOST || 'db',
     database: process.env.POSTGRES_DB,
     password: process.env.POSTGRES_PASSWORD,
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutmillis: 10000
+    connectionTimeoutMillis: 10000
 });
 
 // DB疎通確認用関数
@@ -25,7 +25,7 @@ export const connectDB = async () => {
         const res = await pool.query("SELECT NOW()");
         return pool;
     } catch  (error) {
-        console.errir('DB応答確認 NG: ', error.message);
+        console.error('DB応答確認 NG: ', error.message);
         process.exit(1);
     }
 };
