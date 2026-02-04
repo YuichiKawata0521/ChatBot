@@ -8,13 +8,9 @@ services:
       target: dev
     ports:
       - "${BACKEND_PORT}:3000"
-    develop:
-      watch:
-        - action: sync
-          path: ./backend
-          target: /app
-          ignore:
-            - node_modules/
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
     command: npm run dev
   
   dozzle:
