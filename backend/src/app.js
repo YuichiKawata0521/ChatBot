@@ -39,25 +39,6 @@ app.use((req, res, next) => {
     next(error);
 });
 
-app.use((err, req, res, next) => {
-    if (res.headerSent) return next(err);
-
-    if (err.code === 'EBADCSRFTOKEN') {
-        return res.status(403).json({success: false, message: 'CSRFトークンが無効です。'});
-    }
-
-    console.error('Error: ', err.message);
-    if (err.stack && process.env.NODE_ENV === 'development') {
-        console.error(err.stack);
-    }
-
-    res.status(err.status || 500).json({
-        success: false,
-        message: err.message || 'サーバーでエラーが発生しました',
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-    });
-}) ;
-
 app.all('*', (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
