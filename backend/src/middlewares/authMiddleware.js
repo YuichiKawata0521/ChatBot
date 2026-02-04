@@ -1,21 +1,22 @@
+import AppError from '../utils/appError.js';
+
 // ログイン状態の確認
 export const protect = (req, res, next) => {
     if (req.session.user) {
-        next();
-    } else {
-        res.redirect('/login/login.html?reason=session_expored'); // 実際のログインページのパスに合わせる
+        return next();
     }
+    return next(new AppError('ログイン認証が必要です。', 401));
 };
 
 // ロール確認
 export const authorizeRoles = (...roles) => {
     return (req, res, next) => {
         if (!req.session.user) {
-            return res.status(401).json({success: false, message: 'ログイン認証が必要です。'});
+            return next(new AppError('ログイン認証が必要です。', 401));
         }
 
         if (!roles.includes(req.session.user.role)) {
-            return res.status(403).json({success: false, message: 'アクセス権がありません。'});
+            return next(new AppError('アクセス権がありません。', 403));
         }
         next();
     };
