@@ -1,0 +1,30 @@
+services:
+  db:
+    ports:
+      - "${DB_PORT}:5432"
+  
+  backend:
+    build:
+      target: dev
+    ports:
+      - "${BACKEND_PORT}:3000"
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+          ignore:
+            - node_modules/
+    command: npm run dev
+  
+  dozzle:
+    container_name: dozzle
+    image: amir20/dozzle:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "${DOZZLE_PORT}:8091"
+    networks:
+      - app_net
+    environment:
+      - DOZZLE_LEVEL=${DOZZLE_LEVEL}

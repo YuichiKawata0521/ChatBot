@@ -1,0 +1,41 @@
+services:
+  db:
+    image: pgvector/pgvector:16
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./backend/db:/docker-entrypoint-initdb.d
+    networks:
+      - app_net
+  
+  backend:
+    build: 
+      context: ./backend
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - app_net
+  
+  frontend:
+    image: nginx:1.25-alpine
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT}:80"
+      - "${HTTPS_PORT}:443"
+    env_file:
+      - .env
+    networks:
+      - app_net
+
+volumes:
+  db_data:
+
+networks:
+  app_net:
+    driver: bridge
+
