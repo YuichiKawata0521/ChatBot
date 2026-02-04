@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import { sessionConfig } from './config/session.js';
 import viewRoutes from './routes/viewRoutes.js';
 import indexRoutes from './routes/indexRoutes.js';
-import * as globalErrorHandler from './middlewares/errorHandler.js';
+import globalErrorHandler from './middlewares/errorHandler.js';
 import AppError from './utils/appError.js';
 
 const app = express();
@@ -30,7 +30,7 @@ app.use(cors({
 app.use('/', viewRoutes);
 app.use('/api/v1', indexRoutes);
 app.get('/api/health', (req, res) => {
-    res.status(200).json({success: true, message: 'Backend is runngin'});
+    res.status(200).json({success: true, message: 'Backend is running'});
 });
 
 app.use((req, res, next) => {
