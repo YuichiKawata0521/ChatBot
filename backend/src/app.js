@@ -6,8 +6,12 @@ import helmet from 'helmet';
 import { sessionConfig } from './config/session.js';
 import viewRoutes from './routes/viewRoutes.js';
 import indexRoutes from './routes/indexRoutes.js';
+import * as globalErrorHandler from './middlewares/errorHandler.js';
+import AppError from './utils/appError.js';
 
 const app = express();
+
+app.set('trust proxy', 1);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -53,5 +57,10 @@ app.use((err, req, res, next) => {
         stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
 }) ;
+
+app.all('*', (req, res, next) => {
+    next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+app.use(globalErrorHandler);
 
 export default app;
