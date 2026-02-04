@@ -23,7 +23,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
-      - "${DOZZLE_PORT}:8091"
+      - "${DOZZLE_PORT}:8080"
     networks:
       - app_net
     environment:
