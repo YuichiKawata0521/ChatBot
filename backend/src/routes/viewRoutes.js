@@ -1,8 +1,16 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { protect, authorizeRoles } from '../middlewares/authMiddleware';
+import { protect, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-// frontendディレクトリ構造が分からないからかけない
+router.get('/', (req, res) => {
+    res.send('Chatbot API Server is running');
+});
+
+router.get('/dashboard', protect, (req, res) => {
+    res.send('Dashboard: Login Successful');
+});
+
+export default router;
