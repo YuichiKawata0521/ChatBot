@@ -7,7 +7,7 @@ const PgSession = pgSession(session);
 
 const sessionStore = new PgSession({
     pool: getPool(),
-    tableName: 'session',
+    tableName: 'sessions',
     createTableIfMissing: false
 });
 
