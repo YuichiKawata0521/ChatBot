@@ -8,7 +8,7 @@ const PgSession = pgSession(session);
 const sessionStore = new PgSession({
     pool: getPool(),
     tableName: 'session',
-    createTableIfMissing: true
+    createTableIfMissing: false
 });
 
 let sessionSecret = process.env.SESSION_SECRET;
