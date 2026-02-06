@@ -22,8 +22,7 @@ const {
 });
 
 const csrfExcludePaths = [
-    '/login/login',
-    '/login/change-password'
+    '/auth/login',
 ];
 
 router.use((req, res, next) => {
@@ -50,6 +49,6 @@ router.get('/csrf-token', (req, res) => {
     res.json({ csrfToken });
 });
 
-// router.use('/login', loginRoutes); // 例
+router.use('/auth', loginRoutes); // 例
 
 export default router;
