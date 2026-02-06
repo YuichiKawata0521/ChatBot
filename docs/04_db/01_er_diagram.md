@@ -5,6 +5,7 @@ erDiagram
         BIGINT id PK "内部識別子"
         VARCHAR employee_no UK "社員番号"
         VARCHAR user_name "ユーザー名"
+        VARCHAR email "メールアドレス"
         VARCHAR password "ハッシュ化PW"
         VARCHAR dep1_code "本部コード"
         VARCHAR dep1_name
@@ -16,6 +17,8 @@ erDiagram
         BOOLEAN registered_flag "登録済フラグ"
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
+        VARCHAR password_reset_token
+        TIMESTAMPTZ password_reset_expires
     }
 
     %% セッション管理
