@@ -15,15 +15,18 @@ CREATE TABLE departments (
 
 CREATE  TABLE users ( -- ユーザーテーブル
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    employee_no VARCHAR(20) NOT NULL, -- 社員番号
+    employee_no VARCHAR(20) NOT NULL UNIQUE, -- 社員番号
     user_name VARCHAR(20) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL, -- ハッシュ+ソルト+ペッパーなので255としておく
     department_id BIGINT,
     role TEXT NOT NULL CHECK (role IN ('user', 'admin')),
     registered_flag BOOLEAN DEFAULT false,
     deleted_at TIMESTAMPTZ DEFAULT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(), -- timezoneはdocker-compose.ymlファイルのdbの環境変数としてAsia/Tokyoを定義する
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    password_reset_token VARCHAR(255) DEFAULT NULL,
+    password_reset_expires TIMESTAMPTZ DEFAULT NULL
 );
 
 CREATE TABLE sessions ( -- セッション管理用
