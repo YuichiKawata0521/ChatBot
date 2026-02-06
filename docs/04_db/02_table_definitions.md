@@ -7,17 +7,20 @@
 |1|ユーザーID|id|BIGINT|-|不可|IDENTITY|◯|-|-|内部識別子|
 |2|社員番号|employee_no|VARCHAR|20|不可|-|-|-|UNIQUE|業務用ユーザー識別子|
 |3|ユーザー名|user_name|VARCHAR|20|不可|-|-|-|-|表示名|
-|4|パスワード|password|VARCHAR|255|不可|-|-|-|-|ハッシュ＋ソルト＋ペッパー|
-|5|本部コード|dep1_code|VARCHAR|20|可|-|-|-|-|所属本部コード|
-|6|本部名|dep1_name|VARCHAR|100|可|-|-|-|-|所属本部名|
-|7|部コード|dep2_code|VARCHAR|20|可|-|-|-|-|所属部コード|
-|8|部名|dep2_name|VARCHAR|100|可|-|-|-|-|所属部名|
-|9|課コード|dep3_code|VARCHAR|20|可|-|-|-|-|所属課コード|
-|10|課名|dep3_name|VARCHAR|100|可|-|-|-|-|所属課名|
-|11|権限|role|TEXT|-|不可|'user'|-|-|CHECK(user/admin)|ユーザー権限|
-|12|登録済フラグ|registered_flag|BOOLEAN|-|可|false|-|-|-|初回登録完了判定|
-|13|作成日時|created_at|TIMESTAMPTZ|-|不可|now()|-|-|-|作成日時|
-|14|更新日時|updated_at|TIMESTAMPTZ|-|不可|now()|-|-|TRIGGER|更新時自動更新|
+|4|メールアドレス|email|VARCHAR|100|不可|-|-|-|UNIQUE|メールアドレス|
+|5|パスワード|password|VARCHAR|255|不可|-|-|-|-|ハッシュ＋ソルト＋ペッパー|
+|6|本部コード|dep1_code|VARCHAR|20|可|-|-|-|-|所属本部コード|
+|7|本部名|dep1_name|VARCHAR|100|可|-|-|-|-|所属本部名|
+|8|部コード|dep2_code|VARCHAR|20|可|-|-|-|-|所属部コード|
+|9|部名|dep2_name|VARCHAR|100|可|-|-|-|-|所属部名|
+|10|課コード|dep3_code|VARCHAR|20|可|-|-|-|-|所属課コード|
+|11|課名|dep3_name|VARCHAR|100|可|-|-|-|-|所属課名|
+|12|権限|role|TEXT|-|不可|'user'|-|-|CHECK(user/admin)|ユーザー権限|
+|13|登録済フラグ|registered_flag|BOOLEAN|-|可|false|-|-|-|初回登録完了判定|
+|14|作成日時|created_at|TIMESTAMPTZ|-|不可|now()|-|-|-|作成日時|
+|15|更新日時|updated_at|TIMESTAMPTZ|-|不可|now()|-|-|TRIGGER|更新時自動更新|
+|16|パスワードリセットトークン|password_reset_token|VARCHAR|255|可|-|-|-|-|パスワードリセット時のトークン(ハッシュ化)|
+|17|パスワードリセット期限|password_reset_expires|TIMESTAMPTZ|-|可|-|-|-|-|発行から1時間|
 
 ## sessions (セッション管理)
 | No. | 論理名     | 物理名    | データ型        | 長さ | NULL許可 | デフォルト値 | PK | FK | 制約          | コメント      |
