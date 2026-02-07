@@ -1,13 +1,9 @@
+import crypto from 'crypto';
 import * as loginModel from '../models/loginModel.js';
 import { getPool } from '../config/db.js';
 import { verifyPassword } from '../utils/password.js';
 import AppError from '../utils/appError.js';
-
-// ----ここからは現状のcsrf-csrfに合わせたやり方に変更が必要
-import Tokens from 'csrf';
 import Email from '../utils/email.js';
-const tokens = new Tokens();
-// ----ここまで
 
 export async function login(req, res, next) {
     const { employee_no, email, password } = req.body;
@@ -16,62 +12,52 @@ export async function login(req, res, next) {
     const userData = await loginModel.getUserData(pool, employee_no, email);
     if (!userData) {
         console.error('ユーザーデータが見つかりませんでした: ', email);
-        next(new AppError('Not Found userData', 404));
+        return next(new AppError('Not Found userData', 404));
     }
 
     // PWチェック
     const match = verifyPassword(password, userData.password);
     if (!match) {
         console.error('パスワードが一致しません');
-        next(new AppError('Not Match Password', 401));
+        return next(new AppError('Not Match Password', 401));
     }
 
     req.session.regenerate(async err => {
         if (err) {
-            return next(new AppError('意味を後で調べる', 401));
-        }
-        if (!req.session.userData) {
-            req.session.userData = {};
+            return next(new AppError('ログイン処理に失敗しました', 500));
         }
 
         req.session.user = {
+            id: userData.id,
             employee_no: userData.employee_no,
             email: userData.email,
             role: userData.role,
             isRegistered: !userData.registered_flag
         };
-    });
-    // ----ここからは現状のcsrf-csrfに合わせたやり方に変更が必要
-    const secret = await tokens.secret();
-    req.session.csrfSecret = secret;
-    const newCsrfToekn = tokens.create(secret);
-    // ----ここまで
-
-    req.session.save(err => {
-        if (err) {
-            console.error('セッション保存エラー', err);
-            next(new AppError('Miss Saving Session', 500));
-        }
-
         if (!userData.registered_flag) {
-            try{
+            try {
+                const resetToken = crypto.randomBytes(32).toString('hex');
+                const passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
+                
+                await loginModel.saveResetToken(pool, userData.id, resetToken, passwordResetExpires);
+
                 const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`;
-                await new Email(userData.user_name, resetUrl).sendPasswordReset();
+                await new Email(userData, resetUrl).sendPasswordReset();
+
                 return res.status(200).json({
                     success: true,
-                    message: "パスワードの変更が必要です",
-                    requirePasswordChange: true,
-                    csrfToken: newCsrfToekn,
+                    message: "初回ログインの為パスワードの変更が必要です。メールを送信しました",
+                    requirePasswordChange: true
                 });
             } catch (error) {
-                next(new AppError('Failed To Send Password Reset Mail', 500));
+                console.error('メール送信エラー', error);
+                return next(new AppError('パスワードリセットメールの送信に失敗しました', 500));
             }
         }
 
         res.status(200).json({
             success: true,
             message: 'ログインに成功しました',
-            csrfToken: newCsrfToekn,
             user: {
                 user_name: userData.user_name,
                 employee_no: userData.employee_no,
@@ -80,9 +66,4 @@ export async function login(req, res, next) {
             }
         });
     });
-}
-
-export async function resetPassword(req, res) {
-    const { employee_no, email, password } = req.body;
-
 }
