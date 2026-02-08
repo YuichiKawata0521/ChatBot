@@ -1,4 +1,4 @@
-import { connectDB } from "./config/db";
+import { connectDB } from "./config/db.js";
 
 const PORT = process.env.BACKEND_PORT || 3000;
 
