@@ -27,6 +27,8 @@ services:
     ports:
       - "${FRONTEND_PORT}:80"
       - "${HTTPS_PORT}:443"
+    volumes:
+      - ./frontend/pages:/usr/share/nginx/html:ro
     env_file:
       - .env
     networks:
