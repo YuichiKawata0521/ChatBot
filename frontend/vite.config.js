@@ -4,15 +4,15 @@ import { resolve } from "path";
 export default defineConfig({
     root: '.',
     server: {
-        port: 8080,
-        open: '/login',
-        proxy: {
-            '/api': {
-                target: 'http://backend:3000',
-                changeOrigin: true,
-                secure: false,
-            },
-        },
+      host: true,
+      port: 8080,
+      proxy: {
+          '/api': {
+              target: 'http://backend:3000',
+              changeOrigin: true,
+              secure: false,
+          },
+      },
     },
 
     build: {
