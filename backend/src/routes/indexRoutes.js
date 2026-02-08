@@ -1,7 +1,6 @@
 import express from 'express';
 import { doubleCsrf } from 'csrf-csrf';
-import loginLimiter from '../middlewares/loginMiddleware.js';
-// import loginRoutes from './api/loginRoutes.js'; // 例
+import loginRoutes from './loginRoutes.js';
 
 const router = express.Router();
 const {
@@ -25,13 +24,6 @@ const csrfExcludePaths = [
     '/auth/login',
 ];
 
-router.use((req, res, next) => {
-    if (req.path === '/login/login') {
-        return loginLimiter(req, res, next);
-    }
-    next();
-});
-
 // CSRF保護ミドルウェアの適用
 router.use((req, res, next) => {
     // 除外パスの場合はスキップ
@@ -49,6 +41,5 @@ router.get('/csrf-token', (req, res) => {
     res.json({ csrfToken });
 });
 
-router.use('/auth', loginRoutes); // 例
-
+router.use('/auth', loginRoutes);
 export default router;
