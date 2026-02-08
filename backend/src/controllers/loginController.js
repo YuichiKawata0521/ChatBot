@@ -16,10 +16,10 @@ export async function login(req, res, next) {
     }
 
     // PWチェック
-    const match = verifyPassword(password, userData.password);
+    const match = await verifyPassword(password, userData.password);
     if (!match) {
         console.error('パスワードが一致しません');
-        return next(new AppError('Not Match Password', 401));
+        return next(new AppError('Incorrect email or password', 401));
     }
 
     req.session.regenerate(async err => {
