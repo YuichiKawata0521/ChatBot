@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>運用ダッシュボード - ChatBot Admin</title>
+    <link rel="stylesheet" href="../assets/css/pages/admin_dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-logo">ChatBot Admin / 運用状況</div>
+        <div class="header-actions">
+            <span class="user-name">管理者 様</span>
+            <a href="./index.html" class="header-link">← 管理メニューへ</a>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="page-title">
+            <h1>Operational Status</h1>
+            <span class="last-updated">最終更新: 2026/02/09 11:30</span>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="stat-card">
+                <span class="stat-title">DAU (Daily Active Users)</span>
+                <div class="stat-value">124</div>
+                <div class="stat-trend trend-up">▲ 12% vs yesterday</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-title">RAG利用率</span>
+                <div class="stat-value">45.2%</div>
+                <div class="stat-trend trend-up">▲ 2.1%</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-title">エラー率</span>
+                <div class="stat-value">0.8%</div>
+                <div class="stat-trend trend-down">▼ 0.1% (改善)</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #f1c40f;">
+                <span class="stat-title">今月の推定コスト</span>
+                <div class="stat-value">$120.50</div>
+                <div class="stat-trend">予算進捗: 40%</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">利用トレンド (直近24時間)</h3>
+            </div>
+            <div class="chart-container-wrapper">
+                <canvas id="operationTrendChart"></canvas>
+            </div>
+        </div>
+
+        <div class="grid-2-col">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">RAG品質指標</h3>
+                </div>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px;">ヒット率</td>
+                        <td style="text-align: right; font-weight: bold;">88%</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px;">再質問率</td>
+                        <td style="text-align: right; font-weight: bold;">12%</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px;">平均参照チャンク数</td>
+                        <td style="text-align: right; font-weight: bold;">3.2</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">直近のアラート</h3>
+                </div>
+                <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">
+                    <li style="padding: 10px; border-bottom: 1px solid #eee; color: #e74c3c;">
+                        [Error] API Timeout (OpenAI) - 10:45 AM
+                    </li>
+                    <li style="padding: 10px; border-bottom: 1px solid #eee; color: #f39c12;">
+                        [Warning] High Latency detected - 09:30 AM
+                    </li>
+                    <li style="padding: 10px; color: #7f8c8d;">
+                        [Info] Daily Backup completed - 03:00 AM
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

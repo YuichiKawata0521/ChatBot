@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>管理メニュー - ChatBot</title>
+    <link rel="stylesheet" href="../assets/css/pages/admin_hub.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-logo">ChatBot Admin Console</div>
+        <div class="header-actions">
+            <span class="user-name">管理者 様</span>
+            <a href="/chat" class="header-link">チャットへ戻る</a>
+            <a href="/logout" class="header-link logout">ログアウト</a>
+        </div>
+    </header>
+
+    <main class="hub-container">
+        
+        <section class="hub-section">
+            <h2 class="section-title">ダッシュボード & 分析</h2>
+            <div class="card-grid">
+                <a href="./dashboard_operation.html" class="menu-card">
+                    <div class="icon-box"><i class="fa-solid fa-chart-line"></i></div>
+                    <h3>運用状況</h3>
+                    <p>KPIサマリー、直近のアラートを確認します。</p>
+                </a>
+                
+                <a href="./dashboard_analysis.html" class="menu-card">
+                    <div class="icon-box"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+                    <h3>利用分析</h3>
+                    <p>利用推移、コスト、RAG精度を詳細分析します。</p>
+                </a>
+            </div>
+        </section>
+
+        <section class="hub-section">
+            <h2 class="section-title">管理メニュー</h2>
+            <div class="card-grid">
+                <div class="menu-card" id="btn-doc-manage">
+                    <div class="icon-box"><i class="fa-solid fa-book"></i></div>
+                    <h3>ドキュメント管理</h3>
+                    <p>RAG用データのアップロード・削除を行います。</p>
+                    <span class="badge">Modal</span>
+                </div>
+
+                <a href="./users.html" class="menu-card">
+                    <div class="icon-box"><i class="fa-solid fa-users"></i></div>
+                    <h3>ユーザー管理</h3>
+                    <p>アカウントの登録・編集・権限設定を行います。</p>
+                </a>
+
+                <a href="./logs.html" class="menu-card">
+                    <div class="icon-box"><i class="fa-solid fa-terminal"></i></div>
+                    <h3>システムログ</h3>
+                    <p>システムエラーや操作ログを確認します。</p>
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="modal-doc-manage" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>ドキュメント管理</h3>
+                <button class="close-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <p>ドキュメント管理機能のコンテンツ...</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

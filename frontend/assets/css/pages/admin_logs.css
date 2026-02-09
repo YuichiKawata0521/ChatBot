@@ -1,0 +1,147 @@
+/* admin_logs.css */
+
+/* フィルターエリア調整 */
+.log-filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.filter-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.date-range-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.date-input {
+    padding: 8px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    color: #333;
+    font-family: inherit;
+}
+
+.search-box-wide {
+    flex-grow: 1; /* 検索窓を横幅いっぱいに */
+    min-width: 300px;
+}
+.search-box-wide .input-icon-wrapper input {
+    width: 100%;
+}
+
+/* ログテーブル装飾 */
+.log-table th {
+    background-color: #ecf0f1;
+}
+
+.log-row {
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+/* レベル別バッジ */
+.badge-info {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border: 1px solid #bbdefb;
+}
+.badge-warn {
+    background-color: #fff8e1;
+    color: #f57c00;
+    border: 1px solid #ffecb3;
+}
+.badge-error {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+/* 行ごとの背景色（淡く付ける） */
+.row-error {
+    background-color: #fff5f5;
+}
+.row-warn {
+    background-color: #fffdf5;
+}
+
+/* テキスト整形 */
+.font-mono {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+}
+
+/* モーダル (Large) */
+.modal-lg {
+    max-width: 800px; /* 通常より幅広く */
+}
+
+.log-id {
+    color: #7f8c8d;
+    font-weight: normal;
+    font-size: 0.9em;
+    margin-left: 10px;
+}
+
+.log-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.meta-item label {
+    display: block;
+    font-size: 0.8rem;
+    color: #95a5a6;
+    margin-bottom: 4px;
+}
+
+.log-section {
+    margin-bottom: 20px;
+}
+
+.log-section h4 {
+    font-size: 0.95rem;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    border-left: 3px solid #3498db;
+    padding-left: 8px;
+}
+
+.log-message-box {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.code-block {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    padding: 15px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-family: Consolas, monospace;
+    font-size: 0.85rem;
+    margin: 0;
+    max-height: 300px; /* 長すぎる場合はスクロール */
+}

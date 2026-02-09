@@ -1,0 +1,236 @@
+/* admin_users.css */
+
+/* ボタン系 */
+.btn-primary {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.3s;
+}
+.btn-primary:hover {
+    background-color: #2980b9;
+}
+
+.btn-secondary {
+    background-color: #95a5a6;
+    color: white;
+    border: none;
+    padding: 9px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+.btn-secondary:hover {
+    background-color: #7f8c8d;
+}
+
+/* フィルターエリア調整 */
+.filter-card {
+    padding-bottom: 10px; /* 少し詰める */
+}
+.input-icon-wrapper {
+    position: relative;
+}
+.input-icon-wrapper i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #bdc3c7;
+}
+.input-icon-wrapper input {
+    padding-left: 30px; /* アイコン分空ける */
+    width: 200px;
+}
+
+/* データテーブル */
+.table-card {
+    padding: 0; /* カード内の余白をなくしてテーブルを広げる */
+    overflow: hidden; /* 角丸用 */
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.data-table th {
+    background-color: #f8f9fa;
+    color: #7f8c8d;
+    font-weight: bold;
+    padding: 15px 20px;
+    text-align: left;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.data-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    color: #2c3e50;
+    vertical-align: middle;
+}
+
+.data-table tr:hover {
+    background-color: #fcfcfc;
+}
+
+/* ステータスバッジなど */
+.badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+.role-admin {
+    background-color: #e8f6ff;
+    color: #3498db;
+    border: 1px solid #3498db;
+}
+.role-user {
+    background-color: #f0f0f0;
+    color: #7f8c8d;
+    border: 1px solid #bdc3c7;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+.status-dot.active { background-color: #2ecc71; }
+.status-dot.inactive { background-color: #95a5a6; }
+
+.row-inactive td {
+    color: #95a5a6;
+    background-color: #fafafa;
+}
+
+/* 操作アイコン */
+.action-cell {
+    display: flex;
+    gap: 10px;
+}
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 5px;
+    color: #95a5a6;
+    transition: color 0.2s;
+}
+.btn-icon.edit:hover { color: #3498db; }
+.btn-icon.delete:hover { color: #e74c3c; }
+
+/* ページネーション */
+.pagination {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    gap: 5px;
+}
+.pagination button {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.pagination button.active {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+.pagination button:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+/* モーダル (admin_hub.cssと共通化しても良い) */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal-header h3 { margin: 0; color: #2c3e50; }
+.close-modal {
+    background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+/* モーダル内フォーム */
+.modal-form .form-group {
+    margin-bottom: 15px;
+}
+.modal-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: #34495e;
+}
+.modal-form input, .modal-form select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+.required { color: #e74c3c; }
+.note { font-weight: normal; font-size: 0.8rem; color: #95a5a6; }
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+.half { flex: 1; }
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}

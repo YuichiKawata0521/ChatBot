@@ -1,0 +1,121 @@
+/* ベース設定 (login.cssと共通の雰囲気) */
+body {
+    background-color: #f4f6f9;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    color: #333;
+}
+
+/* ヘッダー */
+.admin-header {
+    background-color: #ffffff;
+    height: 60px;
+    padding: 0 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-logo {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #2c3e50;
+}
+
+.header-actions {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.header-link {
+    text-decoration: none;
+    color: #3498db;
+    font-weight: bold;
+}
+.header-link.logout {
+    color: #e74c3c;
+}
+
+/* メインエリア */
+.hub-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    color: #7f8c8d;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 5px;
+}
+
+.hub-section {
+    margin-bottom: 40px;
+}
+
+/* カードグリッド */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* メニューカード */
+.menu-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 25px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.menu-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-color: #3498db;
+}
+
+.icon-box {
+    font-size: 2.5rem;
+    color: #3498db;
+    margin-bottom: 15px;
+}
+
+.menu-card h3 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.menu-card p {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* モーダル用バッジなど */
+.badge {
+    margin-top: 10px;
+    background: #ecf0f1;
+    color: #7f8c8d;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+}

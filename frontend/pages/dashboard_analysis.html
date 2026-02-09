@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>利用分析 - ChatBot Admin</title>
+    <link rel="stylesheet" href="../assets/css/pages/admin_dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-logo">ChatBot Admin / 利用分析</div>
+        <div class="header-actions">
+            <span class="user-name">管理者 様</span>
+            <a href="./index.html" class="header-link">← 管理メニューへ</a>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        
+        <div class="card">
+            <form class="filter-bar">
+                <div class="filter-item">
+                    <label>期間</label>
+                    <select>
+                        <option>直近30日</option>
+                        <option>今月</option>
+                        <option>先月</option>
+                        <option>カスタム</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>部署</label>
+                    <select>
+                        <option value="">全部署</option>
+                        <option>開発部</option>
+                        <option>営業部</option>
+                        <option>人事部</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>モデル</label>
+                    <select>
+                        <option value="">全てのモデル</option>
+                        <option>GPT-4o</option>
+                        <option>GPT-3.5-Turbo</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>&nbsp;</label>
+                    <button type="button" class="btn-apply">適用</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="grid-2-col">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">ユーザーアクティブ推移</h3>
+                </div>
+                <div class="chart-container-wrapper">
+                    <canvas id="activeUserChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">コスト推移 ($)</h3>
+                </div>
+                <div class="chart-container-wrapper">
+                    <canvas id="costChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">RAGヒット率・回答精度</h3>
+                </div>
+                <div class="chart-container-wrapper">
+                    <canvas id="ragAccuracyChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">部署別利用割合</h3>
+                </div>
+                <div class="chart-container-wrapper" style="height: 250px;"> <canvas id="deptPieChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">部署別 詳細利用データ</h3>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <thead>
+                    <tr style="background: #f8f9fa; border-bottom: 2px solid #ddd; text-align: left;">
+                        <th style="padding: 12px;">部署名</th>
+                        <th style="padding: 12px;">ユーザー数</th>
+                        <th style="padding: 12px;">総メッセージ数</th>
+                        <th style="padding: 12px;">RAG利用率</th>
+                        <th style="padding: 12px;">推定コスト</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px;">開発部</td>
+                        <td style="padding: 12px;">45</td>
+                        <td style="padding: 12px;">1,200</td>
+                        <td style="padding: 12px;">60%</td>
+                        <td style="padding: 12px;">$45.20</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px;">営業部</td>
+                        <td style="padding: 12px;">32</td>
+                        <td style="padding: 12px;">850</td>
+                        <td style="padding: 12px;">25%</td>
+                        <td style="padding: 12px;">$12.80</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</body>
+</html>
