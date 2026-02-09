@@ -13,21 +13,31 @@ CREATE TABLE departments (
     UNIQUE (dep1_code, dep2_code, dep3_code)
 );
 
-CREATE  TABLE users ( -- ユーザーテーブル
+CREATE TABLE users (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    employee_no VARCHAR(20) NOT NULL UNIQUE, -- 社員番号
+    employee_no VARCHAR(20) NOT NULL UNIQUE,
     user_name VARCHAR(20) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL, -- ハッシュ+ソルト+ペッパーなので255としておく
-    department_id BIGINT,
+    password VARCHAR(255) NOT NULL,
+    department_id BIGINT REFERENCES departments(id),
     role TEXT NOT NULL CHECK (role IN ('user', 'admin')),
+    master_admin BOOLEAN NOT NULL DEFAULT false, -- 全社閲覧管理者
     registered_flag BOOLEAN DEFAULT false,
     deleted_at TIMESTAMPTZ DEFAULT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(), -- timezoneはdocker-compose.ymlファイルのdbの環境変数としてAsia/Tokyoを定義する
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     password_reset_token VARCHAR(255) DEFAULT NULL,
     password_reset_expires TIMESTAMPTZ DEFAULT NULL
 );
+
+CREATE TABLE department_admins (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    department_id BIGINT NOT NULL REFERENCES departments(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (user_id, department_id)
+);
+
 
 CREATE TABLE sessions ( -- セッション管理用
     sid TEXT NOT NULL COLLATE "C" PRIMARY KEY,
@@ -69,6 +79,7 @@ CREATE TABLE child_chunks (
 CREATE TABLE threads (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    department_id BIGINT REFERENCES departments(id),
     title TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -103,6 +114,7 @@ CREATE TABLE system_logs (
     context JSONB,
     request_id TEXT,
     user_id BIGINT,
+    department_id BIGINT REFERENCES departments(id),
     service TEXT NOT NULL,
     environment TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
