@@ -20,10 +20,12 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 login: resolve(__dirname, 'pages/login.html'),
-                dashboard: resolve(__dirname, 'pages/dashboard.html'),
+                admin: resolve(__dirname, 'pages/admin.html'),
+                dashboard_operation: resolve(__dirname, 'pages/dashboard_operation.html'),
+                dashboard_analysis: resolve(__dirname, 'pages/dashboard_analysis.html'),
                 chat: resolve(__dirname, 'pages/chat.html'),
-                adminUsers: resolve(__dirname, 'pages/admin-users.html'),
-                adminLogs: resolve(__dirname, 'pages/admin-logs.html'),
+                users: resolve(__dirname, 'pages/users.html'),
+                logs: resolve(__dirname, 'pages/logs.html'),
             },
         },
     },
