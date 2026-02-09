@@ -5,12 +5,12 @@
         WHERE employee_no = $1 AND email = $2;
     `;
     const result = await pool.query(sql, [employee_no, email]);
-    return result.rowCount;
+    return result.rows[0];
 }
 
 export const register = async (pool, data) => {
     const { employee_no, user_name, email, password, department_id, role } = data;
-    
+
     const sql = `
         INSERT INTO users (employee_no, user_name, email, password, department_id, role)
         VALUES ($1, $2, $3, $4, $5, $6);
