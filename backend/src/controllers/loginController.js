@@ -4,6 +4,7 @@ import { getPool } from '../config/db.js';
 import { verifyPassword } from '../utils/password.js';
 import AppError from '../utils/appError.js';
 import Email from '../utils/email.js';
+import { verifyPassword, hashPassword } from '../utils/password.js';
 
 export async function login(req, res, next) {
     const { employee_no, email, password } = req.body;
@@ -92,6 +93,8 @@ export function authMe(req, res, next) {
 
 export async function register(req, res, next) {
     try {
+        const { employee_no, password } = req.body;
+
         if (password.length < 10 || password.length > 128) {
             return next (new AppError('パスワードは10文字以上、128文字以下で\n設定してください'), 400);
         }
@@ -114,17 +117,25 @@ export async function register(req, res, next) {
             return next(new AppError('パスワードに同じ文字を3回以上\n連続させることは出来ません'), 400);
         }
         const pool = getPool();
-        const userData = await model.getUserData(pool, employee_no, email);
+        const userData = await loginModel.getUserData(pool, req.body);
+
         if (userData.registered_flag) {
             console.error(''); // DBでunique制限しているのであり得ないが、一応後でログを取る目印としてcerを置いておく
             return next (new AppError('ユーザーデータが既に登録されています'), 400);
         }
-        const result = await model.register(pool, req.body); // 登録処理
+
+        const hashedPassword = await hashPassword(password);
+        const newBody = {
+            ...req.body,
+            password: hashedPassword
+        };
+
+        const result = await loginModel.register(pool, newBody); // 登録処理
         if(result.success) {
             res.status(200).json({success: result.success, message: '新規登録完了'});
         }
     } catch (error) {
-        console.error('Failed to register');
+        console.error('Failed to register: ', error);
         return next (new AppError('新規登録に失敗しました', 400));
     }
 } 
