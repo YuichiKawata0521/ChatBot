@@ -43,14 +43,16 @@ export default defineConfig({
           // URLとHTMLファイルのマッピング
           if (req.url.startsWith('/login')) {
             req.url = '/pages/login.html';
+          } else if (req.url.startsWith('/admin')) {
+            req.url = '/pages/admin.html';
           } else if (req.url.startsWith('/dashboard')) {
-            req.url = '/pages/dashboard.html';
+            req.url = '/pages/dashboard_operation.html';
           } else if (req.url.startsWith('/chat')) {
             req.url = '/pages/chat.html';
-          } else if (req.url.startsWith('/admin/users')) {
-            req.url = '/pages/admin-users.html';
-          } else if (req.url.startsWith('/admin/logs')) {
-            req.url = '/pages/admin-logs.html';
+          } else if (req.url.startsWith('//users')) {
+            req.url = '/pages/users.html';
+          } else if (req.url.startsWith('/logs')) {
+            req.url = '/pages/logs.html';
           }
           
           next();
