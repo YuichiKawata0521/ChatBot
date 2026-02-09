@@ -67,3 +67,64 @@ export async function login(req, res, next) {
         });
     });
 }
+
+export function logout(req, res, next) {
+
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('ログアウトエラー', err);
+            return next(new AppError('Failed to logout', 500));
+        }
+        res.clearCookie('connect.sid');
+        res.status(200).json({success: true, message: 'ログアウトしました'});
+    });
+
+}
+
+
+export function authMe(req, res, next) {
+    if (req.session.user) {
+        res.status(200).json({user: req.session.user});
+    } else {
+        return next (new AppError('Not Authorized', 401));
+    }
+}
+
+export async function register(req, res, next) {
+    try {
+        if (password.length < 10 || password.length > 128) {
+            return next (new AppError('パスワードは10文字以上、128文字以下で\n設定してください'), 400);
+        }
+        const asciiRegex = /^[\x20-\x7E]+$/;
+
+        if (!asciiRegex.test(password)) {
+            return next (new AppError('使用できない文字が含まれています\n(半角英数字記号のみ使用可能です)'), 400)
+        }
+        const hasLetter = /[a-zA-Z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasSymbol = /[\x20-\x2F\x3A-\x40\x5B-\x60\x7B-\x7E]/.test(password);
+
+        if (!(hasLetter && hasNumber && hasSymbol)) {
+            return next (new AppError('パスワードは英字、数字、記号を\nそれぞれ1文字以上含めてください'), 400);
+        }
+        if (employee_no && password.toLowerCase().includes(employee_no.toLowerCase())) {
+            return next (new AppError('パスワードにユーザーIDを含めることは出来ません'), 400);
+        }
+        if (/(.)\1{2,}/.test(password)) {
+            return next(new AppError('パスワードに同じ文字を3回以上\n連続させることは出来ません'), 400);
+        }
+        const pool = getPool();
+        const userData = await model.getUserData(pool, employee_no, email);
+        if (userData.registered_flag) {
+            console.error(''); // DBでunique制限しているのであり得ないが、一応後でログを取る目印としてcerを置いておく
+            return next (new AppError('ユーザーデータが既に登録されています'), 400);
+        }
+        const result = await model.register(pool, req.body); // 登録処理
+        if(result.success) {
+            res.status(200).json({success: result.success, message: '新規登録完了'});
+        }
+    } catch (error) {
+        console.error('Failed to register');
+        return next (new AppError('新規登録に失敗しました', 400));
+    }
+} 
