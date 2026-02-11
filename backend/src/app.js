@@ -3,7 +3,7 @@ import cors from 'cors';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
-import { sessionConfig } from './config/session.js';
+import { getSessionConfig } from './config/session.js';
 import viewRoutes from './routes/viewRoutes.js';
 import indexRoutes from './routes/indexRoutes.js';
 import globalErrorHandler from './middlewares/errorHandler.js';
@@ -16,7 +16,7 @@ app.set('trust proxy', 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(session(sessionConfig));
+app.use(session(getSessionConfig));
 app.use(helmet());
 
 app.use(cors({
