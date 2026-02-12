@@ -5,6 +5,7 @@ import { verifyPassword } from '../utils/password.js';
 import AppError from '../utils/appError.js';
 import Email from '../utils/email.js';
 import { verifyPassword, hashPassword } from '../utils/password.js';
+import { generateToken } from '../config/csrf.js';
 
 export async function login(req, res, next) {
     const { employee_no, email, password } = req.body;
@@ -55,10 +56,12 @@ export async function login(req, res, next) {
                 return next(new AppError('パスワードリセットメールの送信に失敗しました', 500));
             }
         }
+        const csrfToken = generateToken(res, req);
 
         res.status(200).json({
             success: true,
             message: 'ログインに成功しました',
+            csrfToken,
             user: {
                 user_name: userData.user_name,
                 employee_no: userData.employee_no,
