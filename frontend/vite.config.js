@@ -49,7 +49,7 @@ export default defineConfig({
             req.url = '/pages/dashboard_operation.html';
           } else if (req.url.startsWith('/chat')) {
             req.url = '/pages/chat.html';
-          } else if (req.url.startsWith('//users')) {
+          } else if (req.url.startsWith('/users')) {
             req.url = '/pages/users.html';
           } else if (req.url.startsWith('/logs')) {
             req.url = '/pages/logs.html';
