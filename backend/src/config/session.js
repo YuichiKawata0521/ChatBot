@@ -3,6 +3,8 @@ import pgSession from 'connect-pg-simple';
 import fs from 'fs';
 import { getPool } from './db.js';
 
+const PgSession = pgSession(session);
+
 export const getSessionConfig = () => {
     const sessionStore = new PgSession({
         pool: getPool(),
