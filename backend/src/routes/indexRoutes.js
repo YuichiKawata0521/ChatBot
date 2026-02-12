@@ -1,5 +1,5 @@
 import express from 'express';
-import { generateToken } from '../config/csrf.js';
+import { generateToken, doubleCsrfProtection } from '../config/csrf.js';
 import loginRoutes from './loginRoutes.js';
 
 const router = express.Router();
