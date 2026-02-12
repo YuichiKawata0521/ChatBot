@@ -9,7 +9,7 @@
     "build": "mkdir -p dist && cp -r src/* dist",
     "start": "node dist/server.js",
     "admin": "node scripts/createAdmin.js",
-    "user": "node scripts/createUser.js"
+    "user": "node scripts/createDevUsers.js"
   },
   "keywords": [],
   "author": "",
