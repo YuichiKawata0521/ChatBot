@@ -23,7 +23,7 @@ async function handleLoginSubmit(event) {
                 window.location.href = '/password-change.html';
             } else {
                 authChannel.postMessage({ type: 'LOGIN' });
-                const chatPage = "/chat/index.html";
+                const chatPage = "/chat";
                 window.location.replace(chatPage);
             }
         } else {
