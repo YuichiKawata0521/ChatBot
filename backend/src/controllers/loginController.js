@@ -1,7 +1,6 @@
 import crypto from 'crypto';
 import * as loginModel from '../models/loginModel.js';
 import { getPool } from '../config/db.js';
-import { verifyPassword } from '../utils/password.js';
 import AppError from '../utils/appError.js';
 import Email from '../utils/email.js';
 import { verifyPassword, hashPassword } from '../utils/password.js';
