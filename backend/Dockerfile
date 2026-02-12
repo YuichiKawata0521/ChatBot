@@ -28,7 +28,9 @@ FROM base AS dev
 ENV NODE_ENV=development
 COPY --chown=node:node package*.json ./
 RUN npm install
-CMD ["npm", "run", "dev"]
+COPY --chown=node:node . .
+RUN chmod +x scripts/entrypoint.dev.sh
+CMD ["sh", "scripts/entrypoint.dev.sh"]
 
 # ---------- prod ----------
 # 本番環境用
