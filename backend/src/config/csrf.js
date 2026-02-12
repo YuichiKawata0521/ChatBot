@@ -1,4 +1,4 @@
-import { doubleCsrf } from "csrf-csrf";
+import { doubleCsrf, generateToken, doubleCsrfProtection } from "csrf-csrf";
 
 const CSRF_SECRET = process.env.CSRF_SECRET || 'complex_secret_key_for_csrf';
 const COOKIE_NAME = "x-csrf-token";
