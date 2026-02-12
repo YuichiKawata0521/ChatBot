@@ -9,12 +9,13 @@ async function handleLoginSubmit(event) {
     event.preventDefault();
 
     ui.toggleButtonsState(true);
+    let result;
 
     try {
         const formData = ui.getLoginFormData();
         const dataObject = Object.fromEntries(formData.entries());
 
-        const result = await service.fetchLogin(dataObject);
+        result = await service.fetchLogin(dataObject);
 
         if (result.success) {
             if (result.isRegistered) {
@@ -25,12 +26,14 @@ async function handleLoginSubmit(event) {
                 const chatPage = "/chat/index.html";
                 window.location.replace(chatPage);
             }
+        } else {
+            showToast(result.message);
         }
     } catch (error) {
         console.error('Login Error: ', error);
         showToast(result.message);
     } finally {
-        if (!result?.success) {
+        if (!result || !result?.success) {
             ui.toggleButtonsState(false);
         }
     }
