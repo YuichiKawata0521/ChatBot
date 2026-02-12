@@ -4,7 +4,7 @@ BEGIN
     NEW.updated_at = now();
     RETURN NEW;
 END;
-$$ LANGUAGE pspgsql;
+$$ LANGUAGE plpgsql;
 
 -- users 用 updated_at トリガ
 CREATE TRIGGER trg_users_updated_at
