@@ -3,6 +3,10 @@
 # --------------------------
 FROM node:22-bullseye-slim AS base
 WORKDIR /app
+RUN apt-get update && \
+    apt-get install -y python3 make g++ && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 RUN chown -R node:node /app
 USER node
 
