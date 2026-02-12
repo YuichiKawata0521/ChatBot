@@ -1,7 +1,8 @@
-import { getPool } from '../src/config/db.js';
+import { connectDB, getPool } from '../src/config/db.js';
 import { hashPassword } from '../src/utils/password.js';
 
 const createAdmin = async () => {
+    await connectDB();
     const pool = getPool(); // Poolを取得
 
     try {
