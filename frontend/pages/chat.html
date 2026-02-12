@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>チャットボット</title>
+    <link rel="stylesheet" href="../assets/css/pages/chat.css">
+</head>
+<body id="body-element" class="app-body">
+    <!-- ヘッダー -->
+    <header id="app-header" class="header-container">
+        
+        <div id="header-left" class="header-left">
+            <button id="toggle-btn" class="btn menu-toggle">≡</button>
+            <button id="home-btn" class="btn">HOME</button>
+        </div>
+
+        <div id="header-center" class="header-center">
+            <span id="header-title" class="title-text">タイトル</span>
+        </div>
+
+        <div id="header-right" class="header-right">
+            <button id="logout" class="btn">LOGOUT</button>
+        </div>
+    </header>
+
+    <div id="layout-container" class="layout-wrapper">
+    <!-- サイドバー -->
+        <!-- 履歴      -->
+        <aside id="sidebar" class="sidebar-container">
+            <div id="sidebar-content" class="sidebar-content">
+                <div id="history-1" class="history-card">
+                    <div id="history-1-text" class="history-left">
+                        <span id="date-1" class="history-date">2026/02/05</span>
+                        <span id="title-1" class="history-title">Node.jsでのバックエンド設計をしてみたいのですが、どうすればいいですか？</span>
+                    </div>
+                    <div class="btn history-menu">︙</div>
+                </div>
+            </div>
+
+            <!-- フッター -->
+            <div id="sidebar-footer" class="sidebar-footer">
+                <button id="settings-btn" class="btn settings-btn">⚙ SETTINGS</button>
+            </div>
+        </aside>
+
+        <!-- メイン画面 -->
+        <main id="main-chat-area" class="chat-area">
+            <!-- チャット画面 -->
+            <div id="chat-messages" class="messages-container">
+
+                <div id="msg-1" class="message-row bot">
+                    <div id="bubble-1" class="message-bubble">
+                        こんにちは！<br>何かお手伝いできることはありますか？
+                    </div>
+                </div>
+
+                <div id="msg-2" class="message-row user">
+                    <div id="bubble-2" class="message-bubble">
+                        HTMLとCSSだけでチャット画面のモックを作成したいのですが、構成案を教えて
+                    </div>
+                </div>
+            </div>
+
+            <!-- 入力欄 -->
+            <div id="input-area" class="input-container">
+                <button id="rag-toggle" class="rag-toggle" aria-pressed="false">
+                    <span class="toggle-thumb"></span>
+                </button>
+                <div id="input-main" class="input-main">
+                    <input type="text" id="message-input" class="text-input" placeholder="メッセージを入力...">
+                    <button id="send-btn" class="submit-btn">SEND</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const toggle = document.getElementById('rag-toggle');
+
+        toggle.addEventListener('click', () => {
+        const isOn = toggle.classList.toggle('is-on');
+        toggle.setAttribute('aria-pressed', isOn);
+        });
+
+        const menuToggle = document.getElementById('toggle-btn');
+        const body = document.getElementById('body-element');
+        menuToggle.addEventListener('click', () => {
+            body.classList.toggle('sidebar-closed');
+        });
+
+    </script>
+</body>
+</html> 

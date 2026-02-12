@@ -1,0 +1,388 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", sans-serif;
+    background-color: #e3f2fd;
+    color: #333;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background 0.2s;
+    color: #555;
+    font-weight: bold;
+}
+
+.btn:hover {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.settings-btn {
+    width: 100%;
+    text-align: left;
+    color: #546e7a;
+}
+
+.submit-btn {
+    background-color: #1565c0;
+    color: white;
+    border: none;
+    border-radius: 24px;
+    padding: 0 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+#send-btn:hover {
+    background-color: #0d47a1;
+}
+
+.history-card {
+    background-color: #f5faff;
+    border: 1px solid #e3f3fd;
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    gap: 8px;
+}
+
+
+.history-card:hover {
+    background-color: #e3f2fd;
+    border-color: #90caf9;
+}
+
+.history-left {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.history-menu {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.history-menu:hover {
+    background-color: #bbbbbb;
+    border-radius: 50%;
+}
+
+.history-date {
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.history-title {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #1565c0;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.input-container {
+    background-color: white;
+    padding: 15px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+.input-main {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+.text-input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #cfd8dc;
+    border-radius: 24px;
+    outline: none;
+    font-size: 1rem;
+    background-color: #f8f9fa;
+}
+
+.text-input:focus {
+    border-color: #2196f3;
+    background-color: #fff;
+}
+
+.message-row {
+    display: flex;
+    width: 100%;
+}
+
+.message-row.bot{
+    justify-content: flex-start;
+}
+
+.message-row.user {
+    justify-content: flex-end;
+}
+
+.message-bubble {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 0.95em;
+    line-height: 1.5;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.menu-toggle {
+    font-size: 1.5rem;
+    margin-right: 10px;
+    line-height: 1;
+}
+
+.rag-toggle {
+  position: relative;
+  width: 48px;
+  height: 24px;
+  border-radius: 999px;
+  background-color: #ccc;
+  cursor: pointer;
+  border: none;
+}
+
+.rag-toggle .toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s ease;
+}
+
+.rag-toggle.is-on {
+  background-color: #4caf50;
+}
+
+.rag-toggle.is-on .toggle-thumb {
+  transform: translateX(24px);
+}
+
+.header-container {
+    width: 100%;
+    height: 60px;
+    background-color: white;
+    border-bottom: 1px solid #bbdefb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-shadow: 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.header-left, .header-center, .header-right {
+    display: flex;
+    align-items: center;
+}
+
+.header-center {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #1565c0;
+}
+
+.layout-wrapper {
+    display: flex;
+    flex: 1;
+    margin-top: 60px;
+    height: calc(100vh - 60px);
+    width: 100%;
+    overflow: hidden;
+}
+
+/* =========================
+   Sidebar
+========================= */
+
+.sidebar-container {
+    width: 260px;
+    background-color: #fff;
+    border-right: 1px solid #bbdefb;
+
+    display: flex;
+    flex-direction: column;
+
+    /* スムーズな開閉 */
+    transition:
+        width 0.3s ease,
+        border-color 0.3s ease;
+
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+body.sidebar-closed .sidebar-container {
+    width: 0;
+    border-right-color: transparent;
+}
+
+/* 中身はフェードさせる */
+.sidebar-content {
+    padding: 15px;
+    flex: 1;
+
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    transition: opacity 0.2s ease;
+}
+
+body.sidebar-closed .sidebar-content {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sidebar-footer {
+    padding: 15px;
+}
+
+/* =========================
+   History Card
+========================= */
+
+.history-card {
+    background-color: #f5faff;
+    border: 1px solid #e3f3fd;
+    padding: 12px;
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.history-card:hover {
+    background-color: #e3f2fd;
+    border-color: #90caf9;
+}
+
+/* 左側（タイトル・日付） */
+.history-left {
+    display: flex;
+    flex-direction: column;
+
+    flex: 1;
+    min-width: 0; /* ← ellipsisの必須条件 */
+}
+
+/* 日付 */
+.history-date {
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 4px;
+}
+
+/* タイトル（省略表示） */
+.history-title {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #1565c0;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* =========================
+   Menu Button（三点リーダー）
+========================= */
+
+.history-menu {
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+    border-radius: 50%;
+
+    color: #555;
+    transition: background-color 0.2s;
+}
+
+.history-menu:hover {
+    background-color: rgba(21, 101, 192, 0.15);
+}
+
+.chat-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #e3f2fd;
+    position: relative;
+    transition: margin-left 0.3s ease;
+}
+
+.messages-container {
+    flex: 1;
+    padding: 20px 15% 0 15%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.bot .message-bubble {
+    background-color: white;
+    color: #333;
+    border-top-left-radius: 4px;
+}
+
+.user .message-bubble {
+    background-color: #2196f3;
+    color: white;
+    border-top-right-radius: 4px;
+}
+
+
