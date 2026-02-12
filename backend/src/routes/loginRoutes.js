@@ -13,4 +13,4 @@ router.get('/me', protect, loginController.authMe);
 
 router.post('/register', protect, loginController.register);
 
-export default router();
+export default router;
