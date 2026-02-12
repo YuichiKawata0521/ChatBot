@@ -9,7 +9,7 @@ const startServer = async () => {
         const { default: app } = await import('./app.js');
         app.listen(PORT, () => {});
     } catch (error) {
-        console.error('サーバー起動中にエラーが発生しました: ', error.message);
+        console.error('サーバー起動中にエラーが発生しました: ', error && error.stack ? error.stack : error);
         process.exit(1);
     }
 };
