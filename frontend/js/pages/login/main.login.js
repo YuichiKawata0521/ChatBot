@@ -16,11 +16,12 @@ async function handleLoginSubmit(event) {
         const dataObject = Object.fromEntries(formData.entries());
 
         result = await service.fetchLogin(dataObject);
+        console.log(`ログイン時のresult:\n${result}`);
 
         if (result.success) {
-            if (result.isRegistered) {
-                alert('初回ログインの為、パスワード変更画面へ移動します');
-                window.location.href = '/password-change.html';
+            if (result.requirePasswordChange) {
+                alert('初回ログインの為、入力したメールアドレスに\nパスワード変更のメールを送信しました');
+                location.reload();
             } else {
                 authChannel.postMessage({ type: 'LOGIN' });
                 const chatPage = "/chat";
@@ -28,6 +29,7 @@ async function handleLoginSubmit(event) {
             }
         } else {
             showToast(result.message);
+            location.reload();
         }
     } catch (error) {
         console.error('Login Error: ', error);
