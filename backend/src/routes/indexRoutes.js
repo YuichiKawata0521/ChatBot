@@ -1,24 +1,8 @@
 import express from 'express';
-import { doubleCsrf } from 'csrf-csrf';
+import { generateToken } from '../config/csrf.js';
 import loginRoutes from './loginRoutes.js';
 
 const router = express.Router();
-const {
-    doubleCsrfProtection, // CSRF検証を行うミドルウェア
-    generateToken         // トークン生成関数
-} = doubleCsrf({
-    getSecret: () => process.env.CSRF_SECRET || 'secret-key-keep-it-safe', // 本番環境では必ず環境変数を使用
-    cookieName: 'x-csrf-token', // クッキー名
-    cookieOptions: {
-        httpOnly: true,
-        sameSite: 'lax', // または 'strict'
-        secure: process.env.NODE_ENV === 'production', // 本番環境ではtrue
-        path: '/',
-    },
-    size: 64,
-    ignoredMethods: ['GET', 'HEAD', 'OPTIONS'], // 検証を除外するメソッド
-    getTokenFromRequest: (req) => req.headers['x-csrf-token'], // ヘッダーからトークンを取得
-});
 
 const csrfExcludePaths = [
     '/auth/login',
