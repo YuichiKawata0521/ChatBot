@@ -1,14 +1,15 @@
-import { doubleCsrf, generateToken, doubleCsrfProtection } from "csrf-csrf";
+import { doubleCsrf } from "csrf-csrf";
 
 const CSRF_SECRET = process.env.CSRF_SECRET || 'complex_secret_key_for_csrf';
 const COOKIE_NAME = "x-csrf-token";
 
 const {
     invalidCsrfTokenError,
-    generateToken,
+    generateCsrfToken,
     doubleCsrfProtection
 } = doubleCsrf({
     getSecret: () => CSRF_SECRET,
+    getSessionIdentifier: (req) => req.session.id,
     cookieName: COOKIE_NAME,
     cookieOptions: {
         httpOnly: true,
@@ -23,6 +24,6 @@ const {
 
 export {
     invalidCsrfTokenError,
-    generateToken,
+    generateCsrfToken as generateToken,
     doubleCsrfProtection
 };
