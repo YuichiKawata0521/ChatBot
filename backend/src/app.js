@@ -16,7 +16,7 @@ app.set('trust proxy', 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(session(getSessionConfig));
+app.use(session(getSessionConfig()));
 app.use(helmet());
 
 app.use(cors({
@@ -39,7 +39,7 @@ app.use((req, res, next) => {
     next(error);
 });
 
-app.all('*', (req, res, next) => {
+app.use((req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 app.use(globalErrorHandler);
