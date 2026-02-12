@@ -18,15 +18,25 @@ export const connectDB = async () => {
     if (pool) {
         return pool;
     }
+    const maxRetries = 5;
+    let retries = 0;
 
-    pool = new Pool(getPoolConfig());
+    while (retries < maxRetries) {
+        try {
+            pool = new Pool(getPoolConfig());
+            const res = await pool.query("SELECT NOW()");
+            console.log('DB応答確認 OK!!');
+            return pool;
+        } catch (error) {
+            retries++;
+            console.error(`DB応答確認 NG (Attempt ${retries}/${maxRetries}): `, error.message);
 
-    try {
-        const res = await pool.query("SELECT NOW()");
-        return pool;
-    } catch  (error) {
-        console.error('DB応答確認 NG: ', error.message);
-        process.exit(1);
+            if (retries >= maxRetries) {
+                console.error('Max retries reached. Exiting・・・');
+                process.exit(1);
+            }
+            await new Promise(resolve => setTimeout(resolve, 5000));
+        }
     }
 };
 
