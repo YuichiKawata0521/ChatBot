@@ -55,7 +55,7 @@ export async function login(req, res, next) {
                 return next(new AppError('パスワードリセットメールの送信に失敗しました', 500));
             }
         }
-        const csrfToken = generateToken(res, req);
+        const csrfToken = generateToken(req, res);
 
         res.status(200).json({
             success: true,
