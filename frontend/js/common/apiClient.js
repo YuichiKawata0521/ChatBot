@@ -1,5 +1,5 @@
  import { AppError } from "./AppError.js";
-const BASE_URL = '/api';
+const BASE_URL = '/api/v1';
 
 export class ApiClient {
     static async #getCsrfToken() {
