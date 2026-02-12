@@ -10,9 +10,6 @@ const loginLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => {
-        return req.ip || req.connection.remoteAddress;
-    }
 });
 
 export default loginLimiter;
