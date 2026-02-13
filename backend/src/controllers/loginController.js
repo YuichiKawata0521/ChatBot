@@ -95,7 +95,7 @@ export function authMe(req, res, next) {
 
 export async function register(req, res, next) {
     try {
-        const { employee_no, password } = req.body;
+        const { token, employee_no, email, password } = req.body;
 
         if (password.length < 10 || password.length > 128) {
             return next (new AppError('パスワードは10文字以上、128文字以下で\n設定してください'), 400);
@@ -119,23 +119,26 @@ export async function register(req, res, next) {
             return next(new AppError('パスワードに同じ文字を3回以上\n連続させることは出来ません'), 400);
         }
         const pool = getPool();
-        const userData = await loginModel.getUserData(pool, req.body);
 
-        if (userData.registered_flag) {
+        // 1. トークンの検証
+        const user = await loginModel.getUserByResetToken(pool, token);
+        if (!user) {
+            return next(new AppError('トークンが無効か、有効期限が切れています', 400));
+        }
+
+        // 2. 本人確認
+        if (user.employee_no !== employee_no || user.email !== email) {
+            return next(new AppError('社員番号またはメールアドレスが一致しません', 400));
+        }
+
+        if (user.registered_flag) {
             console.error(''); // DBでunique制限しているのであり得ないが、一応後でログを取る目印としてcerを置いておく
             return next (new AppError('ユーザーデータが既に登録されています'), 400);
         }
 
         const hashedPassword = await hashPassword(password);
-        const newBody = {
-            ...req.body,
-            password: hashedPassword
-        };
-
-        const result = await loginModel.register(pool, newBody); // 登録処理
-        if(result.success) {
-            res.status(200).json({success: result.success, message: '新規登録完了'});
-        }
+        await loginModel.register(pool, email, employee_no, hashedPassword); // 登録処理
+            res.status(200).json({success: result.success, message: '登録完了'});
     } catch (error) {
         console.error('Failed to register: ', error);
         return next (new AppError('新規登録に失敗しました', 400));
