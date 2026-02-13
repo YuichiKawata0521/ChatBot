@@ -8,7 +8,7 @@
     return result.rows[0];
 }
 
-export const register = async (pool, email, employee_no, hashedPassword) => {
+export const register = async (pool, hashedPassword, token) => {
     const sql = `
         UPDATE users
         SET password = $1,
@@ -16,9 +16,9 @@ export const register = async (pool, email, employee_no, hashedPassword) => {
             password_reset_expires = NULL,
             registered_flag = true,
             updated_at = NOW()
-        WHERE email = $2 AND employee_no = $3;
+        WHERE password_reset_token = $2
     `;
-    await pool.query(sql, [hashedPassword, email, employee_no]);
+    await pool.query(sql, [hashedPassword, token]);
 };
 
 export const saveResetToken = async (pool, id, token, expires) => {
