@@ -96,26 +96,26 @@ export function authMe(req, res, next) {
 
 export async function register(req, res, next) {
     try {
-        const { token, employee_no, email, password } = req.body;
+        const { token, password } = req.body;
         console.log('受け取ったtoken:', token);
 
         if (password.length < 10 || password.length > 128) {
-            return next (new AppError('パスワードは10文字以上、128文字以下で\n設定してください'), 400);
+            return next (new AppError('パスワードは10文字以上、128文字以下で\n設定してください', 400));
         }
         const asciiRegex = /^[\x20-\x7E]+$/;
 
         if (!asciiRegex.test(password)) {
-            return next (new AppError('使用できない文字が含まれています\n(半角英数字記号のみ使用可能です)'), 400)
+            return next (new AppError('使用できない文字が含まれています\n(半角英数字記号のみ使用可能です)', 400))
         }
         const hasLetter = /[a-zA-Z]/.test(password);
         const hasNumber = /[0-9]/.test(password);
         const hasSymbol = /[\x20-\x2F\x3A-\x40\x5B-\x60\x7B-\x7E]/.test(password);
 
         if (!(hasLetter && hasNumber && hasSymbol)) {
-            return next (new AppError('パスワードは英字、数字、記号を\nそれぞれ1文字以上含めてください'), 400);
+            return next (new AppError('パスワードは英字、数字、記号を\nそれぞれ1文字以上含めてください', 400));
         }
         if (/(.)\1{2,}/.test(password)) {
-            return next(new AppError('パスワードに同じ文字を3回以上\n連続させることは出来ません'), 400);
+            return next(new AppError('パスワードに同じ文字を3回以上\n連続させることは出来ません', 400));
         }
         const pool = getPool();
 
@@ -127,12 +127,40 @@ export async function register(req, res, next) {
 
         if (user.registered_flag) {
             console.error(''); // DBでunique制限しているのであり得ないが、一応後でログを取る目印としてcerを置いておく
-            return next (new AppError('ユーザーデータが既に登録されています'), 400);
+            return next (new AppError('ユーザーデータが既に登録されています', 400));
         }
 
         const hashedPassword = await hashPassword(password);
         await loginModel.register(pool, hashedPassword, token); // 登録処理
-            res.status(200).json({success: true, message: '登録完了'});
+
+        req.session.regenerate((err) => {
+            if (err) {
+                console.error('Session regeneration error: ', err);
+                return next(new AppError('登録は完了しましたが、自動ログインに失敗しました。ログインページへ移動してください', 400));
+            }
+
+            req.session.user = {
+                id: user.id,
+                employee_no: user.employee_no,
+                email: user.email,
+                role: user.role,
+                isRegistered: true
+            };
+
+            const csrfToken = generateToken(req, res);
+
+            res.status(200).json({
+                success: true,
+                message: '登録が完了しました',
+                csrfToken,
+                user: {
+                    user_name: user.user_name,
+                    employee_no: user.employee_no,
+                    email: user.email,
+                    role: user.role
+                }
+            });
+        });
     } catch (error) {
         console.error('Failed to register: ', error);
         return next (new AppError('新規登録に失敗しました', 400));
