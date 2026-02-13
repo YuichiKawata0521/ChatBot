@@ -11,6 +11,6 @@ router.post('/logout', protect, loginController.logout);
 
 router.get('/me', protect, loginController.authMe);
 
-router.post('/register', protect, loginController.register);
+router.post('/register', loginController.register);
 
 export default router;
