@@ -35,6 +35,14 @@ services:
       - .env
     networks:
       - app_net
+  
+  llm:
+    build:
+      context: ./llm
+    env_file:
+      - .env
+    networks:
+      - app_net
 
 volumes:
   db_data:
