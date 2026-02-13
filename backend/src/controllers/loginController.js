@@ -42,7 +42,8 @@ export async function login(req, res, next) {
                 
                 await loginModel.saveResetToken(pool, userData.id, resetToken, passwordResetExpires);
 
-                const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`;
+                const frontendURL = process.env.FRONTEND_URL || `http://localhost:${process.env.FRONTEND_PORT}`
+                const resetUrl = `${frontendURL}/pages/change_password.html?token=${resetToken}`;
                 await new Email(userData, resetUrl).sendPasswordReset();
 
                 return res.status(200).json({
@@ -96,6 +97,7 @@ export function authMe(req, res, next) {
 export async function register(req, res, next) {
     try {
         const { token, employee_no, email, password } = req.body;
+        console.log('受け取ったtoken:', token);
 
         if (password.length < 10 || password.length > 128) {
             return next (new AppError('パスワードは10文字以上、128文字以下で\n設定してください'), 400);
@@ -112,9 +114,6 @@ export async function register(req, res, next) {
         if (!(hasLetter && hasNumber && hasSymbol)) {
             return next (new AppError('パスワードは英字、数字、記号を\nそれぞれ1文字以上含めてください'), 400);
         }
-        if (employee_no && password.toLowerCase().includes(employee_no.toLowerCase())) {
-            return next (new AppError('パスワードにユーザーIDを含めることは出来ません'), 400);
-        }
         if (/(.)\1{2,}/.test(password)) {
             return next(new AppError('パスワードに同じ文字を3回以上\n連続させることは出来ません'), 400);
         }
@@ -126,19 +125,14 @@ export async function register(req, res, next) {
             return next(new AppError('トークンが無効か、有効期限が切れています', 400));
         }
 
-        // 2. 本人確認
-        if (user.employee_no !== employee_no || user.email !== email) {
-            return next(new AppError('社員番号またはメールアドレスが一致しません', 400));
-        }
-
         if (user.registered_flag) {
             console.error(''); // DBでunique制限しているのであり得ないが、一応後でログを取る目印としてcerを置いておく
             return next (new AppError('ユーザーデータが既に登録されています'), 400);
         }
 
         const hashedPassword = await hashPassword(password);
-        await loginModel.register(pool, email, employee_no, hashedPassword); // 登録処理
-            res.status(200).json({success: result.success, message: '登録完了'});
+        await loginModel.register(pool, hashedPassword, token); // 登録処理
+            res.status(200).json({success: true, message: '登録完了'});
     } catch (error) {
         console.error('Failed to register: ', error);
         return next (new AppError('新規登録に失敗しました', 400));
