@@ -8,17 +8,18 @@
     return result.rows[0];
 }
 
-export const register = async (pool, data) => {
-    const { employee_no, user_name, email, password, department_id, role } = data;
-
+export const register = async (pool, email, employee_no, hashedPassword) => {
     const sql = `
-        INSERT INTO users (employee_no, user_name, email, password, department_id, role)
-        VALUES ($1, $2, $3, $4, $5, $6);
+        UPDATE users
+        SET password = $1,
+            password_reset_token = NULL,
+            password_reset_expires = NULL,
+            registered_flag = true,
+            updated_at = NOW()
+        WHERE email = $2 AND employee_no = $3;
     `;
-
-    await pool.query(sql, [employee_no, user_name, email, password, department_id, role]);
-    return {success: true};
-} 
+    await pool.query(sql, [hashedPassword, email, employee_no]);
+};
 
 export const saveResetToken = async (pool, id, token, expires) => {
     const sql = `
@@ -28,3 +29,14 @@ export const saveResetToken = async (pool, id, token, expires) => {
     `;
     await pool.query(sql, [token, expires, id]);
 };
+
+export const getUserByResetToken = async (pool, token) => {
+    const sql = `
+        SELECT * FROM users
+        WHERE password_reset_token = $1
+        AND password_reset_expires > NOW();
+    `;
+    const result = await pool.query(sql, [token]);
+    return result.rows[0];
+};
+
