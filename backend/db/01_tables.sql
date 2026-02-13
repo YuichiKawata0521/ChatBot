@@ -81,6 +81,9 @@ CREATE TABLE threads (
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     department_id BIGINT REFERENCES departments(id),
     title TEXT NOT NULL,
+    mode VARCHAR(20) DEFAULT 'normal' CHECK (mode IN ('normal', 'rag', 'agent')),
+    model_name VARCHAR(50) DEFAULT 'gpt-4o-mini',
+    document_id BIGINT REFERENCES documents(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     show_history BOOLEAN NOT NULL DEFAULT false
