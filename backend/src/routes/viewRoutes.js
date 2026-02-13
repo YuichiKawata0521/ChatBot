@@ -13,4 +13,10 @@ router.get('/dashboard', protect, (req, res) => {
     res.send('Dashboard: Login Successful');
 });
 
+router.get('/register/:token', (req, res) => {
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const htmlPath = path.join(__dirname, '../../../frontend/pages/change_password.html');
+    res.sendFile(htmlPath);
+});
+
 export default router;
