@@ -16,7 +16,6 @@ async function handleLoginSubmit(event) {
         const dataObject = Object.fromEntries(formData.entries());
 
         result = await service.fetchLogin(dataObject);
-        console.log(`ログイン時のresult:\n${result}`);
 
         if (result.success) {
             if (result.requirePasswordChange) {
