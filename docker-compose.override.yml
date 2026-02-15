@@ -23,3 +23,7 @@ services:
       - app_net
     environment:
       - DOZZLE_LEVEL=${DOZZLE_LEVEL}
+  
+  llm:
+    ports:
+      - "8000:8000"
