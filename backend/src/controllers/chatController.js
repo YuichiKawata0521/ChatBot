@@ -6,7 +6,6 @@ import catchAsync from "../utils/catchAsync.js";
 
 export const chatController = {
     sendMessage: catchAsync(async (req, res, next) => {
-        console.log('req: \n', req);
         const pool = getPool();
         const { message, modelName } = req.body;
         let { threadId } = req.body;
@@ -40,7 +39,7 @@ export const chatController = {
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
 
-        res.write(`data: ${JSON.stringify({type: 'meta', threadId})}\n\n`);
+        res.write(`data: ${JSON.stringify({type: 'meta', threadId})}`)
 
         let fullResponse = '';
         const reader = llmResponse.body.getReader();
