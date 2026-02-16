@@ -15,12 +15,12 @@ export function addMessage(role, content) {
 
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-bubble';
-    contentDiv.textContent = marked.parse(content);
+    contentDiv.innerHTML = marked.parse(content);
 
     messageDiv.appendChild(contentDiv);
     
     chatContainer.appendChild(messageDiv);
-    chatContainer.scrollToBottom();
+    scrollToBottom();
     return contentDiv;
 }
 
