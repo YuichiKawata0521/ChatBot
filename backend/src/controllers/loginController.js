@@ -30,6 +30,7 @@ export async function login(req, res, next) {
 
         req.session.user = {
             id: userData.id,
+            department_id: userData.department_id,
             employee_no: userData.employee_no,
             email: userData.email,
             role: userData.role,
