@@ -18,7 +18,8 @@ export const ChatStream = {
                 },
                 body: JSON.stringify({
                     message,
-                    threadId: this.currentThreadId
+                    threadId: this.currentThreadId,
+                    modelName: 'gpt-4o-mini'
                 })
             });
 
