@@ -2,6 +2,9 @@ import * as ui from './ui.chat.js'
 import { dom } from './ui.chat.js'
 import * as api from '../../services/chatService.js';
 import { showToast } from '../../common/toast.js';
+import { loadMessages } from './history.chat.js';
+import { ChatStream } from './stream.chat.js';
+
 
 const authChannel = new BroadcastChannel('auth_sync');
 
@@ -14,6 +17,16 @@ async function handleLogout() {
     } else {
         console.error('ログアウトに失敗しました');
         alert('ログアウトに失敗しました');
+    }
+}
+
+async function handleStream() {
+    const pathParts = window.location.pathname.split('/');
+    const threadId = pathParts[pathParts.length -1];
+
+    if (!isNaN(threadId)) {
+        ChatStream.currentThreadId = threadId;
+        loadMessages(threadId);
     }
 }
 
@@ -34,6 +47,15 @@ function setupEventListeners() {
     const body = document.getElementById('body-element');
     menuToggle.addEventListener('click', () => {
         body.classList.toggle('sidebar-closed');
+    });
+
+    const sendBtn = dom.sendBtn;
+    sendBtn.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const message = dom.messageInput.value.trim();
+        if (!message) return;
+
+        await ChatStream.sendMessage(menuToggle);
     });
     
     authChannel.onmessage = (event) => {
