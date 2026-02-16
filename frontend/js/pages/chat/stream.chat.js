@@ -8,7 +8,7 @@ export const ChatStream = {
         ui.addMessage('user', message);
         ui.clearInput();
 
-        const assistantMsgDiv = ui.addMessage('assistant', '');
+        const assistantMsgDiv = ui.addMessage('bot', '');
 
         try {
 
@@ -18,7 +18,7 @@ export const ChatStream = {
             if (!token.ok) throw new Error('CSRF token fetch failed');
             const { csrfToken } = await token.json();
 
-            const response = await fetch('/api/v1/chat/chat', {
+            const response = await fetch('/api/v1/chat', {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -53,12 +53,18 @@ export const ChatStream = {
 
                         try {
                             const data = JSON.parse(dataStr);
-                            if (data.type === 'meta' && data.threadId) {
+                            if (typeof data === 'string') {
+                                // 通常のテキストチャンク
+                                accumulatedText += data;
+                            } else if (data.type === 'meta' && data.threadId) {
+                                // メタデータ
                                 this.updateThreadId(data.threadId);
-                                continue;
+                            } else if (data.type === 'error') {
+                                // エラー
+                                console.error('LLM Error:', data.error);
                             }
                         } catch (error) {
-                            accumulatedText += dataStr;
+                            console.error('Parse error:', error, 'dataStr:', dataStr);
                         }
                     }
                 }
