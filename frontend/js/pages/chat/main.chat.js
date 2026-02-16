@@ -50,12 +50,14 @@ function setupEventListeners() {
     });
 
     const sendBtn = dom.sendBtn;
-    sendBtn.addEventListener('submit', async (e) => {
+    sendBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         const message = dom.messageInput.value.trim();
-        if (!message) return;
-
-        await ChatStream.sendMessage(menuToggle);
+        if (!message) {
+            showToast('入力が空です');
+            return;
+        }
+        await ChatStream.sendMessage(message);
     });
     
     authChannel.onmessage = (event) => {
