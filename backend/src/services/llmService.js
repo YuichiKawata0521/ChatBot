@@ -1,5 +1,3 @@
-import { AppError } from '../utils/appError.js'
-
 export const llmService = {
     async fetchStream(messages, modelName="gpt-4o-mini") {
         const url = 'http://llm:8000/chat'
