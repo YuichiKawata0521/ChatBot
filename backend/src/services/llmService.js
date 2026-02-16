@@ -1,6 +1,6 @@
 export const llmService = {
     async fetchStream(messages, modelName="gpt-4o-mini") {
-        const url = 'http://llm:8000/chat'
+        const url = 'http://llm:8000/api/chat'
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-type': 'application/json' },
