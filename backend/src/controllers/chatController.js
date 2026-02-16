@@ -6,6 +6,7 @@ import catchAsync from "../utils/catchAsync.js";
 
 export const chatController = {
     sendMessage: catchAsync(async (req, res, next) => {
+        console.log('req: \n', req);
         const pool = getPool();
         const { message, modelName } = req.body;
         let { threadId } = req.body;
@@ -15,7 +16,7 @@ export const chatController = {
         if (!threadId) {
             const title = message.replace(/\n/g, ' ').substring(0, 30) + (message.length > 30 ? '...' : '');
             const newThread = await chatModel.createThread(pool, userId, depId, title, modelName);
-            threadId = newThread;
+            threadId = newThread.id;
         } else {
             const thread = await chatModel.getThread(pool, threadId, userId);
             if (!thread) return next (new AppError('Thread not found or permission denied', 404));
@@ -42,12 +43,27 @@ export const chatController = {
         res.write(`data: ${JSON.stringify({type: 'meta', threadId})}\n\n`);
 
         let fullResponse = '';
+        const reader = llmResponse.body.getReader();
+        const decoder = new TextDecoder();
 
-        for await (const chunk of llmResponse.body) {
-            const text = chunk.toString();
-            fullResponse += text;
-            res.write(`data: ${JSON.stringify(text)}\n\n`);
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                console.log('LLM Stream Chunk:', chunk);
+                fullResponse += chunk;
+                res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+            }
+        } catch (error) {
+            console.error('Streaming error:', error);
+            res.write(`data: ${JSON.stringify({type: 'error', error: error.message})}\n\n`);
+        } finally {
+            reader.releaseLock();
         }
+
+        console.log('LLM Full Response:', fullResponse);
 
         await chatModel.saveMessage({
             pool, threadId, sender: 'assistant', content: fullResponse
