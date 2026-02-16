@@ -11,10 +11,19 @@ export const ChatStream = {
         const assistantMsgDiv = ui.addMessage('assistant', '');
 
         try {
-            const response = await fetch('/api/v1/chat', {
+
+            const token = await fetch('/api/v1/csrf-token', {
+                credentials: 'include'
+            });
+            if (!token.ok) throw new Error('CSRF token fetch failed');
+            const { csrfToken } = await token.json();
+
+            const response = await fetch('/api/v1/chat/chat', {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
                 },
                 body: JSON.stringify({
                     message,
@@ -37,7 +46,7 @@ export const ChatStream = {
 
 
                 const lines = chunk.split('\n');
-                for (const line in lines) {
+                for (const line of lines) {
                     if (line.startsWith('data: ')) {
                         const dataStr = line.replace('data: ', '').trim();
                         if (!dataStr) continue;
