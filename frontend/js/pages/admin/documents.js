@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 source: 'markdown' // 今回はテキスト入力なのでmarkdown扱いとする
             });
 
-            showToast('ドキュメントを保存しました');
+            showToast('ドキュメントを保存しました', 'success');
             modal.style.display = 'none';
             
             // 入力リセット
