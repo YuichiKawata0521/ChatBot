@@ -14,3 +14,9 @@ class ChunkResult(BaseModel):
 
 class EmbedResponse(BaseModel):
     chunks: List[ChunkResult]
+
+class QueryEmbedRequest(BaseModel):
+    text: str
+
+class QueryEmbedResponse(BaseModel):
+    embedding: list[float]
