@@ -26,10 +26,15 @@
 
     <div id="layout-container" class="layout-wrapper">
     <!-- サイドバー -->
-        <!-- 履歴      -->
         <aside id="sidebar" class="sidebar-container">
-            <div id="sidebar-content" class="sidebar-content">
+            <div class="sidebar-tabs">
+                <button id="tab-history" class="tab-btn active">履歴</button>
+                <button id="tab-documents" class="tab-btn">ドキュメント</button>
             </div>
+
+            <div id="sidebar-content-history" class="sidebar-content"></div>
+
+            <div id="sidebar-content-documents" class="sidebar-content hidden"></div>
 
             <!-- フッター -->
             <div id="sidebar-footer" class="sidebar-footer">
