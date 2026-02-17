@@ -5,6 +5,14 @@ export const dom = {
     get chatContainer() { return document.getElementById('chat-messages');},
     get messageInput() { return document.getElementById('message-input');},
     get sendBtn() { return document.getElementById('send-btn');},
+    get sidebar() { return document.getElementById('sidebar-content');},
+    get home() { return document.getElementById('home-btn');},
+    get menuToggle() { return document.getElementById('toggle-btn');},
+    get body() { return document.getElementById('body-element');},
+    get settingBtn() { return document.getElementById('settings-btn');},
+    get settingMenu() { return document.getElementById('settings-menu');},
+    get changePWBtn() { return document.getElementById('change-password-btn');},
+    get deleteHistoryBtn() { return document.getElementById('delete-history-btn');},
 }
 
 export function addMessage(role, content) {
@@ -32,4 +40,10 @@ export function scrollToBottom() {
 export function clearInput() {
     const input = dom.messageInput;
     input.value = '';
+    resetInputHeight();
+}
+
+export function resetInputHeight() {
+    const input = dom.messageInput;
+    input.style.height = '';
 }

@@ -24,7 +24,18 @@ router.use((req, res, next) => {
 router.get('/csrf-token', (req, res) => {
     // トークンを生成してレスポンスに含める（同時にCookieにもセットされます）
     const csrfToken = generateToken(req, res);
-    res.json({ csrfToken });
+    const responseData = { csrfToken };
+    
+    // ユーザー情報がセッションにあれば含める
+    if (req.session.user) {
+        responseData.user = {
+            id: req.session.user.id,
+            role: req.session.user.role,
+            email: req.session.user.email
+        };
+    }
+    
+    res.json(responseData);
 });
 
 router.use('/auth', loginRoutes);

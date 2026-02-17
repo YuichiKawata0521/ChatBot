@@ -17,6 +17,15 @@ export const chatModel = {
             RETURNING *;
         `;
         const result = await pool.query(sql, [threadId, sender, content,inputTokenCount, outputTokenCount]);
+        
+        // メッセージ保存後、スレッドのupdated_atを更新
+        const updateThreadSql = `
+            UPDATE threads
+            SET updated_at = NOW()
+            WHERE id = $1;
+        `;
+        await pool.query(updateThreadSql, [threadId]);
+        
         return result.rows[0];
     },
 
@@ -28,6 +37,17 @@ export const chatModel = {
         return result.rows[0];
     },
 
+    async getThreadsByUserId(pool, userId) {
+        const sql = `
+            SELECT id, title, created_at, updated_at
+            FROM threads
+            WHERE user_id = $1 AND show_history = false
+            ORDER BY updated_at DESC;
+        `;
+        const result = await pool.query(sql, [userId]);
+        return result.rows;
+    },
+
     async getRecentMessages(pool, threadId, limit = 6) {
         const sql = `
             SELECT sender, content FROM messages
@@ -37,5 +57,15 @@ export const chatModel = {
         `;
         const result = await pool.query(sql, [threadId, limit]);
         return result.rows;
+    },
+
+    async deleteThreadsByUserId(pool, userId) {
+        const sql = `
+            UPDATE threads
+            SET show_history = true
+            WHERE user_id = $1;
+        `;
+        const result = await pool.query(sql, [userId]);
+        return result.rowCount;
     }
 };

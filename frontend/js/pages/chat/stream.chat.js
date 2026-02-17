@@ -1,14 +1,19 @@
 import * as ui from './ui.chat.js';
 import { AppError } from '../../common/AppError.js';
+import { marked } from 'https://cdn.jsdelivr.net/npm/marked/+esm';
 
 export const ChatStream = {
     currentThreadId: null,
+
+    setThreadId(id) {
+        this.currentThreadId = id;
+    },
 
     async sendMessage(message) {
         ui.addMessage('user', message);
         ui.clearInput();
 
-        const assistantMsgDiv = ui.addMessage('bot', '');
+        const assistantMsgDiv = ui.addMessage('assistant', '');
 
         try {
 
@@ -69,7 +74,7 @@ export const ChatStream = {
                     }
                 }
 
-                assistantMsgDiv.textContent = accumulatedText;
+                assistantMsgDiv.innerHTML = marked.parse(accumulatedText);
                 ui.scrollToBottom();
             }
         } catch (error) {
