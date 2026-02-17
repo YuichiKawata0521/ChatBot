@@ -46,6 +46,22 @@ async function handleStream() {
     }
 }
 
+function handleSidebarTab() {
+    const tabH = dom.tabHistory;
+    const tabD = dom.tabDocuments;
+
+    if (tabH && tabD) {
+        tabH.addEventListener('click', () => {
+            ui.switchSidebarTab('history');
+            loadThreadList();
+        });
+        tabD.addEventListener('click', () => {
+            ui.switchSidebarTab('documents');
+            // loadDocumentsList();
+        })
+    }
+}
+
 function setupEventListeners() {
     const logoutBtn = dom.logout;
     if (logoutBtn) {
@@ -62,6 +78,8 @@ function setupEventListeners() {
     menuToggle.addEventListener('click', () => {
         body.classList.toggle('sidebar-closed');
     });
+
+    handleSidebarTab();
 
     authChannel.onmessage = (event) => {
         if (event.data.type === 'LOGOUT') {
