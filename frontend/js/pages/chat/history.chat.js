@@ -31,8 +31,8 @@ export async function loadThreadList() {
         const res = await getThreads();
         const threads = res.data.threads;
 
-        if (dom.sidebar) {
-            dom.sidebar.innerHTML = '';
+        if (dom.contentHistory) {
+            dom.contentHistory.innerHTML = '';
             threads.forEach(thread => {
                 const div = document.createElement('div');
                 div.className = 'history-card';
@@ -66,7 +66,7 @@ export async function loadThreadList() {
                     document.dispatchEvent(new CustomEvent('threadSelected', { detail: { threadId: thread.id } }));
                 });
 
-                dom.sidebar.appendChild(div);
+                dom.contentHistory.appendChild(div);
             });
         }
     } catch (error) {
