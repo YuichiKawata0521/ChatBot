@@ -74,12 +74,14 @@ export const createDocument = async (req, res, next) => {
 
 export const getDocuments = async (req, res, next) => {
     try {
-        const result = await db.query(
-            `SELECT id, title, source, status, created_at 
-             FROM documents 
-             WHERE status != 'failed' 
-             ORDER BY created_at DESC`
-        );
+        const pool = getPool();
+        const sql = `
+        SELECT id, title, source, status, uploaded_at 
+        FROM documents 
+        WHERE status != 'failed' 
+        ORDER BY uploaded_at DESC;
+        `;
+        const result = await pool.query(sql);
         res.status(200).json({
             success: true,
             data: result.rows
