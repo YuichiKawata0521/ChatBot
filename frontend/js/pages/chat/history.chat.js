@@ -1,8 +1,8 @@
 import * as ui from './ui.chat.js';
 import { dom } from './ui.chat.js';
-import { ApiClient } from '../../common/apiClient.js';
 import { showToast } from '../../common/toast.js'
 import { ChatStream } from './stream.chat.js';
+import { getThreadMessages, getThreads } from '../../services/chatService.js';
 
 let currentThreadId = null;
 
@@ -10,8 +10,7 @@ export async function loadMessages(threadId) {
     if (!threadId) return;
 
     try {
-        const endpoint = `/chat/${threadId}`
-        const res = await ApiClient.get(endpoint);
+        const res = await getThreadMessages(threadId);
         const messages = res.data.messages;
 
         // ChatStreamのcurrentThreadIdを設定
@@ -29,8 +28,7 @@ export async function loadMessages(threadId) {
 
 export async function loadThreadList() {
     try {
-        const endpoint = '/chat/threads';
-        const res = await ApiClient.get(endpoint);
+        const res = await getThreads();
         const threads = res.data.threads;
 
         if (dom.sidebar) {
