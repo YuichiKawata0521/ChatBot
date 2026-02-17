@@ -2,6 +2,7 @@ import express from 'express';
 import { generateToken, doubleCsrfProtection } from '../config/csrf.js';
 import loginRoutes from './loginRoutes.js';
 import chatRoutes from './chatRoutes.js';
+import documentRoutes from './documentRoutes.js';
 
 const router = express.Router();
 
@@ -40,5 +41,6 @@ router.get('/csrf-token', (req, res) => {
 
 router.use('/auth', loginRoutes);
 router.use('/chat', chatRoutes);
+router.use('/documents', documentRoutes);
 
 export default router;
