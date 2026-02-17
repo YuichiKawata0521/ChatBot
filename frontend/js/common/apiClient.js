@@ -26,6 +26,7 @@ export class ApiClient {
         try {
             const response = await fetch(`${BASE_URL}${endpoint}`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: headers,
                 body: JSON.stringify(body),
             });
@@ -51,6 +52,7 @@ export class ApiClient {
         try {
             const response = await fetch(`${BASE_URL}${endpoint}`, {
                 method: 'GET',
+                credentials: 'include',
                 headers: headers
             });
             const data = await response.json();
