@@ -1,4 +1,4 @@
-import { chatController } from "../controllers/chatController.js";
+import * as chatController from "../controllers/chatController.js";
 import * as documentController from '../controllers/documentController.js';
 import express from 'express';
 import { protect } from '../middlewares/authMiddleware.js';

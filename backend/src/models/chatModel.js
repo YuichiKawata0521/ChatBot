@@ -1,12 +1,12 @@
 export const chatModel = {
-    async createThread(pool, userId, departmentId, title, modelName) {
+    async createThread(pool, userId, departmentId, title, mode, modelName, documentId) {
         const sql = `
-            INSERT INTO threads (user_id, department_id, title, model_name)
-            VALUES($1, $2, $3, $4)
+            INSERT INTO threads (user_id, department_id, title, mode, model_name, document_id)
+            VALUES($1, $2, $3, $4, $5, $6)
             RETURNING *;
         `;
 
-        const result = await pool.query(sql, [userId, departmentId, title, modelName]);
+        const result = await pool.query(sql, [userId, departmentId, title, mode, modelName, documentId || null]);
         return result.rows[0];
     },
 
@@ -67,5 +67,12 @@ export const chatModel = {
         `;
         const result = await pool.query(sql, [userId]);
         return result.rowCount;
+    },
+
+    async updateThreadTimestamp(pool, threadId) {
+        await pool.query(
+            `UPDATE threads SET updated_at = NOW() WHERE id = $1`,
+            [threadId]
+        );
     }
 };
