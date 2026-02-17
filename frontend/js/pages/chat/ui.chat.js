@@ -5,7 +5,6 @@ export const dom = {
     get chatContainer() { return document.getElementById('chat-messages');},
     get messageInput() { return document.getElementById('message-input');},
     get sendBtn() { return document.getElementById('send-btn');},
-    get sidebar() { return document.getElementById('sidebar-content');},
     get home() { return document.getElementById('home-btn');},
     get menuToggle() { return document.getElementById('toggle-btn');},
     get body() { return document.getElementById('body-element');},
@@ -13,7 +12,11 @@ export const dom = {
     get settingMenu() { return document.getElementById('settings-menu');},
     get changePWBtn() { return document.getElementById('change-password-btn');},
     get deleteHistoryBtn() { return document.getElementById('delete-history-btn');},
-}
+    get tabHistory() { return document.getElementById('tab-history'); },
+    get tabDocuments() { return document.getElementById('tab-documents'); },
+    get contentHistory() { return document.getElementById('sidebar-content-history'); },
+    get contentDocuments() { return document.getElementById('sidebar-content-documents'); },
+};
 
 export function addMessage(role, content) {
     const chatContainer = dom.chatContainer;
@@ -89,4 +92,18 @@ export function createAdminMenuItem(onClick) {
 
     deleteHistoryBtn.insertAdjacentElement('afterend', adminBtn);
     return adminBtn;
+}
+
+export function switchSidebarTab(tabName) {
+    if (tabName === 'history') {
+        dom.tabHistory.classList.add('active');
+        dom.tabDocuments.classList.remove('active');
+        dom.contentHistory.classList.remove('hidden');
+        dom.contentDocuments.classList.add('hidden');
+    } else {
+        dom.tabHistory.classList.remove('active');
+        dom.tabDocuments.classList.add('active');
+        dom.contentHistory.classList.add('hidden');
+        dom.contentDocuments.classList.remove('hidden');
+    }
 }
