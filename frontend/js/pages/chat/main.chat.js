@@ -6,6 +6,7 @@ import { ChatStream } from './stream.chat.js';
 import { loadThreadList } from './history.chat.js';
 import { initSettingsMenu, initializeAdminMenu } from './settings.chat.js';
 import { initInputHandlers } from './input.chat.js';
+import { showToast } from '../../common/toast.js';
 
 
 const authChannel = new BroadcastChannel('auth_sync');
@@ -57,8 +58,49 @@ function handleSidebarTab() {
         });
         tabD.addEventListener('click', () => {
             ui.switchSidebarTab('documents');
-            // loadDocumentsList();
+            loadDocumentsList();
         })
+    }
+}
+
+async function loadDocumentsList() {
+    try {
+        const response = await api.getDocuments();
+        if (response.success) {
+            ui.renderDocumentsList(response.data, handleDocumentSelect);
+        }
+    } catch (error) {
+        console.error('Failed to load documents:', error);
+        showToast('ドキュメントの取得に失敗しました');
+    }
+}
+
+// ドキュメント選択時の処理
+async function handleDocumentSelect(doc) {
+    if (!confirm(`「${doc.title}」についてチャットを開始しますか？`)) return;
+
+    try {
+        // RAGモードで新規スレッド作成
+        const res = await api.createThread(doc.title, doc.id);
+        if (res.success) {
+            // スレッドIDが返ってくるので、URLを変更してチャットを開始
+            ChatStream.currentThreadId = res.threadId;
+            window.history.pushState({}, '', `/chat/${res.threadId}`);
+            
+            // UIリセット
+            dom.chatContainer.innerHTML = '';
+            ui.clearInput();
+            
+            // 履歴タブに戻す（アクティブなスレッドを表示するため）
+            ui.switchSidebarTab('history'); 
+            loadThreadList(); // 履歴一覧も更新
+            
+            // システムメッセージ風に開始を表示（任意）
+            ui.addMessage('assistant', `**${doc.title}** についての質問をどうぞ。`);
+        }
+    } catch (error) {
+        console.error('Error creating RAG thread:', error);
+        showToast('チャットの開始に失敗しました');
     }
 }
 
