@@ -71,6 +71,18 @@ export const chatController = {
         res.end();
     }),
 
+    getThreads: catchAsync(async (req, res, next) => {
+        const userId = req.user.id;
+        const pool = getPool();
+
+        const threads = await chatModel.getThreadsByUserId(pool, userId);
+
+        res.status(200).json({
+            success: true,
+            data: {threads}
+        });
+    }),
+
     getHistory: catchAsync(async (req, res, next) => {
         const { threadId } = req.params;
         const userID = req.user.id;
@@ -85,6 +97,19 @@ export const chatController = {
             data: {
                 messages: messages.reverse()
             }
+        });
+    }),
+
+    deleteAllThreads: catchAsync(async (req, res, next) => {
+        const userId = req.user.id;
+        const pool = getPool();
+
+        const result = await chatModel.deleteThreadsByUserId(pool, userId);
+
+        res.status(200).json({
+            success: true,
+            message: 'All threads deleted successfully',
+            data: { deletedCount: result }
         });
     })
 };
