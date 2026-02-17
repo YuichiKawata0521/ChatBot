@@ -28,3 +28,7 @@ async def process_embedding(text: str, chunk_size: int = 1000, chunk_overlap: in
         ))
     
     return results
+
+async def get_query_embedding(text: str) -> list[float]:
+    embeddings_model = OpenAIEmbeddings(model="text-embedding-3-small")
+    return embeddings_model.enbed_query(text)
