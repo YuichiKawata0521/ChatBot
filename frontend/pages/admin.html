@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>管理メニュー - ChatBot</title>
+    <link rel="stylesheet" href="../assets/css/common/btn.css">
+    <link rel="stylesheet" href="../assets/css/common/toast.css">
     <link rel="stylesheet" href="../assets/css/pages/admin_hub.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -62,15 +64,26 @@
     </main>
 
     <div id="modal-doc-manage" class="modal-overlay" style="display:none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>ドキュメント管理</h3>
-                <button class="close-modal">×</button>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>ドキュメント登録</h3>
+            <button class="close-modal" id="close-doc-modal">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>タイトル</label>
+                <input type="text" id="doc-title" placeholder="例: 就業規則 2026年度版" class="form-input">
             </div>
-            <div class="modal-body">
-                <p>ドキュメント管理機能のコンテンツ...</p>
+            <div class="form-group">
+                <label>本文 (Markdown/Text)</label>
+                <textarea id="doc-content" rows="15" class="form-textarea" placeholder="# 第1条 目的..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button id="save-doc-btn" class="btn">保存して解析開始</button>
             </div>
         </div>
     </div>
+</div>
+<script type="module" src="/js/pages/admin/documents.js"></script>
 </body>
 </html>
