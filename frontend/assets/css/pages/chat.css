@@ -292,6 +292,64 @@ body.sidebar-closed .sidebar-content {
     padding: 15px;
 }
 
+/* サイドバータブのスタイル */
+.sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid #bbdefb;
+    background-color: #f5faff;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    background: rgb(194, 193, 193);
+    cursor: pointer;
+    font-weight: bold;
+    color: #fff;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.tab-btn:hover {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.tab-btn.active {
+    color: #fff;
+    border-bottom: 3px solid #1565c0;
+    background-color: #1565c0;
+}
+
+.sidebar-content.hidden {
+    display: none;
+}
+
+/* ドキュメントリストアイテムのスタイル */
+.document-item {
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #333;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+}
+
+.document-item:hover {
+    background-color: #e3f2fd;
+}
+
+.document-item.active {
+    background-color: #bbdefb;
+    font-weight: bold;
+}
+
 /* =========================
    History Card
 ========================= */

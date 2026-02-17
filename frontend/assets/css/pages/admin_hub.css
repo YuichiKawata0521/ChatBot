@@ -6,6 +6,15 @@ body {
     color: #333;
 }
 
+.btn {
+    background-color: #73b3df;
+    color: black;
+}
+
+.btn:hover {
+    background-color: #3498db;
+}
+
 /* ヘッダー */
 .admin-header {
     background-color: #ffffff;
@@ -118,4 +127,142 @@ body {
     font-size: 0.7rem;
     padding: 2px 8px;
     border-radius: 10px;
+}
+
+/* =========================================
+   Modal Styles
+   ========================================= */
+
+/* 背景のオーバーレイ */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* 半透明の黒 */
+    display: none; /* JSで flex に切り替え */
+    justify-content: center;
+    align-items: center;
+    z-index: 2000; /* ヘッダー(1000)より上に表示 */
+    backdrop-filter: blur(2px); /* 背景を少しぼかす */
+}
+
+/* モーダル本体 */
+.modal-content {
+    background-color: #fff;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh; /* 画面からはみ出さないように */
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* 角丸を維持 */
+    animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ヘッダー */
+.modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+/* 閉じるボタン */
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #888;
+    line-height: 1;
+    padding: 0 5px;
+}
+
+.close-modal:hover {
+    color: #333;
+}
+
+/* ボディ（コンテンツエリア） */
+.modal-body {
+    padding: 20px;
+    overflow-y: auto; /* 内容が多い場合はスクロール */
+    flex: 1;
+}
+
+/* フォーム要素 */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.form-input,
+.form-textarea {
+    width: 95%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: #2196f3;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+.form-textarea {
+    resize: vertical; /* 縦方向のみリサイズ可 */
+    min-height: 100px;
+    line-height: 1.5;
+}
+
+/* アクションボタンエリア */
+.modal-actions {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    background-color: #f8f9fa;
+}
+
+/* 共通ボタンの上書きがあればここで行う */
+.modal-actions .submit-btn {
+    margin-bottom: 0; /* chat.css等の影響を打ち消し */
+    font-size: 0.95rem;
+}
+
+.modal-actions .submit-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
