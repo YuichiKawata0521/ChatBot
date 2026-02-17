@@ -40,3 +40,7 @@ export async function getSessionInfo() {
 
     return response.json();
 }
+
+export async function getDocuments() {
+    return await ApiClient.get('/documents');
+}
