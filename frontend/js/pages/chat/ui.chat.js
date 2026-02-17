@@ -107,3 +107,30 @@ export function switchSidebarTab(tabName) {
         dom.contentDocuments.classList.remove('hidden');
     }
 }
+
+export function renderDocumentsList(documents, onDocumentClick) {
+    const container = dom.contentDocuments;
+    container.innerHTML = '';
+
+    if (documents.length === 0) {
+        container.innerHTML = '<div style="padding:10px; color:#888">ドキュメントがありません</div>';
+        return;
+    }
+
+    const list = document.createElement('div');
+    list.className = 'document-list';
+
+    documents.forEach(doc => {
+        const item = document.createElement('div');
+        item.className = 'document-item';
+        item.innerHTML = `
+            <span class="doc-icon">📄</span>
+            <span class="doc-title">${doc.title}</span>
+        `;
+        
+        item.addEventListener('click', () => onDocumentClick(doc));
+        list.appendChild(item);
+    });
+
+    container.appendChild(list);
+}
