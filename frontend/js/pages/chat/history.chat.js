@@ -20,7 +20,10 @@ export async function loadMessages(threadId) {
 
         dom.chatContainer.innerHTML = '';
         messages.forEach(msg => {
-            ui.addMessage(msg.sender, msg.content);
+            const messageDiv = ui.addMessage(msg.sender, msg.content);
+            if (msg.sender === 'assistant' && Array.isArray(msg.references) && msg.references.length > 0) {
+                ui.renderReferenceButtons(messageDiv, msg.references);
+            }
         });
     } catch (error) {
         console.error('Failed to load hisotry: ', error);

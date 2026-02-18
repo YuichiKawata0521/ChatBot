@@ -1,7 +1,7 @@
 import { getPool } from "../config/db.js";
 
 export const ragService = {
-    async searchRelevantChunks(queryText, documentId, limit=5) {
+    async searchRelevantChunks(queryText, documentId, limit=2) {
         try {
             const pool = getPool();
 

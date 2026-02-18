@@ -17,7 +17,30 @@ export const chatService = {
         if (!thread) {
             throw new Error('Thread not found');
         }
-        return await chatModel.getRecentMessages(pool, threadId);
+        const messages = await chatModel.getRecentMessages(pool, threadId);
+        const orderedMessages = messages.reverse();
+
+        const messageIds = orderedMessages.map(msg => msg.id);
+        const referenceRows = await chatModel.getMessageReferencesByMessageIds(pool, messageIds);
+
+        const refsByMessageId = new Map();
+        referenceRows.forEach(row => {
+            const existing = refsByMessageId.get(row.message_id) || [];
+            existing.push({
+                document_id: row.document_id,
+                chunk_id: row.chunk_id,
+                similarity: row.similarity,
+                title: row.title,
+                content: row.content
+            });
+            refsByMessageId.set(row.message_id, existing);
+        });
+
+        return orderedMessages.map(msg => ({
+            sender: msg.sender,
+            content: msg.content,
+            references: refsByMessageId.get(msg.id) || []
+        }));
     },
 
     async deleteAllThreads(pool, userId) {
@@ -101,7 +124,7 @@ ${contextText}`
         });
 
         if (usedReferences.length > 0 && savedMessage) {
-            await chatModel.saveMessageReferences(pool, saveMessage.id, usedReferences);
+            await chatModel.saveMessageReferences(pool, savedMessage.id, usedReferences);
         }
     }
 };

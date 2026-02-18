@@ -50,9 +50,9 @@ export const chatModel = {
 
     async getRecentMessages(pool, threadId, limit = 6) {
         const sql = `
-            SELECT sender, content FROM messages
+            SELECT id, sender, content FROM messages
             WHERE thread_id = $1
-            ORDER BY created_at ASC
+            ORDER BY created_at DESC
             LIMIT $2;
         `;
         const result = await pool.query(sql, [threadId, limit]);
@@ -85,7 +85,29 @@ export const chatModel = {
         `;
 
         for (const ref of references) {
-            await pool.query(sql, [messageId, res.document_id, res.chunk_id, res.similarity]);
+            await pool.query(sql, [messageId, ref.document_id, ref.chunk_id, ref.similarity]);
         }
+    },
+
+    async getMessageReferencesByMessageIds(pool, messageIds) {
+        if (!messageIds || messageIds.length === 0) return [];
+
+        const sql = `
+            SELECT
+                mr.message_id,
+                mr.document_id,
+                mr.child_chunk_id AS chunk_id,
+                mr.relevance_score AS similarity,
+                d.title,
+                cc.content
+            FROM message_references mr
+            LEFT JOIN documents d ON d.id = mr.document_id
+            LEFT JOIN child_chunks cc ON cc.id = mr.child_chunk_id
+            WHERE mr.message_id = ANY($1::BIGINT[])
+            ORDER BY mr.message_id, mr.id;
+        `;
+
+        const result = await pool.query(sql, [messageIds]);
+        return result.rows;
     }
 };
