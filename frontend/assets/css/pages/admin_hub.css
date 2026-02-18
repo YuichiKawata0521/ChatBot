@@ -153,7 +153,7 @@ body {
     background-color: #fff;
     width: 90%;
     max-width: 600px;
-    max-height: 90vh; /* 画面からはみ出さないように */
+    height: 90vh; /* 画面からはみ出さないように */
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     display: flex;
@@ -209,6 +209,35 @@ body {
     padding: 20px;
     overflow-y: auto; /* 内容が多い場合はスクロール */
     flex: 1;
+}
+
+.tabs {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.tab-btn {
+    border: 1px solid #d9dee3;
+    background: #fff;
+    color: #4b5563;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.tab-btn.active {
+    border-color: #3498db;
+    color: #3498db;
+    font-weight: 600;
+    background: #f3f9ff;
+}
+
+.upload-area {
+    border: 2px dashed #ccc;
+    background: white;
+    border-radius: 5px;
+    padding: 10px;
 }
 
 /* フォーム要素 */
