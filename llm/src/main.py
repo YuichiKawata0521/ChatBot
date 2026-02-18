@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.routers import chat, embed
+from src.routers import chat, embed, convert
 
 app = FastAPI()
 
@@ -15,6 +15,7 @@ app.add_middleware(
 
 app.include_router(chat.router, prefix="/api")
 app.include_router(embed.router, prefix="/api")
+app.include_router(convert.router, prefix="/api")
 
 @app.get("/health")
 def health_check():
