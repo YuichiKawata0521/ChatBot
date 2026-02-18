@@ -35,7 +35,7 @@ export const ragService = {
             `;
             const dbResult = await pool.query(sql, [embeddingStr, documentId, limit]);
 
-            return result.rows.map(row => row.content);
+            return dbResult.rows.map(row => row.content);
         } catch (error) {
             console.error('RAG Search Error: ', error);
             return [];
