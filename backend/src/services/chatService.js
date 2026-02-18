@@ -3,9 +3,9 @@ import { llmService } from './llmService.js';
 import { ragService } from './ragService.js';
 
 export const chatService = {
-    async createThread(pool, userId, title, modelName, documentId) {
+    async createThread(pool, userId, title, modelName = 'gpt-4o-mini', documentId = null) {
         const mode = documentId ? 'rag' : 'normal';
-        return await chatModel.createThread(pool, userId, '', title, mode, modelName, documentId)
+        return await chatModel.createThread(pool, userId, null, title, mode, modelName, documentId);
     },
 
     async getThreads(pool, userId) {
@@ -17,14 +17,14 @@ export const chatService = {
         if (!thread) {
             throw new Error('Thread not found');
         }
-        return await chatModel.getHistory(pool, threadId, userId);
+        return await chatModel.getRecentMessages(pool, threadId);
     },
 
     async deleteAllThreads(pool, userId) {
         return await chatModel.deleteThreadsByUserId(pool, userId);
     },
 
-    async *processChatStream(pool, threadId, userId, userMessage) {
+    async *processChatStream(pool, threadId, userId, userMessage, modelName = 'gpt-4o-mini') {
         const thread = await chatModel.getThread(pool, threadId, userId);
         if (!thread) {
             throw new Error('Thread not found');
@@ -35,7 +35,11 @@ export const chatService = {
         });
         await chatModel.updateThreadTimestamp(pool, threadId);
 
-        let messages = await chatModel.getHistory(threadId);
+        let rawMessages = await chatModel.getRecentMessages(pool, threadId);
+        let messages = rawMessages.reverse().map(msg => ({
+            role: msg.sender,
+            content: msg.content
+        }));
 
         // 4. RAG処理 (必要な場合)
         if (thread.mode === 'rag' && thread.document_id) {
@@ -63,7 +67,7 @@ ${contextText}`
         }
 
         // 5. LLM呼び出し
-        const llmStreamResponse = await llmService.fetchStream(messages);
+        const llmStreamResponse = await llmService.fetchStream(messages, modelName);
         
         // 6. ストリームデータの読み込みとyield
         const reader = llmStreamResponse.body.getReader();
@@ -76,25 +80,19 @@ ${contextText}`
                 if (done) break;
                 
                 const chunk = decoder.decode(value, { stream: true });
-                // LLMサービス(Python)からのSSE形式("data: ...")をパースして中身だけ取り出す
-                const lines = chunk.split('\n');
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const data = line.slice(6);
-                        if (data === '[DONE]') continue;
-                        
-                        // JSONパースせずにそのまま文字列として結合＆yield
-                        // (Python側が単純なテキストを返している場合)
-                        fullResponse += data;
-                        yield data; 
-                    }
-                }
+                fullResponse += chunk;
+                yield chunk;
             }
         } finally {
             reader.releaseLock();
         }
 
         // 7. アシスタントメッセージ保存
-        await chatModel.saveMessage(threadId, 'assistant', fullResponse);
+        await chatModel.saveMessage({
+            pool,
+            threadId,
+            sender: 'assistant',
+            content: fullResponse
+        });
     }
 };

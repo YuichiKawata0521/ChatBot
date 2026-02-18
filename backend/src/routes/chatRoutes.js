@@ -8,6 +8,7 @@ const router = express.Router();
 router.use(protect);
 
 router.post('/', chatController.sendMessage);
+router.post('/threads', chatController.createThread);
 router.get('/threads', chatController.getThreads);
 router.post('/delete-history', chatController.deleteAllThreads);
 router.get('/documents', documentController.getDocuments);

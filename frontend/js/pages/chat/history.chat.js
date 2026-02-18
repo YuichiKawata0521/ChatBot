@@ -11,7 +11,9 @@ export async function loadMessages(threadId) {
 
     try {
         const res = await getThreadMessages(threadId);
-        const messages = res.data.messages;
+        const messages = Array.isArray(res?.data)
+            ? res.data
+            : (res?.data?.messages ?? []);
 
         // ChatStreamのcurrentThreadIdを設定
         ChatStream.setThreadId(threadId);
@@ -29,7 +31,9 @@ export async function loadMessages(threadId) {
 export async function loadThreadList() {
     try {
         const res = await getThreads();
-        const threads = res.data.threads;
+        const threads = Array.isArray(res?.data)
+            ? res.data
+            : (res?.data?.threads ?? []);
 
         if (dom.contentHistory) {
             dom.contentHistory.innerHTML = '';

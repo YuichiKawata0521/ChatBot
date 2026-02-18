@@ -81,7 +81,7 @@ async function handleDocumentSelect(doc) {
 
     try {
         // RAGモードで新規スレッド作成
-        const res = await api.createThread(doc.title, doc.id);
+        const res = await api.createThread(doc.title, doc.id);　// api.createThreadはないので確認する
         if (res.success) {
             // スレッドIDが返ってくるので、URLを変更してチャットを開始
             ChatStream.currentThreadId = res.threadId;

@@ -52,7 +52,7 @@ export const chatModel = {
         const sql = `
             SELECT sender, content FROM messages
             WHERE thread_id = $1
-            ORDER BY created_at DESC
+            ORDER BY created_at ASC
             LIMIT $2;
         `;
         const result = await pool.query(sql, [threadId, limit]);

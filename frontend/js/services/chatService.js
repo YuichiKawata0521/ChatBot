@@ -44,3 +44,12 @@ export async function getSessionInfo() {
 export async function getDocuments() {
     return await ApiClient.get('/documents');
 }
+
+export async function createThread(title, documentId = null, modelName = 'gpt-4o-mini') {
+    const endpoint = '/chat/threads';
+    return await ApiClient.post(endpoint, {
+        title,
+        documentId,
+        modelName
+    });
+}

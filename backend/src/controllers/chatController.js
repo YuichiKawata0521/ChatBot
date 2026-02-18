@@ -4,10 +4,10 @@ import { getPool } from '../config/db.js';
 // スレッド作成
 export const createThread = async (req, res, next) => {
     try {
-        const { title, documentId } = req.body;
+        const { title, documentId, modelName } = req.body;
         const userId = req.session.user.id;
 
-        const thread = await chatService.createThread(getPool(), userId, title, documentId);
+        const thread = await chatService.createThread(getPool(), userId, title, modelName, documentId);
         
         res.status(201).json({
             success: true,
@@ -53,22 +53,28 @@ export const getHistory = async (req, res, next) => {
 
 // チャットストリーム処理
 export const sendMessage = async (req, res, next) => {
-    const { threadId, message } = req.body;
+    const { message, modelName, documentId } = req.body;
+    let { threadId } = req.body;
     const userId = req.session.user.id;
+
+    if (!threadId) {
+        const title = message.replace(/\n/g, ' ').substring(0, 30) + (message.length > 30 ? '...' : '');
+        const thread = await chatService.createThread(getPool(), userId, title, modelName, documentId);
+        threadId = thread.id;
+    }
 
     // SSEヘッダー設定
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
+    res.write(`data: ${JSON.stringify({ type: 'meta', threadId })}\n\n`);
 
     try {
         // ServiceのAsyncGeneratorからデータを受け取り、クライアントへ流す
-        const stream = chatService.processChatStream(getPool(), threadId, userId, message);
+        const stream = chatService.processChatStream(getPool(), threadId, userId, message, modelName);
 
         for await (const chunk of stream) {
-            // フロントエンドが期待するSSE形式で送信
-            // chunkはテキスト断片
-            res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`);
+            res.write(`data: ${JSON.stringify(chunk)}\n\n`);
         }
 
         // 完了シグナル

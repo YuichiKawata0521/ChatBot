@@ -39,6 +39,11 @@ export default defineConfig({
       name: 'rewrite-middleware',
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
+          if (req.url === '/favicon.ico') {
+            req.url = '/favicon.svg';
+            return next();
+          }
+
           // CSSやJS、画像などのアセットへのリクエストはリライトしない
           if (req.url.includes('.')) {
             return next();
