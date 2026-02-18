@@ -12,3 +12,6 @@ langchain-openai>=1.0.0
 
 tiktoken>=0.8.0
 python-dotenv>=1.0.1
+
+python-multipart>=0.0.9
+docling>=2.0.0
