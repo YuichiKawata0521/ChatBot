@@ -3,7 +3,7 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
+    build-essential \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 RUN python -m venv /opt/venv
@@ -17,10 +17,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    libgl1 \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN mkdir -p /app/.cache && chown -R appuser:appuser /app
+ENV XDG_CACHE_HOME=/app/.cache
 COPY . .
 RUN chown -R appuser:appuser /app
 USER appuser
