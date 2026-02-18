@@ -14,5 +14,32 @@ export const llmService = {
             throw new Error(`LLM Service Error: ${response.statusText}`);
         }
         return response;
+    },
+
+    async fetchEmbed(content) {
+        const endpoint = 'http://llm:8000/api/embed';
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: content})
+        });
+        if (!response.ok) {
+            throw new Error(`Embedding failed: ${response.statusText}`);
+        }
+        return response;
+    },
+
+    async fetchConvert(formData) {
+        const endpoint = 'http://llm:8000/api/convert';
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error('Conversion failed: ', response.statusText);
+        }
+
+        return response;
     }
 }
