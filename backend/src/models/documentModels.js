@@ -2,11 +2,11 @@ export const documentModel = {
     async saveDocTable(client, title, source, metadata) {
         const sql = `
             INSERT INTO documents (title, source, status, metadata)
-            VALUES($1, $2, 'processing', $4)
+            VALUES($1, $2, 'processing', $3)
             RETURNING id;
         `;
 
-        const result = await client.query(sql, [title, source, JSON.stringify({ charCount: content.length, ...metadata})]);
+        const result = await client.query(sql, [title, source, JSON.stringify(metadata || {})]);
         return result;
     },
 
@@ -22,7 +22,7 @@ export const documentModel = {
     async saveChiledChunksTable(client, parentChunkId, chunk, embeddingStr) {
         const sql = `
             INSERT INTO child_chunks (parent_chunk_id, child_index, content, embedding, token_count)
-            VALUES ($1, $2, $3, $4, $4);
+            VALUES ($1, $2, $3, $4, $5);
         `;
         const result = await client.query(sql, [parentChunkId, chunk.chunk_index, chunk.content, embeddingStr, chunk.token_count]);
         return result;
@@ -32,6 +32,6 @@ export const documentModel = {
         const sql = `
             UPDATE documents SET status = 'completed' WHERE id = $1;
         `;
-        const result = client.query(sql, [documentId]);
+        return await client.query(sql, [documentId]);
     }
 }
