@@ -41,17 +41,22 @@ export const chatService = {
             content: msg.content
         }));
 
+        let usedReferences = [];
+
         // 4. RAG処理 (必要な場合)
         if (thread.mode === 'rag' && thread.document_id) {
-            const relevantChunks = await ragService.searchRelevantChunks(userMessage, thread.document_id);
+            usedReferences = await ragService.searchRelevantChunks(userMessage, thread.document_id);
             
-            if (relevantChunks.length > 0) {
-                const contextText = relevantChunks.join("\n\n---\n\n");
+            if (usedReferences.length > 0) {
+                yield { type: 'reference', references: usedReferences };
+
+                const contextText = usedReferences.map(ref => ref.content).join("\n\n---\n\n");
                 const systemPrompt = {
                     role: 'system',
                     content: `あなたは社内規定やドキュメントに基づくアシスタントです。
 以下の参考情報を元にユーザーの質問に回答してください。
 情報が不足している場合は、正直に「ドキュメントに記載がありません」と答えてください。
+文中で引用する場合は「(参照: [タイトル])」のように記述してください。
 
 [参考情報]
 ${contextText}`
@@ -88,11 +93,15 @@ ${contextText}`
         }
 
         // 7. アシスタントメッセージ保存
-        await chatModel.saveMessage({
+        const savedMessage = await chatModel.saveMessage({
             pool,
             threadId,
             sender: 'assistant',
             content: fullResponse
         });
+
+        if (usedReferences.length > 0 && savedMessage) {
+            await chatModel.saveMessageReferences(pool, saveMessage.id, usedReferences);
+        }
     }
 };

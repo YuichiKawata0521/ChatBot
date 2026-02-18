@@ -134,3 +134,30 @@ export function renderDocumentsList(documents, onDocumentClick) {
 
     container.appendChild(list);
 }
+
+export function renderReferenceButtons(messageDiv, references) {
+    let refContainer = messageDiv.querySelector('.reference-container');
+
+    if (!refContainer) {
+        refContainer = document.createElement('div');
+        refContainer.className = 'reference-container';
+        messageDiv.appendChild(refContainer);
+    }
+
+    refContainer.innerHTML = '<div class="ref-btn">参照情報</div>';
+
+    references.forEach((ref, index) => {
+        const details = document.createElement('details')
+
+        const summary = document.createElement('summary');
+        summary.textContent = `[${index + 1}] ${ref.title || 'ドキュメント'}`;
+
+        const content = document.createElement('div');
+        content.className = 'ref-content';
+        content.innerHTML = marked.parse(ref.content);
+
+        details.appendChild(summary);
+        details.appendChild(content);
+        refContainer.appendChild(details);
+    })
+}

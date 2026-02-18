@@ -25,17 +25,21 @@ export const ragService = {
             // ベクトル検索
             const sql = `
                 SELECT
+                    cc.id as chunk_id,
                     cc.content,
+                    pc.document_id,
+                    d.title,
                     1 - (cc.embedding <=> $1) as similarity
                 FROM child_chunks cc
                 JOIN parent_chunks pc ON cc.parent_chunk_id = pc.id
+                JOIN documents d ON pc.document_id = d.id
                 WHERE pc.document_id = $2
                 ORDER BY cc.embedding <=> $1
                 LIMIT $3;
             `;
             const dbResult = await pool.query(sql, [embeddingStr, documentId, limit]);
 
-            return dbResult.rows.map(row => row.content);
+            return dbResult.rows;
         } catch (error) {
             console.error('RAG Search Error: ', error);
             return [];

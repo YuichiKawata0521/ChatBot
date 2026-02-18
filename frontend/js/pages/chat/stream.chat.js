@@ -14,6 +14,7 @@ export const ChatStream = {
         ui.clearInput();
 
         const assistantMsgDiv = ui.addMessage('assistant', '');
+        let currentReferences = [];
 
         try {
 
@@ -64,6 +65,8 @@ export const ChatStream = {
                             } else if (data.type === 'meta' && data.threadId) {
                                 // メタデータ
                                 this.updateThreadId(data.threadId);
+                            } else if (data.type === 'reference') {
+                                currentReferences = data.references;
                             } else if (data.type === 'error') {
                                 // エラー
                                 console.error('LLM Error:', data.error);
@@ -75,7 +78,11 @@ export const ChatStream = {
                 }
 
                 assistantMsgDiv.innerHTML = marked.parse(accumulatedText);
+
                 ui.scrollToBottom();
+            }
+            if (currentReferences.length > 0) {
+                ui.renderReferenceButtons(assistantMsgDiv, currentReferences);
             }
         } catch (error) {
             console.error('Stream error: ', error);

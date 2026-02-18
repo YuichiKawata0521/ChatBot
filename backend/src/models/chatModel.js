@@ -74,5 +74,18 @@ export const chatModel = {
             `UPDATE threads SET updated_at = NOW() WHERE id = $1`,
             [threadId]
         );
+    },
+
+    async saveMessageReferences(pool, messageId, references) {
+        if (!references || references.length === 0) return;
+
+        const sql = `
+            INSERT INTO message_references (message_id, document_id, child_chunk_id, relevance_score)
+            VALUES ($1, $2, $3, $4);
+        `;
+
+        for (const ref of references) {
+            await pool.query(sql, [messageId, res.document_id, res.chunk_id, res.similarity]);
+        }
     }
 };
