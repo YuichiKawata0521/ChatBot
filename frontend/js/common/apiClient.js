@@ -4,7 +4,9 @@ const BASE_URL = '/api/v1';
 export class ApiClient {
     static async #getCsrfToken() {
         try {
-            const response = await fetch(`${BASE_URL}/csrf-token`);
+            const response = await fetch(`${BASE_URL}/csrf-token`, {
+                credentials: 'include'
+            });
             if (!response.ok) throw new Error('Failed to fetch CSRF Token');
             const data = await response.json();
             return data.csrfToken;
