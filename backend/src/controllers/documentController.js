@@ -16,7 +16,7 @@ const processAndSaveContent = async (title, content, source, metadata) => {
         const documentId = docRes.rows[0].id;
 
         // parent_chunksテーブルへ保存
-        const paretnRes = await documentModel.saveParentChunksTable(client, documentId, content);
+        const parentRes = await documentModel.saveParentChunksTable(client, documentId, content);
         const parentChunkId = parentRes.rows[0].id;
 
         // Embedding APIを呼び出す
@@ -117,7 +117,7 @@ export const uploadDocument = async (req, res, next) => {
         return next(new AppError('Please upload a file', 400));
     }
     const filePath = req.file.path;
-    const originalName = req.file.originalName;
+    const originalName = req.file.originalname;
 
     try {
         const fileBuffer = await fs.readFile(filePath);
