@@ -11,5 +11,10 @@ async def embed_ednpoint(req: EmbedRequest):
 
 @router.post("/embed/query", response_model=QueryEmbedResponse)
 async def embed_query_endpoint(req: QueryEmbedRequest):
-    embedding = await get_query_embedding(req.text)
+    print('embed_query_endpintにhitしました！')
+    try:
+        embedding = await get_query_embedding(req.text)
+        print('問題なく処理完了')
+    except Exception as e:
+        print(e)
     return QueryEmbedResponse(embedding=embedding)
