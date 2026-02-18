@@ -39,6 +39,8 @@ services:
   llm:
     build:
       context: ./llm
+    volumes:
+      - llm_cache:/app/.cache
     env_file:
       - .env
     networks:
@@ -46,6 +48,7 @@ services:
 
 volumes:
   db_data:
+  llm_cache:
 
 networks:
   app_net:
