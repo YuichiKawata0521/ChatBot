@@ -41,16 +41,23 @@ export async function loadThreadList() {
                 const div = document.createElement('div');
                 div.className = 'history-card';
                 div.dataset.id = thread.id;
-
+                
                 const leftDiv = document.createElement('div');
                 leftDiv.className = 'history-left';
-
+                
                 const dateSpan = document.createElement('span');
                 const date = new Date(thread.created_at)
                 dateSpan.textContent = date.toISOString().split('T')[0];
+                
+                let iconHTML = '';
+                if (thread.mode === 'rag') {
+                    iconHTML = '<span style="margin-right:4px;">📄</span>';
+                } else {
+                    iconHTML = '<span style="margin-right:4px;">💬</span>';
+                }
 
                 const titleSpan = document.createElement('span');
-                titleSpan.textContent = thread.title;
+                titleSpan.innerHTML = `${iconHTML}${thread.title}`;
                 leftDiv.appendChild(dateSpan);
                 leftDiv.appendChild(titleSpan);
 

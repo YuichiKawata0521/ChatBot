@@ -39,7 +39,7 @@ export const chatModel = {
 
     async getThreadsByUserId(pool, userId) {
         const sql = `
-            SELECT id, title, created_at, updated_at
+            SELECT id, title, created_at, updated_at, mode
             FROM threads
             WHERE user_id = $1 AND show_history = false
             ORDER BY updated_at DESC;
