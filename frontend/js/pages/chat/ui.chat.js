@@ -16,6 +16,7 @@ export const dom = {
     get tabDocuments() { return document.getElementById('tab-documents'); },
     get contentHistory() { return document.getElementById('sidebar-content-history'); },
     get contentDocuments() { return document.getElementById('sidebar-content-documents'); },
+    get overlay() { return document.getElementById('loading-overlay');}
 };
 
 export function addMessage(role, content) {
@@ -160,4 +161,15 @@ export function renderReferenceButtons(messageDiv, references) {
         details.appendChild(content);
         refContainer.appendChild(details);
     })
+}
+
+export function switchOverlay(mode) {
+    const overlay = dom.overlay;
+    if (!overlay) return;
+
+    if (mode === 'show') {
+        overlay.classList.remove('hidden');
+    } else {
+        overlay.classList.add('hidden');
+    }
 }

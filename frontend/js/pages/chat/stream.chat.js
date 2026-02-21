@@ -12,9 +12,11 @@ export const ChatStream = {
     async sendMessage(message) {
         ui.addMessage('user', message);
         ui.clearInput();
+        ui.switchOverlay('show');
 
         const assistantMsgDiv = ui.addMessage('assistant', '');
         let currentReferences = [];
+        let overlayHiddenOnStream = false;
 
         try {
 
@@ -62,6 +64,10 @@ export const ChatStream = {
                             if (typeof data === 'string') {
                                 // 通常のテキストチャンク
                                 accumulatedText += data;
+                                if (!overlayHiddenOnStream && data.length > 0) {
+                                    ui.switchOverlay('hide');
+                                    overlayHiddenOnStream = true;
+                                }
                             } else if (data.type === 'meta' && data.threadId) {
                                 // メタデータ
                                 this.updateThreadId(data.threadId);
@@ -84,9 +90,11 @@ export const ChatStream = {
             if (currentReferences.length > 0) {
                 ui.renderReferenceButtons(assistantMsgDiv, currentReferences);
             }
+            ui.switchOverlay('hide');
         } catch (error) {
             console.error('Stream error: ', error);
             assistantMsgDiv.textContent = 'エラーが発生しました';
+            ui.switchOverlay('hide');
         } 
     },
 

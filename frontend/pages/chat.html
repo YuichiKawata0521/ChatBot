@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>チャットボット</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="../assets/css/common/loading.css">
     <link rel="stylesheet" href="../assets/css/pages/chat.css">
 </head>
 <body id="body-element" class="app-body">
@@ -63,6 +64,11 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="trinity-rings-spinner"><div class="circle"></div><div class="circle"></div><div class="circle"></div></div> 
+        <p>回答を生成中です</p>         
     </div>
     <script type="module" src="/js/pages/chat/main.chat.js"></script>
 </body>

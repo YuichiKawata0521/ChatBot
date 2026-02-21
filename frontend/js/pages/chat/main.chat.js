@@ -133,6 +133,7 @@ function setupEventListeners() {
 
 
 window.addEventListener('DOMContentLoaded', async () => {
+    ui.switchOverlay('hide');
     setupEventListeners();
     loadThreadList();
     initSettingsMenu();
