@@ -180,7 +180,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #f8f9fa;
+    background-color: white;
 }
 
 .modal-header h3 {
@@ -282,7 +282,7 @@ body {
     border-top: 1px solid #eee;
     display: flex;
     justify-content: flex-end;
-    background-color: #f8f9fa;
+    background-color: white;
 }
 
 /* 共通ボタンの上書きがあればここで行う */
