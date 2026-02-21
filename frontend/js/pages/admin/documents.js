@@ -27,14 +27,7 @@ async function uploadDocumentFile(file) {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = ApiClient.post('/documents/upload', {body: formData});
-
-    const data = await response.json();
-    if (!response.ok) {
-        throw new Error(data.message || 'ファイルアップロードに失敗しました');
-    }
-
-    return data;
+    return await ApiClient.post('/documents/upload', formData);
 }
 
 document.addEventListener('DOMContentLoaded', () => {

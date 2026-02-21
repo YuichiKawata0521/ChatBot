@@ -5,6 +5,16 @@ import { documentModel } from '../models/documentModels.js';
 import { llmService } from '../services/llmService.js';
 import AppError from '../utils/appError.js';
 
+const inferDocumentSource = (filename) => {
+    const ext = path.extname(filename || '').toLowerCase();
+
+    if (ext === '.pdf') return 'pdf';
+    if (ext === '.doc' || ext === '.docx') return 'word';
+    if (ext === '.md' || ext === '.markdown') return 'markdown';
+    if (ext === '.csv') return 'csv';
+    return 'txt';
+};
+
 const processAndSaveContent = async (title, content, source, metadata) => {
     const pool = getPool();
     const client = await pool.connect();
@@ -118,6 +128,7 @@ export const uploadDocument = async (req, res, next) => {
     }
     const filePath = req.file.path;
     const originalName = req.file.originalname;
+    const source = inferDocumentSource(originalName);
 
     try {
         const fileBuffer = await fs.readFile(filePath);
@@ -142,7 +153,7 @@ export const uploadDocument = async (req, res, next) => {
         const result = await processAndSaveContent(
             originalName,
             markdownConten,
-            'file',
+            source,
             { originalFileName: originalName, debugFile: debugFileName}
         );
 
@@ -151,7 +162,7 @@ export const uploadDocument = async (req, res, next) => {
             data: result
         });
     } catch (error) {
-        console.error("pload Document Error: ", error);
+        console.error("upload Document Error: ", error);
         next(error);
     } finally {
         try {

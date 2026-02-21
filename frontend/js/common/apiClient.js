@@ -18,9 +18,12 @@ export class ApiClient {
 
     static async post(endpoint, body) {
         const csrfToken = await this.#getCsrfToken();
-        const headers = {
-            'Content-Type': 'application/json',
-        };
+        const isFormData = body instanceof FormData;
+        const headers = {};
+
+        if (!isFormData) {
+            headers['Content-Type'] = 'application/json';
+        }
 
         if (csrfToken) {
             headers['x-csrf-token'] = csrfToken;
@@ -30,7 +33,7 @@ export class ApiClient {
                 method: 'POST',
                 credentials: 'include',
                 headers: headers,
-                body: JSON.stringify(body),
+                body: isFormData ? body : JSON.stringify(body),
             });
             const data = await response.json();
             if (!response.ok) {
