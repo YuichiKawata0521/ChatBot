@@ -54,8 +54,10 @@ export default defineConfig({
             req.url = '/pages/login.html';
           } else if (req.url.startsWith('/admin')) {
             req.url = '/pages/admin.html';
-          } else if (req.url.startsWith('/dashboard')) {
+          } else if (req.url.startsWith('/dashboard_ope')) {
             req.url = '/pages/dashboard_operation.html';
+          } else if (req.url.startsWith('/dashboard_ana')) {
+            req.url = '/pages/dashboard_analysis.html';
           } else if (req.url.startsWith('/chat')) {
             req.url = '/pages/chat.html';
           } else if (req.url.startsWith('/users')) {
