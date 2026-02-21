@@ -2,3 +2,4 @@ knowledge
 .env
 node_modules
 dist
+debug_output
