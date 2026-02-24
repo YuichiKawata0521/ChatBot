@@ -529,3 +529,133 @@ body.sidebar-closed .sidebar-content {
     margin-top: 4px;
     white-space: pre-wrap;
 }
+
+/* --- エージェント選択グリッド --- */
+.agent-selection-container {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+}
+.agent-selection-title {
+    color: #1565c0;
+    margin-bottom: 30px;
+}
+.agent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 800px;
+}
+.agent-card {
+    background: white;
+    border: 2px solid #e3f3fd;
+    border-radius: 12px;
+    padding: 24px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+.agent-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    border-color: #2196f3;
+}
+.agent-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 10px;
+}
+
+/* --- モーダル --- */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+.modal-overlay.hidden {
+    display: none;
+}
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+.modal-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #e3f3fd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #e3f3fd;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+.btn-primary {
+    background-color: #1565c0;
+    color: white;
+}
+.btn-secondary {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+/* モーダル内のフォーム・確認画面用 */
+.question-text {
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+    font-weight: bold;
+}
+.answer-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    resize: vertical;
+}
+.confirm-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.confirm-item {
+    background: #f5faff;
+    padding: 12px;
+    border-radius: 8px;
+}
+.confirm-item-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 8px;
+}
+.edit-btn {
+    color: #1565c0;
+    cursor: pointer;
+    text-decoration: underline;
+    background: none;
+    border: none;
+}

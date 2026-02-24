@@ -52,6 +52,16 @@
 
         <!-- メイン画面 -->
         <main id="main-chat-area" class="chat-area">
+            <div id="agent-selection-area" class="agent-selection-container">
+                <h2 class="agent-selection-title">エージェントを選択</h2>
+                <div class="agent-grid">
+                    <button id="agent-requirement-btn" class="agent-card">
+                        <span class="agent-icon">📝</span>
+                        <h3>要件定義書作成</h3>
+                        <p>対話形式で要件定義・仕様書を作成します</p>
+                    </button>
+                    </div>
+            </div>
             <!-- チャット画面 -->
             <div id="chat-messages" class="messages-container">
             </div>
@@ -64,6 +74,21 @@
                 </div>
             </div>
         </main>
+        <div id="agent-modal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modal-title">要件定義書エージェント</h3>
+                    <button id="modal-close-btn" class="btn close-btn">×</button>
+                </div>
+                <div id="modal-body" class="modal-body">
+                    </div>
+                <div class="modal-footer">
+                    <button id="modal-back-btn" class="btn btn-secondary hidden">戻る</button>
+                    <button id="modal-next-btn" class="btn btn-primary">次へ</button>
+                    <button id="modal-submit-btn" class="btn btn-primary hidden">作成開始</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="loading-overlay" class="loading-overlay hidden">
