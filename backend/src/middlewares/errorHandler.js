@@ -1,4 +1,4 @@
-import AppError from '../utils/appError.js';
+import logger from '../utils/logger.js';
 
 const sendErrorDev = (err, res) => {
     res.status(err.statusCode).json({
@@ -17,7 +17,6 @@ const sendErrorProd = (err, res) => {
             message: err.message
         });
     } else { // プログラムのバグやその他未知のエラー : 詳細を出さない
-        console.error('ERROR: ', err);
         res.status(500).json({
             status: 'error',
             message: 'Something went very wrong'
@@ -28,6 +27,27 @@ const sendErrorProd = (err, res) => {
 const globalErrorHandler = (err, req, res, next) => {
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error';
+
+    const logLevel = err.statusCode >= 500 ? 'error' : 'warn';
+    const logMessage = err.statusCode === 404
+        ? `Not Found: ${req?.method} ${req?.originalUrl}`
+        : (err.message || 'Unhandled error');
+
+    const clientIp = req?.ip || req?.headers?.['x-forwarded-for'] || req?.socket?.remoteAddress;
+    const sessionUser = req?.session?.user;
+
+    logger[logLevel](logMessage, {
+        option: {
+            statusCode: err.statusCode,
+            status: err.status,
+            path: req?.originalUrl,
+            method: req?.method,
+            ip: clientIp,
+            user_id: sessionUser?.id ?? null,
+            employee_no: sessionUser?.employee_no ?? null,
+            stack: err.statusCode >= 500 ? err.stack : undefined
+        }
+    });
 
     if (process.env.NODE_ENV === 'development') {
         sendErrorDev(err, res);
