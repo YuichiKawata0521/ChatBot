@@ -585,12 +585,11 @@ body.sidebar-closed .sidebar-content {
 }
 .modal-content {
     background: white;
-    width: 90%;
-    max-width: 600px;
+    width: 600px;
+    height: 720px;
     border-radius: 12px;
     display: flex;
     flex-direction: column;
-    max-height: 80vh;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 .modal-header {
@@ -604,6 +603,7 @@ body.sidebar-closed .sidebar-content {
     padding: 24px;
     overflow-y: auto;
     flex: 1;
+    min-height: 0;
 }
 .modal-footer {
     padding: 16px 24px;
