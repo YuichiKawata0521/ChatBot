@@ -7,6 +7,7 @@ import { loadThreadList } from './history.chat.js';
 import { initSettingsMenu, initializeAdminMenu } from './settings.chat.js';
 import { initInputHandlers } from './input.chat.js';
 import { showToast } from '../../common/toast.js';
+import { RequirementAgentWizard } from './agentWizard.js';
 
 
 const authChannel = new BroadcastChannel('auth_sync');
@@ -104,6 +105,37 @@ async function handleDocumentSelect(doc) {
     }
 }
 
+function handleRDDAgent() {
+    const reqWizard = new RequirementAgentWizard(async ({ promptText, interviewPayload }) => {
+        // 1. エージェント選択画面を隠し、チャット画面を表示する
+        toggleChatArea(true);
+        
+        // 2. ユーザーの発言として、画面にプロンプト（またはその要約）を表示する
+        // （※長すぎるプロンプトを画面に出したくない場合は、「要件定義書の作成を依頼しました」等のテキストをUIに出す手もあります）
+        ui.addMessage('user', promptText); 
+        
+        try {
+            ui.switchOverlay('show');
+            const result = await api.executeRDDAgent(interviewPayload);
+            const draft = result?.data?.draft || result?.draft || 'ドラフト生成結果が空でした。';
+            ui.addMessage('assistant', draft);
+        } catch (error) {
+            console.error("エージェントの実行に失敗しました", error);
+            ui.addMessage('system', 'エラーが発生しました。もう一度お試しください。');
+        } finally {
+            ui.switchOverlay('hide');
+        }
+    });
+
+    // 「要件定義書作成」ボタンのクリックでウィザードを開く
+    const reqAgentBtn = document.getElementById('agent-requirement-btn');
+    if (reqAgentBtn) {
+        reqAgentBtn.addEventListener('click', () => {
+            reqWizard.open();
+        });
+    }
+}
+
 function setupEventListeners() {
     const logoutBtn = dom.logout;
     if (logoutBtn) {
@@ -142,4 +174,5 @@ window.addEventListener('DOMContentLoaded', async () => {
         await ChatStream.sendMessage(message);
         loadThreadList();
     });
+    handleRDDAgent();
 })
