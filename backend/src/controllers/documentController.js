@@ -4,6 +4,7 @@ import {getPool} from '../config/db.js';
 import { documentModel } from '../models/documentModels.js';
 import { llmService } from '../services/llmService.js';
 import AppError from '../utils/appError.js';
+import logger from '../utils/logger.js';
 
 const inferDocumentSource = (filename) => {
     const ext = path.extname(filename || '').toLowerCase();
@@ -115,7 +116,14 @@ export const createDocument = async (req, res, next) => {
 
     } catch (error) {
         await client.query('ROLLBACK');
-        console.error("Document Save Error: ", error);
+        logger.error('ドキュメント保存に失敗しました', {
+            option: {
+                title,
+                source,
+                detail: error.message,
+                stack: error.stack
+            }
+        });
         next(error);
     } finally {
         client.release();
@@ -147,7 +155,12 @@ export const uploadDocument = async (req, res, next) => {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const debugFileName = `${path.parse(originalName).name}_${timestamp}.md`;
         await fs.writeFile(path.join(debugDir, debugFileName), markdownConten);
-        console.log(`Debug MD file saved: ${debugFileName}`);
+        logger.info('変換後Markdownをデバッグ出力しました', {
+            option: {
+                original_name: originalName,
+                debug_file: debugFileName
+            }
+        });
 
         // DBへ保存
         const result = await processAndSaveContent(
@@ -162,13 +175,24 @@ export const uploadDocument = async (req, res, next) => {
             data: result
         });
     } catch (error) {
-        console.error("upload Document Error: ", error);
+        logger.error('ドキュメントアップロードに失敗しました', {
+            option: {
+                original_name: originalName,
+                detail: error.message,
+                stack: error.stack
+            }
+        });
         next(error);
     } finally {
         try {
             await fs.unlink(filePath);
         } catch (err) {
-            console.warn('Failed to delete temp file: ', err);
+            logger.warn('一時ファイル削除に失敗しました', {
+                option: {
+                    file_path: filePath,
+                    detail: err.message
+                }
+            });
         }
     }
 };
@@ -188,6 +212,12 @@ export const getDocuments = async (req, res, next) => {
             data: result.rows
         });
     } catch (error) {
+        logger.error('ドキュメント一覧の取得に失敗しました', {
+            option: {
+                detail: error.message,
+                stack: error.stack
+            }
+        });
         next(error);
     }
 };

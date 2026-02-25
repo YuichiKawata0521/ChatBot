@@ -5,6 +5,7 @@ import AppError from '../utils/appError.js';
 import Email from '../utils/email.js';
 import { verifyPassword, hashPassword } from '../utils/password.js';
 import { generateToken } from '../config/csrf.js';
+import logger from '../utils/logger.js';
 
 export async function login(req, res, next) {
     const { employee_no, email, password } = req.body;
@@ -12,19 +13,20 @@ export async function login(req, res, next) {
 
     const userData = await loginModel.getUserData(pool, employee_no, email);
     if (!userData) {
-        console.error('ユーザーデータが見つかりませんでした: ', email);
+        logger.warn('ユーザーデータが見つかりませんでした', {option: {employee_no}})
         return next(new AppError('Not Found userData', 404));
     }
 
     // PWチェック
     const match = await verifyPassword(password, userData.password);
     if (!match) {
-        console.error('パスワードが一致しません');
+        logger.warn('パスワードが一致しません', {option: {employee_no}});
         return next(new AppError('Incorrect email or password', 401));
     }
 
     req.session.regenerate(async err => {
         if (err) {
+            logger.warn('セッションの再生成に失敗しました', {option: {employee_no}});
             return next(new AppError('ログイン処理に失敗しました', 500));
         }
 
@@ -47,18 +49,20 @@ export async function login(req, res, next) {
                 const resetUrl = `${frontendURL}/pages/change_password.html?token=${resetToken}`;
                 await new Email(userData, resetUrl).sendPasswordReset();
 
+                logger.info('初回ログインの為、パスワード変更メールを送信しました', {option: {email: userData.email}});
                 return res.status(200).json({
                     success: true,
                     message: "初回ログインの為パスワードの変更が必要です。メールを送信しました",
                     requirePasswordChange: true
                 });
             } catch (error) {
-                console.error('メール送信エラー', error);
+                logger.error('パスワード変更メール送信エラー', {option: {email: userData.email, detail: error.message}});
                 return next(new AppError('パスワードリセットメールの送信に失敗しました', 500));
             }
         }
         const csrfToken = generateToken(req, res);
 
+        logger.info('ログインに成功しました', {option: {employee_no}});
         res.status(200).json({
             success: true,
             message: 'ログインに成功しました',
@@ -74,13 +78,15 @@ export async function login(req, res, next) {
 }
 
 export function logout(req, res, next) {
+    const employee_no = req.session?.user?.employee_no ?? null;
 
     req.session.destroy((err) => {
         if (err) {
-            console.error('ログアウトエラー', err);
+            logger.error('ログアウトエラー', {option: {employee_no, detail: err.message}});
             return next(new AppError('Failed to logout', 500));
         }
         res.clearCookie('connect.sid');
+        logger.info('ログアウトに成功しました', {option: {employee_no}});
         res.status(200).json({success: true, message: 'ログアウトしました'});
     });
 
@@ -98,7 +104,6 @@ export function authMe(req, res, next) {
 export async function register(req, res, next) {
     try {
         const { token, password } = req.body;
-        console.log('受け取ったtoken:', token);
 
         if (password.length < 10 || password.length > 128) {
             return next (new AppError('パスワードは10文字以上、128文字以下で\n設定してください', 400));
@@ -127,7 +132,7 @@ export async function register(req, res, next) {
         }
 
         if (user.registered_flag) {
-            console.error(''); // DBでunique制限しているのであり得ないが、一応後でログを取る目印としてcerを置いておく
+            logger.warn('ユーザーデータが既に登録されています', {option: {user_name: user.user_name}});
             return next (new AppError('ユーザーデータが既に登録されています', 400));
         }
 
@@ -136,7 +141,7 @@ export async function register(req, res, next) {
 
         req.session.regenerate((err) => {
             if (err) {
-                console.error('Session regeneration error: ', err);
+                logger.warn('新規登録は完了しましたが、自動ログインに失敗しました', {option: {employee_no: user.employee_no}});
                 return next(new AppError('登録は完了しましたが、自動ログインに失敗しました。ログインページへ移動してください', 400));
             }
 
@@ -150,6 +155,7 @@ export async function register(req, res, next) {
 
             const csrfToken = generateToken(req, res);
 
+            logger.info('新規登録完了', {option: {employee_no: user.employee_no}});
             res.status(200).json({
                 success: true,
                 message: '登録が完了しました',
@@ -163,7 +169,7 @@ export async function register(req, res, next) {
             });
         });
     } catch (error) {
-        console.error('Failed to register: ', error);
+        logger.error('新規登録に失敗しました', {option: {detail: error.message, stack: error.stack}});
         return next (new AppError('新規登録に失敗しました', 400));
     }
 } 
