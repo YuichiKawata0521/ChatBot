@@ -1,6 +1,7 @@
 import { chatService } from '../services/chatService.js';
 import { getPool } from '../config/db.js';
 import logger from '../utils/logger.js';
+import { llmService } from '../services/llmService.js';
 
 // スレッド作成
 export const createThread = async (req, res, next) => {
@@ -153,6 +154,33 @@ export const deleteAllThreads = async (req, res, next) => {
         });
     } catch (error) {
         logger.error('全スレッド削除に失敗しました', {
+            option: {
+                user_id: req.session?.user?.id ?? null,
+                detail: error.message,
+                stack: error.stack
+            }
+        });
+        next(error);
+    }
+};
+
+export const executeRDDAgent = async (req, res, next) => {
+    try {
+        const response = await llmService.fetchRDDAgent(req.body);
+        const result = await response.json();
+
+        logger.info('RDDエージェントを実行しました', {
+            option: {
+                user_id: req.session?.user?.id ?? null
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        logger.error('RDDエージェント実行に失敗しました', {
             option: {
                 user_id: req.session?.user?.id ?? null,
                 detail: error.message,

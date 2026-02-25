@@ -41,5 +41,20 @@ export const llmService = {
         }
 
         return response;
+    },
+
+    async fetchRDDAgent(interviewPayload) {
+        const endpoint = 'http://llm:8000/api/agent/rdd';
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(interviewPayload)
+        });
+
+        if (!response.ok) {
+            throw new Error(`RDD Agent failed: ${response.statusText}`);
+        }
+
+        return response;
     }
 }
