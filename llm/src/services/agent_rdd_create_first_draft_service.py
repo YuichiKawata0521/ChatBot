@@ -1,5 +1,5 @@
-from graph.workflow import app
-from models.agent_state import AgentState
+from src.graph.workflow import app
+from src.models.agent_state import AgentState
 
 def create_first_draft(user_request: str) -> str:
     initial_state: AgentState = {

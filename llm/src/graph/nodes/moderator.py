@@ -1,6 +1,6 @@
 from langchain_core.messages import SystemMessage, HumanMessage
-from services.llm_provider import get_llm
-from prompts.loaders import load_persona, load_template
+from src.services.llm_provider import get_llm
+from src.prompts.loaders import load_persona, load_template
 
 def moderator_node(state):
     llm = get_llm()

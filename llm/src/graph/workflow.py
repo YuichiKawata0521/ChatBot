@@ -1,8 +1,8 @@
 from langgraph.graph import StateGraph, END
-from models.agent_state import AgentState
-from graph.nodes.moderator import moderator_node
-from graph.nodes.reviewers import reviewer_nodes
-from graph.nodes.conditions import should_continue
+from src.models.agent_state import AgentState
+from src.graph.nodes.moderator import moderator_node
+from src.graph.nodes.reviewers import reviewer_nodes
+from src.graph.nodes.conditions import should_continue
 
 def build_workflow():
     workflow = StateGraph(AgentState)
