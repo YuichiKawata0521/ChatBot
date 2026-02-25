@@ -53,3 +53,8 @@ export async function createThread(title, documentId = null, modelName = 'gpt-4o
         modelName
     });
 }
+
+export async function executeRDDAgent(interviewPayload) {
+    const endpoint = '/chat/agent/rdd';
+    return await ApiClient.post(endpoint, interviewPayload);
+}
