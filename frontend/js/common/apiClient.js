@@ -1,4 +1,4 @@
- import { AppError } from "./AppError.js";
+import { AppError } from "./AppError.js";
 const BASE_URL = '/api/v1';
 
 export class ApiClient {
