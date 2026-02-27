@@ -4,6 +4,8 @@ import { format } from 'winston';
 import fs from 'fs';
 import path from 'path';
 import Email from './email.js';
+import { getPool } from '../config/db.js';
+import { insertSystemLog } from '../models/logModels.js';
 
 // ログディレクトリの有無を確認
 function ensureLogDir(dir) {
@@ -109,6 +111,43 @@ function createSystemLog() {
         await errorMail.send(subject, message);
     }
 
+    async function saveLogToDB(level, message, safeMeta, module_name, source) {
+        const pool = getPool();
+        const ignoreLevels = ['silly', 'debug'];
+        if (ignoreLevels.includes(level)) return;
+
+        try {
+            const context = {
+                source,
+                module_name,
+                option: safeMeta.option ?? null,
+                ...safeMeta
+            };
+
+            delete context.event_type;
+            delete context.request_id;
+            delete context.user_id;
+            delete context.department_id;
+
+            const logData = {
+                level,
+                event_type: safeMeta.event_type,
+                message: typeof message === 'string' ? message : JSON.stringify(message),
+                context,
+                request_id: safeMeta.request_id,
+                user_id: safeMeta.user_id,
+                department_id: safeMeta.department_id,
+                service: process.env.SERVICE_NAME,
+                environment: process.env.NODE_ENV
+            };
+
+            await insertSystemLog(pool, logData);
+        } catch (error) {
+            const reason = error instanceof Error ? error.message : String(error);
+            console.error(`[logger] ログをDBへ保存するのに失敗しました: ${reason}`);
+        }
+    }
+
     // Winstonロガーの本体を作成
     const winstonLogger = winston.createLogger({
         levels: customLevels.levels,
@@ -168,6 +207,8 @@ function createSystemLog() {
                 console.error('Failed to send error alert email:', mailError);
             });
         }
+
+        saveLogToDB(level, message, safeMeta, module_name, source);
 
         // Winstonにメタデータを付与してログを出力
         winstonLogger.log(level, message, { ...safeMeta, module_name, source });
