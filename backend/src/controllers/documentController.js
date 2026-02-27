@@ -16,6 +16,19 @@ const inferDocumentSource = (filename) => {
     return 'txt';
 };
 
+const normalizeUploadedFilename = (filename) => {
+    if (!filename) return filename;
+
+    try {
+        const decoded = Buffer.from(filename, 'latin1').toString('utf8');
+        const roundTrip = Buffer.from(decoded, 'utf8').toString('latin1');
+
+        return roundTrip === filename ? decoded : filename;
+    } catch {
+        return filename;
+    }
+};
+
 const processAndSaveContent = async (title, content, source, metadata) => {
     const pool = getPool();
     const client = await pool.connect();
@@ -135,7 +148,7 @@ export const uploadDocument = async (req, res, next) => {
         return next(new AppError('Please upload a file', 400));
     }
     const filePath = req.file.path;
-    const originalName = req.file.originalname;
+    const originalName = normalizeUploadedFilename(req.file.originalname);
     const source = inferDocumentSource(originalName);
 
     try {
