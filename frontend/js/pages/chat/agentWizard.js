@@ -66,7 +66,7 @@ export class RequirementAgentWizard {
 
     nextStep() {
         this.saveCurrentAnswer();
-        if (this.currentStep < this.questions.length - 1) {
+        if (this.currentStep < this.questions.length) {
             this.currentStep++;
             this.renderStep();
         }
@@ -99,13 +99,12 @@ export class RequirementAgentWizard {
         // --- 確認画面 ---
         if (this.currentStep === this.questions.length) {
             this.btnNext.classList.add('hidden');
-            this.btnBack.classList.add('hidden');
             this.btnSubmit.classList.remove('hidden');
             this.btnSubmit.textContent = '実行';
 
             let html = `
                 <div style="background:#fff3cd; padding:12px; border-radius:8px; margin-bottom:20px; font-size:0.9rem;">
-                    💡 空欄の項目は「特になし(AI側で定義)」として処理されます。問題なければ「作成開始」を押してください。
+                    💡 空欄の項目は「特になし(AI側で定義)」として処理されます。問題なければ「実行」を押してください。
                 </div>
                 <div class="confirm-list">
             `;
@@ -133,12 +132,11 @@ export class RequirementAgentWizard {
         }
 
         // --- 質問画面 ---
-        this.btnSubmit.classList.add('hidden');
-        this.btnSubmit.textContent = '作成開始';
+        this.btnSubmit.textContent = '確認画面';
 
         const isLastQuestion = this.currentStep === this.questions.length - 1;
         this.btnNext.classList.toggle('hidden', isLastQuestion);
-        this.btnSubmit.classList.toggle('hidden', !isLastQuestion);
+        this.btnSubmit.classList.remove('hidden');
         this.btnBack.classList.toggle('hidden', this.currentStep === 0);
 
         const q = this.questions[this.currentStep];
@@ -148,8 +146,8 @@ export class RequirementAgentWizard {
         const formattedText = q.text.replace(/\n/g, '<br>');
 
         const inputHtml = q.type === 'textarea' 
-            ? `<textarea id="wizard-input" class="answer-input" rows="6" placeholder="入力または空欄のまま次へ">${currentValue}</textarea>`
-            : `<input type="text" id="wizard-input" class="answer-input" value="${currentValue}" placeholder="入力または空欄のまま次へ">`;
+            ? `<textarea id="wizard-input" class="answer-input" rows="6" placeholder="入力または空欄のまま次へ (Ctrl + Enterで次の質問へ)">${currentValue}</textarea>`
+            : `<input type="text" id="wizard-input" class="answer-input" value="${currentValue}" placeholder="入力または空欄のまま次へ (Ctrl + Enterで次の質問へ)">`;
 
         this.modalBody.innerHTML = `
             <div style="color:#1565c0; font-weight:bold; margin-bottom:8px;">${q.number}</div>
@@ -157,14 +155,30 @@ export class RequirementAgentWizard {
             ${inputHtml}
             <div style="margin-top:10px; font-size:0.8rem; color:#666;">※思いつく範囲でざっくりと回答してください。空欄で次へ進むとスキップ（AIにお任せ）になります。</div>
         `;
-        
-        setTimeout(() => document.getElementById('wizard-input').focus(), 10);
+
+        const inputElement = document.getElementById('wizard-input');
+        if (inputElement) {
+            inputElement.addEventListener('keydown', (e) => {
+                if (q.type === 'text' && e.key === 'Enter') {
+                    e.preventDefault();
+                    this.nextStep();
+                    return;
+                }
+
+                if (q.type === 'textarea' && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    this.nextStep();
+                }
+            });
+
+            setTimeout(() => inputElement.focus(), 10);
+        }
     }
 
     submit() {
         this.saveCurrentAnswer();
 
-        if (this.currentStep === this.questions.length - 1) {
+        if (this.currentStep < this.questions.length) {
             this.currentStep = this.questions.length;
             this.renderStep();
             return;
