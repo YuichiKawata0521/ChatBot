@@ -6,7 +6,7 @@ import { llmService } from '../services/llmService.js';
 import AppError from '../utils/appError.js';
 import logger from '../utils/logger.js';
 
-const inferDocumentSource = (filename) => {
+export const inferDocumentSource = (filename) => {
     const ext = path.extname(filename || '').toLowerCase();
 
     if (ext === '.pdf') return 'pdf';
@@ -16,7 +16,7 @@ const inferDocumentSource = (filename) => {
     return 'txt';
 };
 
-const normalizeUploadedFilename = (filename) => {
+export const normalizeUploadedFilename = (filename) => {
     if (!filename) return filename;
 
     try {
@@ -217,7 +217,7 @@ export const getDocuments = async (req, res, next) => {
         SELECT id, title, source, status, uploaded_at 
         FROM documents 
         WHERE status != 'failed' 
-        ORDER BY uploaded_at DESC;
+        ORDER BY uploaded_at ASC;
         `;
         const result = await pool.query(sql);
         res.status(200).json({
