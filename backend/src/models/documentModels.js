@@ -35,6 +35,13 @@ export const documentModel = {
         return await client.query(sql, [documentId]);
     },
 
+    async updateDocumentStatusWithMeta(client, source, originalName, id) {
+        const sql = `
+            UPDATE documents SET status = 'completed', source = $1 , metadata = $2 WHERE id = $3;
+        `;
+        return await client.query(sql, [source, JSON.stringify({ originalFileName: originalName}), id]);
+    },
+
     async deleteDocument(client, documentId) {
         const sql = `
             DELETE FROM documents WHERE id = $1;
