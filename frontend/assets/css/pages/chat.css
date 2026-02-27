@@ -24,6 +24,10 @@ summary {
     color: #0056b3;
 }
 
+.hidden {
+    display: none;
+}
+
 .btn {
     border: none;
     background: none;
