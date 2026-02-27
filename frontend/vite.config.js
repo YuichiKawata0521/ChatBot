@@ -29,7 +29,8 @@ export default defineConfig({
                 chat: resolve(__dirname, 'pages/chat.html'),
                 users: resolve(__dirname, 'pages/users.html'),
                 logs: resolve(__dirname, 'pages/logs.html'),
-                change_password: resolve(__dirname, 'pages/change_password.html')
+                change_password: resolve(__dirname, 'pages/change_password.html'),
+                documents: resolve(__dirname, 'pages/documents.html')
             },
         },
     },
@@ -66,6 +67,8 @@ export default defineConfig({
             req.url = '/pages/logs.html';
           } else if (req.url.startsWith('/change_password')) {
             req.url = '/pages/change_password.html';
+          } else if (req.url.startsWith('/documents')) {
+            req.url = '/pages/documents.html';
           }
           
           next();
