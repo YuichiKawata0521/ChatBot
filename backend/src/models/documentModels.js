@@ -33,5 +33,37 @@ export const documentModel = {
             UPDATE documents SET status = 'completed' WHERE id = $1;
         `;
         return await client.query(sql, [documentId]);
+    },
+
+    async deleteDocument(client, documentId) {
+        const sql = `
+            DELETE FROM documents WHERE id = $1;
+        `;
+        return await client.query(sql, [documentId]);
+    },
+
+    async updateDocumentTitle(client, documentId, title) {
+        const sql = `
+            UPDATE documents SET title = $1 WHERE id = $2;
+        `;
+        return await client.query(sql, [title, documentId]);
+    },
+
+    async deleteChunksByDocumentId(client, documentId) {
+        const sql = `
+            DELETE FROM parent_chunks WHERE document_id = $1;
+        `;
+
+        return await client.query(sql, [documentId]);
+    },
+
+    async getDocumentWithContent(client, documentId) {
+        const sql = `
+            SELECT content FROM parent_chunks 
+            WHERE document_id =  $1
+            ORDER BY parent_index ASC;
+        `;
+        const result = await client.query(sql, [documentId]);
+        return result.rows[0];
     }
 }
