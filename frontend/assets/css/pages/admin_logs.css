@@ -14,6 +14,10 @@
     align-items: flex-end;
 }
 
+.filter-item.actions {
+    margin-left: 50px;
+}
+
 .date-range-group {
     display: flex;
     align-items: center;
@@ -30,7 +34,7 @@
 
 .search-box-wide {
     flex-grow: 1; /* 検索窓を横幅いっぱいに */
-    min-width: 300px;
+    margin-right: auto;
 }
 .search-box-wide .input-icon-wrapper input {
     width: 100%;
