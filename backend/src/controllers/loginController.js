@@ -34,6 +34,7 @@ export async function login(req, res, next) {
             id: userData.id,
             department_id: userData.department_id,
             employee_no: userData.employee_no,
+            user_name: userData.user_name,
             email: userData.email,
             role: userData.role,
             isRegistered: !userData.registered_flag
