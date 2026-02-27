@@ -107,21 +107,31 @@ async function handleDocumentSelect(doc) {
 
 function handleRDDAgent() {
     const reqWizard = new RequirementAgentWizard(async ({ promptText, interviewPayload }) => {
-        // 1. エージェント選択画面を隠し、チャット画面を表示する
-        toggleChatArea(true);
-        
-        // 2. ユーザーの発言として、画面にプロンプト（またはその要約）を表示する
-        // （※長すぎるプロンプトを画面に出したくない場合は、「要件定義書の作成を依頼しました」等のテキストをUIに出す手もあります）
-        ui.addMessage('user', promptText); 
-        
         try {
             ui.switchOverlay('show');
             const result = await api.executeRDDAgent(interviewPayload);
             const draft = result?.data?.draft || result?.draft || 'ドラフト生成結果が空でした。';
-            ui.addMessage('assistant', draft);
+
+            const blob = new Blob([draft], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            
+            const date = new Date();
+            const jst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+            const day = jst.toISOString().replace('T', ' ').split('.')[0];
+
+            a.href = url;
+            a.download = `要件定義書・仕様書_draft_${day}.md`;
+            a.style.display = 'none';
+
+            document.body.appendChild(a)
+            a.click();
+            
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         } catch (error) {
             console.error("エージェントの実行に失敗しました", error);
-            ui.addMessage('system', 'エラーが発生しました。もう一度お試しください。');
+            showToast('エラーが発生しました。もう一度お試しください。');
         } finally {
             ui.switchOverlay('hide');
         }
