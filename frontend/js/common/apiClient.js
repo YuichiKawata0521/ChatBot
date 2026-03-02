@@ -71,4 +71,56 @@ export class ApiClient {
             throw error;
         }
     }
+
+    static async delete(endpoint) {
+        const csrfToken = await this.#getCsrfToken();
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        if (csrfToken) {
+            headers['x-csrf-token'] = csrfToken;
+        }
+        try {
+            const response = await fetch(`${BASE_URL}${endpoint}`, {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: headers
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new AppError(data.message || 'API Error occured', response.status);
+            }
+            return data;
+        } catch (error) {
+            console.error('API Call Error: ', error);
+            throw error;
+        }
+    }
+
+    static async put(endpoint) {
+        const csrfToken = await this.#getCsrfToken();
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        if (csrfToken) {
+            headers['x-csrf-token'] = csrfToken;
+        }
+        try {
+            const response = await fetch(`${BASE_URL}${endpoint}`, {
+                method: 'PUT',
+                credentials: 'include',
+                headers: headers
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new AppError(data.message || 'API Error occured', response.status);
+            }
+            return data;
+        } catch (error) {
+            console.error('API Call Error: ', error);
+            throw error;
+        }
+    }
 } 
