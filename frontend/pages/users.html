@@ -135,48 +135,83 @@
                 <button class="close-modal">×</button>
             </div>
             <div class="modal-body">
-                <form class="modal-form">
-                    <div class="form-group">
-                        <label>社員番号 <span class="required">*</span></label>
-                        <input type="text" name="employee_no" placeholder="例: 123456">
-                    </div>
-                    <div class="form-group">
-                        <label>氏名 <span class="required">*</span></label>
-                        <input type="text" name="username" placeholder="例: 山田 太郎">
-                    </div>
-                    <div class="form-group">
-                        <label>メールアドレス <span class="required">*</span></label>
-                        <input type="email" name="email" placeholder="example@company.com">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group half">
-                            <label>部署</label>
-                            <select name="department">
-                                <option>開発部</option>
-                                <option>営業部</option>
-                                <option>人事部</option>
-                            </select>
+                <div class="modal-tabs">
+                    <button class="tab-btn active" data-target="tab-single">個別登録</button>
+                    <button class="tab-btn" data-target="tab-csv">CSV一括登録</button>
+                </div>
+
+                <div id="tab-single" class="tab-content active">
+                    <form id="single-user-form" class="modal-form">
+                        <div class="form-group">
+                            <label>社員番号 <span class="required">*</span></label>
+                            <input type="text" name="employee_no" placeholder="例: 123456" required>
                         </div>
-                        <div class="form-group half">
-                            <label>権限</label>
-                            <select name="role">
-                                <option value="user">User</option>
-                                <option value="admin">Admin</option>
-                            </select>
+                        <div class="form-group">
+                            <label>氏名 <span class="required">*</span></label>
+                            <input type="text" name="username" placeholder="例: 山田 太郎" required>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label>パスワード <span class="note">(新規登録時のみ必須)</span></label>
-                        <input type="password" name="password" placeholder="••••••••">
-                    </div>
-                    
-                    <div class="modal-actions">
-                        <button type="button" class="btn-secondary close-modal-btn">キャンセル</button>
-                        <button type="submit" class="btn-primary">保存する</button>
-                    </div>
-                </form>
+                        <div class="form-group">
+                            <label>メールアドレス <span class="required">*</span></label>
+                            <input type="email" name="email" placeholder="example@company.com" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label>部署</label>
+                                <select name="department">
+                                    <option value="開発部">開発部</option>
+                                    <option value="営業部">営業部</option>
+                                    <option value="人事部">人事部</option>
+                                </select>
+                            </div>
+                            <div class="form-group half">
+                                <label>権限</label>
+                                <select name="role">
+                                    <option value="user">User</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>パスワード <span class="note">(新規登録時のみ必須)</span></label>
+                            <input type="password" name="password" placeholder="••••••••">
+                        </div>
+                        
+                        <div class="modal-actions">
+                            <button type="button" class="btn-secondary close-modal-btn">キャンセル</button>
+                            <button type="submit" class="btn-primary">保存する</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="tab-csv" class="tab-content" style="display: none;">
+                    <form id="csv-user-form" class="modal-form">
+                        <div class="csv-instruction">
+                            <p>指定のフォーマットのCSVファイルをアップロードしてください。</p>
+                            <a href="/api/users/csv-template" class="download-link"><i class="fa-solid fa-download"></i> サンプルCSVをダウンロード</a>
+                        </div>
+                        
+                        <div class="file-drop-area" id="csv-drop-area">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <p>ここにCSVファイルをドラッグ＆ドロップ</p>
+                            <p class="or-text">または</p>
+                            <input type="file" id="csv-file-input" accept=".csv" hidden>
+                            <button type="button" class="btn-secondary" onclick="document.getElementById('csv-file-input').click()">ファイルを選択</button>
+                            <p id="selected-file-name" class="selected-file"></p>
+                        </div>
+
+                        <div class="modal-actions">
+                            <button type="button" class="btn-secondary close-modal-btn">キャンセル</button>
+                            <button type="submit" class="btn-primary" id="btn-upload-csv" disabled>アップロード</button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
         </div>
     </div>
+
+    <script type="module" src="../js/pages/admin/users/main.js"></script>
+</body>
+</html>
 </body>
 </html>
