@@ -44,6 +44,7 @@ const globalErrorHandler = (err, req, res, next) => {
             method: req?.method,
             ip: clientIp,
             user_id: sessionUser?.id ?? null,
+            user_name: sessionUser?.user_name ?? null,
             employee_no: sessionUser?.employee_no ?? null,
             stack: err.statusCode >= 500 ? err.stack : undefined
         }
