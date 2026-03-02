@@ -234,3 +234,92 @@
     padding-top: 20px;
     border-top: 1px solid #eee;
 }
+
+/* =========================================
+   モーダル内 タブUI
+========================================= */
+.modal-tabs {
+    display: flex;
+    border-bottom: 2px solid #ecf0f1;
+    margin-bottom: 20px;
+}
+.tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #95a5a6;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.tab-btn:hover {
+    color: #7f8c8d;
+    background-color: #f9f9f9;
+}
+.tab-btn.active {
+    color: #3498db;
+    border-bottom: 3px solid #3498db;
+    margin-bottom: -2px; /* ボーダーの重なり調整 */
+}
+
+/* =========================================
+   CSVアップロードエリア
+========================================= */
+.csv-instruction {
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    color: #34495e;
+}
+.download-link {
+    color: #3498db;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    font-size: 0.9rem;
+}
+.download-link:hover {
+    text-decoration: underline;
+}
+
+.file-drop-area {
+    border: 2px dashed #bdc3c7;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    background-color: #fdfdfd;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-bottom: 15px;
+}
+.file-drop-area.dragover {
+    background-color: #e8f6ff;
+    border-color: #3498db;
+}
+.file-drop-area i {
+    font-size: 3rem;
+    color: #bdc3c7;
+    margin-bottom: 10px;
+    transition: color 0.3s;
+}
+.file-drop-area.dragover i {
+    color: #3498db;
+}
+.file-drop-area p {
+    color: #7f8c8d;
+    margin: 5px 0;
+}
+.file-drop-area .or-text {
+    font-size: 0.8rem;
+    color: #bdc3c7;
+    margin: 15px 0;
+}
+.selected-file {
+    margin-top: 15px !important;
+    font-weight: bold;
+    color: #2ecc71 !important;
+    word-break: break-all;
+}
