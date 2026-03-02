@@ -8,13 +8,21 @@ const state = {
     itemPerPage: 50
 };
 
+const DEFAULT_FILTERS = {
+    dateFrom: '',
+    dateTo: '',
+    level: 'important',
+    keyword: ''
+};
+
 const dom = {
     tableBody: document.getElementById('log-table-body'),
     form: document.getElementById('log-filter-form'),
     searchBtn: document.getElementById('search-btn'),
+    clearBtn: document.getElementById('clear-btn'),
+    exportBtn: document.getElementById('export-btn'),
     filterDateFrom: document.getElementById('filter-date-from'),
     filterDateTo: document.getElementById('filter-date-to'),
-    filterType: document.getElementById('filter-type'),
     filterLevel: document.getElementById('filter-level'),
     filterKeyword: document.getElementById('filter-keyword'),
     pagination: document.getElementById('pagination-container'),
@@ -24,7 +32,6 @@ const dom = {
     modalId: document.getElementById('modal-log-id'),
     modalDate: document.getElementById('modal-date'),
     modalLevel: document.getElementById('modal-level'),
-    modalType: document.getElementById('modal-type'),
     modalUser: document.getElementById('modal-user'),
     modalMessage: document.getElementById('modal-message'),
     modalContext: document.getElementById('modal-context'),
@@ -32,20 +39,33 @@ const dom = {
 };
 
 function initEvents() {
-    dom.searchBtn.addEventListener('click', applyFilters);
-    dom.filterKeyword.addEventListener('keypress', (e) => {
+    dom.searchBtn?.addEventListener('click', applyFilters);
+    dom.clearBtn?.addEventListener('click', resetFilters);
+    dom.exportBtn?.addEventListener('click', exportFilteredLogsToCsv);
+    dom.filterDateFrom?.addEventListener('change', applyFilters);
+    dom.filterDateTo?.addEventListener('change', applyFilters);
+    dom.filterLevel?.addEventListener('change', applyFilters);
+    dom.filterKeyword?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             applyFilters();
         }
     });
 
-    dom.closeBtns.forEach(btn => {
+    dom.closeBtns.filter(Boolean).forEach(btn => {
         btn.addEventListener('click', closeModal);
     });
-    dom.modal.addEventListener('click', (e) => {
+    dom.modal?.addEventListener('click', (e) => {
         if (e.target === dom.modal) closeModal();
     });
+}
+
+function resetFilters() {
+    dom.filterDateFrom.value = DEFAULT_FILTERS.dateFrom;
+    dom.filterDateTo.value = DEFAULT_FILTERS.dateTo;
+    dom.filterLevel.value = DEFAULT_FILTERS.level;
+    dom.filterKeyword.value = DEFAULT_FILTERS.keyword;
+    applyFilters();
 }
 
 async function fetchLogs() {
@@ -62,29 +82,31 @@ async function fetchLogs() {
 }
 
 function applyFilters() {
-    const fromData = dom.filterDateFrom.value ? new Date(dom.filterDateFrom.value) : null;
-    const toDate = dom.filterDateTo.value ? new Date(dom.filterDateTo.value) : null;
-    const type = dom.filterType.value.toLowerCase();
-    const level = dom.filterLevel.value.toLowerCase();
-    const keyword = dom.filterKeyword.value.toLowerCase();
+    const fromDate = parseDateAtStartOfDay(dom.filterDateFrom?.value || '');
+    const toDate = parseDateAtEndOfDay(dom.filterDateTo?.value || '');
+    const level = (dom.filterLevel?.value || '').toLowerCase();
+    const keyword = (dom.filterKeyword?.value || '').toLowerCase();
 
     state.filteredLogs = state.allLogs.filter(log => {
         const logDate = new Date(log.created_at);
-        const logLevel = log.level.toLowerCase();
+        if (Number.isNaN(logDate.getTime())) return false;
+        const logLevel = (log.level || '').toLowerCase();
 
-        if (fromData && logDate < fromData) return false;
+        if (fromDate && logDate < fromDate) return false;
         if (toDate && logDate > toDate) return false;
-
-        if (type && !(log.service?.toLowerCase().includes(type) || log.event_type?.toLowerCase().includes(type))) return false;
 
         if (level === 'important' && !['warn', 'error'].includes(logLevel)) return false;
         else if (level && level !== 'important' && logLevel !== level) return false;
 
         if (keyword) {
+            const message = (log.message || '').toLowerCase();
             const contextStr = log.context ? JSON.stringify(log.context).toLowerCase() : '';
+            const userName = (resolveUserName(log) || '').toLowerCase();
+            const userId = log.user_id ? log.user_id.toString().toLowerCase() : '';
             const isMatch = (
-                log.message.toLowerCase().includes(keyword) ||
-                (log.user_id && log.user_id.toString().includes(keyword)) ||
+                message.includes(keyword) ||
+                userName.includes(keyword) ||
+                userId.includes(keyword) ||
                 contextStr.includes(keyword)
             );
             if (!isMatch) return false;
@@ -103,7 +125,7 @@ function renderTable() {
 
     if (logsToShow.length === 0) {
         dom.tableBody.innerHTML = `
-        <tr><td colspan="7" class="text-center" style="padding: 20px;">条件に一致するログが見つかりません</td></tr>
+        <tr><td colspan="6" class="text-center" style="padding: 20px;">条件に一致するログが見つかりません</td></tr>
         `;
         renderPagination();
         return;
@@ -131,30 +153,26 @@ function renderTable() {
         const tdLevel = document.createElement('td');
         tdLevel.innerHTML = getLevelBadgeHTML(log.level);
 
-        // 3. 種別
-        const tdType = document.createElement('td');
-        tdType.textContent = log.event_type || log.service || '-';
-
-        // 4. モジュール
+        // 3. モジュール
         const tdModule = document.createElement('td');
         const moduleName = log.context?.module_name || '-';
         tdModule.textContent = moduleName;
 
-        // 5. メッセージ
+        // 4. メッセージ
         const tdMessage = document.createElement('td');
         tdMessage.className = 'text-truncate';
         tdMessage.textContent = log.message;
 
-        // 6. ユーザー
+        // 5. ユーザー
         const tdUser = document.createElement('td');
-        tdUser.textContent = log.user_id || 'system';
+        tdUser.textContent = resolveUserName(log);
 
-        // 7. アイコン
+        // 6. アイコン
         const tdIcon = document.createElement('td');
         tdIcon.className = 'text-center';
         tdIcon.innerHTML = '<i class="fa-solid fa-chevron-right" style="color:#ccc;"></i>';
 
-        tr.append(tdDate, tdLevel, tdType, tdModule, tdMessage, tdUser, tdIcon);
+        tr.append(tdDate, tdLevel, tdModule, tdMessage, tdUser, tdIcon);
         fragment.appendChild(tr);
     });
 
@@ -214,8 +232,7 @@ function openModal(log) {
     dom.modalId.textContent = `#LOG-${log.id || '---'}`;
     dom.modalDate.textContent = formatDateTime(log.created_at);
     dom.modalLevel.innerHTML = getLevelBadgeHTML(log.level);
-    dom.modalType.textContent = `${log.service || '-'} / ${log.event_type || '-'}`;
-    dom.modalUser.textContent = log.user_id || 'system';
+    dom.modalUser.textContent = resolveUserName(log);
     dom.modalMessage.textContent = log.message;
     
     // JSONを見やすくフォーマットして表示
@@ -234,6 +251,97 @@ function formatDateTime(isoString) {
     const d = new Date(isoString);
     const pad = (n) => n.toString().padStart(2, '0');
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+function parseDateAtStartOfDay(dateValue) {
+    if (!dateValue) return null;
+    const date = new Date(`${dateValue}T00:00:00`);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function parseDateAtEndOfDay(dateValue) {
+    if (!dateValue) return null;
+    const date = new Date(`${dateValue}T23:59:59.999`);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function exportFilteredLogsToCsv() {
+    if (!state.filteredLogs.length) {
+        showToast('エクスポート対象のログがありません');
+        return;
+    }
+
+    const exportCurrentPageOnly = window.confirm('現在表示中のページのみCSV出力しますか？\n「キャンセル」でフィルタ結果すべてを出力します。');
+    const targetLogs = exportCurrentPageOnly
+        ? getCurrentPageLogs()
+        : state.filteredLogs;
+
+    if (!targetLogs.length) {
+        showToast('現在ページにエクスポート対象のログがありません');
+        return;
+    }
+
+    const headers = ['日時', 'レベル', 'モジュール', 'メッセージ', 'ユーザー', 'コンテキスト詳細'];
+    const rows = targetLogs.map((log) => {
+        return [
+            formatDateTime(log.created_at),
+            (log.level || '').toUpperCase(),
+            log.context?.module_name || '-',
+            log.message || '',
+            resolveUserName(log),
+            formatContextForCsv(log.context)
+        ];
+    });
+
+    const csvContent = [headers, ...rows]
+        .map((row) => row.map(escapeCsvCell).join(','))
+        .join('\r\n');
+
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `system_logs_${formatFileTimestamp(new Date())}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showToast(exportCurrentPageOnly ? '現在ページのCSVエクスポートが完了しました' : '全件CSVエクスポートが完了しました', 'success');
+}
+
+function getCurrentPageLogs() {
+    const startIdx = (state.currentPage - 1) * state.itemPerPage;
+    const endIdx = startIdx + state.itemPerPage;
+    return state.filteredLogs.slice(startIdx, endIdx);
+}
+
+function escapeCsvCell(value) {
+    const normalized = String(value ?? '').replace(/\r?\n/g, ' ');
+    return `"${normalized.replace(/"/g, '""')}"`;
+}
+
+function formatFileTimestamp(date) {
+    const pad = (n) => n.toString().padStart(2, '0');
+    return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}_${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
+}
+
+function resolveUserName(log) {
+    if (log?.user_name) return log.user_name;
+    if (log?.context?.option?.user_name) return log.context.option.user_name;
+    if (log?.user_id) return String(log.user_id);
+    return 'system';
+}
+
+function formatContextForCsv(context) {
+    if (!context) return '';
+    try {
+        return JSON.stringify(context);
+    } catch {
+        return String(context);
+    }
 }
 
 
