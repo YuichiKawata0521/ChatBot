@@ -148,6 +148,20 @@ function createSystemLog() {
         }
     }
 
+    function normalizeMeta(meta) {
+        const safeMeta = meta && typeof meta === 'object' ? meta : {};
+        const safeOption = safeMeta.option && typeof safeMeta.option === 'object' ? safeMeta.option : {};
+
+        return {
+            ...safeMeta,
+            user_id: safeMeta.user_id ?? safeOption.user_id ?? null,
+            department_id: safeMeta.department_id ?? safeOption.department_id ?? null,
+            request_id: safeMeta.request_id ?? safeOption.request_id ?? null,
+            user_name: safeMeta.user_name ?? safeOption.user_name ?? null,
+            employee_no: safeMeta.employee_no ?? safeOption.employee_no ?? null
+        };
+    }
+
     // Winstonロガーの本体を作成
     const winstonLogger = winston.createLogger({
         levels: customLevels.levels,
@@ -186,7 +200,7 @@ function createSystemLog() {
 
     // 共通のログ書き込みロジック (ここで parseErrorInfo を同期的に呼ぶ)
     const logWrapper = (level, message, meta = {}) => {
-        const safeMeta = meta && typeof meta === 'object' ? meta : {};
+        const safeMeta = normalizeMeta(meta);
         const parsed = parseErrorInfo();
         
         // オプション等ですでに source が指定されていれば優先し、なければ parsed を使用
