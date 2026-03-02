@@ -2,7 +2,9 @@ import { ApiClient } from "../common/apiClient";
 
 export class userService {
     async getUsers(params = {}) {
-        return await ApiClient.get('/users/', params);
+        const response = await ApiClient.get('/users/', params);
+        if (Array.isArray(response)) return response;
+        return response?.data ?? [];
     }
 
     async createUser(userData) {
