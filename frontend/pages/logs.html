@@ -13,7 +13,7 @@
         <div class="header-logo">ChatBot Admin / システムログ</div>
         <div class="header-actions">
             <span class="user-name">管理者 様</span>
-            <a href="./index.html" class="header-link">← 管理メニューへ</a>
+            <a href="/admin" class="header-link">← 管理メニューへ</a>
         </div>
     </header>
 
@@ -21,7 +21,6 @@
         <div class="page-title">
             <h1>System Logs</h1>
             <div class="actions">
-                <button class="btn-secondary" id="export-btn"><i class="fa-solid fa-download"></i> CSVエクスポート</button>
             </div>
         </div>
 
@@ -35,16 +34,6 @@
                             <span class="separator">~</span>
                             <input type="date" class="date-input" id="filter-date-to">
                         </div>
-                    </div>
-                    <div class="filter-item">
-                        <label>ログ種別</label>
-                        <select id="filter-type">
-                            <option value="">全て</option>
-                            <option value="system">System</option>
-                            <option value="auth">Auth</option>
-                            <option value="rag">RAG</option>
-                            <option value="user">User Action</option>
-                        </select>
                     </div>
                     <div class="filter-item">
                         <label>レベル</label>
@@ -68,6 +57,8 @@
                     <div class="filter-item actions">
                         <label>&nbsp;</label>
                         <button type="button" class="btn-secondary" id="search-btn">検索</button>
+                        <button type="button" class="btn-secondary" id="clear-btn">クリア</button>
+                        <button class="btn-secondary" id="export-btn"><i class="fa-solid fa-download"></i> CSVエクスポート</button>
                     </div>
                 </div>
             </form>
@@ -79,9 +70,8 @@
                     <tr>
                         <th width="18%">日時</th>
                         <th width="8%">レベル</th>
-                        <th width="10%">種別</th>
-                        <th width="15%">モジュール (操作)</th>
-                        <th width="32%">メッセージ</th>
+                        <th width="20%">モジュール (操作)</th>
+                        <th width="37%">メッセージ</th>
                         <th width="12%">ユーザー</th>
                         <th width="5%"></th>
                     </tr>
@@ -110,10 +100,6 @@
                     <div class="meta-item">
                         <label>レベル</label>
                         <div id="modal-level"></div>
-                    </div>
-                    <div class="meta-item">
-                        <label>種別 / API</label>
-                        <div id="modal-type"></div>
                     </div>
                     <div class="meta-item">
                         <label>ユーザーID</label>
