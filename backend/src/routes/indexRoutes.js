@@ -4,6 +4,7 @@ import loginRoutes from './loginRoutes.js';
 import chatRoutes from './chatRoutes.js';
 import documentRoutes from './documentRoutes.js';
 import logRoutes from './logRoutes.js';
+import userRoutes from './userRoutes.js';
 
 const router = express.Router();
 
@@ -45,5 +46,6 @@ router.use('/auth', loginRoutes);
 router.use('/chat', chatRoutes);
 router.use('/documents', documentRoutes);
 router.use('/logs', logRoutes);
+router.use('/users', userRoutes);
 
 export default router;
