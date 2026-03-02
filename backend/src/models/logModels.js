@@ -24,8 +24,15 @@ export const insertSystemLog = async (pool, logData) => {
 
 export const getAllLogs = async (pool) => {
     const sql = `
-        SELECT *
-        FROM system_logs
+        SELECT
+            l.*,
+            COALESCE(
+                u.user_name,
+                l.context -> 'option' ->> 'user_name'
+            ) AS user_name
+        FROM system_logs l
+        LEFT JOIN users u
+            ON l.user_id = u.id
         ORDER BY created_at DESC;
     `;
     const result = await pool.query(sql);
