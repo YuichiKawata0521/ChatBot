@@ -3,7 +3,7 @@
 /* フィルターエリア調整 */
 .log-filter-bar {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 15px;
 }
 
@@ -15,7 +15,14 @@
 }
 
 .filter-item.actions {
+    flex-direction: row;
     margin-left: 50px;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-item.actions label {
+    display: none;
 }
 
 .date-range-group {
