@@ -2,153 +2,29 @@ import { getPool } from '../config/db.js';
 import AppError from '../utils/appError.js';
 import logger from '../utils/logger.js';
 import { dashboardModel } from '../models/dashboardModel.js';
-
-const getEnvValue = (...keys) => {
-    for (const key of keys) {
-        const value = process.env[key];
-        if (value !== undefined && String(value).trim() !== '') {
-            return String(value).trim();
-        }
-    }
-    return '';
-};
-
-const safeNumber = (value) => Number(value || 0);
-const safeDivide = (numerator, denominator) => (denominator ? numerator / denominator : 0);
-const safeRate = (value, fallback) => {
-    const n = Number(value);
-    return Number.isFinite(n) && n > 0 ? n : fallback;
-};
-
-const formatYmd = (date) => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-};
-
-const formatTokyoYmd = (value) => {
-    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-        return value;
-    }
-
-    const date = value instanceof Date ? value : new Date(value);
-    if (Number.isNaN(date.getTime())) {
-        return String(value || '');
-    }
-
-    return new Intl.DateTimeFormat('sv-SE', {
-        timeZone: 'Asia/Tokyo'
-    }).format(date);
-};
-
-const isValidYmd = (value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''));
-
-const buildAnalysisDateRange = (query = {}) => {
-    const now = new Date();
-    const period = String(query.period || 'last30');
-
-    if (period === 'custom' && isValidYmd(query.fromDate) && isValidYmd(query.toDate)) {
-        return {
-            period,
-            fromDate: query.fromDate,
-            toDate: query.toDate
-        };
-    }
-
-    if (period === 'current') {
-        const start = new Date(now.getFullYear(), now.getMonth(), 1);
-        const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        return { period, fromDate: formatYmd(start), toDate: formatYmd(end) };
-    }
-
-    if (period === 'previous') {
-        const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const end = new Date(now.getFullYear(), now.getMonth(), 0);
-        return { period, fromDate: formatYmd(start), toDate: formatYmd(end) };
-    }
-
-    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const start = new Date(end);
-    start.setDate(end.getDate() - 29);
-    return { period: 'last30', fromDate: formatYmd(start), toDate: formatYmd(end) };
-};
-
-const buildDateContext = (scope = 'current') => {
-    const now = new Date();
-    const target = scope === 'previous'
-        ? new Date(now.getFullYear(), now.getMonth(), 0)
-        : now;
-
-    const yesterday = new Date(target);
-    yesterday.setDate(target.getDate() - 1);
-
-    const monthStart = new Date(target.getFullYear(), target.getMonth(), 1);
-    const monthEnd = new Date(target.getFullYear(), target.getMonth() + 1, 0);
-
-    return {
-        scope,
-        monthLabel: `${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2, '0')}`,
-        todayDate: formatYmd(target),
-        yesterdayDate: formatYmd(yesterday),
-        monthStartDate: formatYmd(monthStart),
-        monthEndDate: formatYmd(monthEnd)
-    };
-};
-
-const getMasterUserIdentities = () => {
-    const employeeNos = [
-        getEnvValue('MASTER_ADMIN_EMPLOYEE_NO'),
-        getEnvValue('MASTER_USER_EMPLOYEE_NO')
-    ].filter((value) => !!value);
-
-    const emails = [
-        getEnvValue('MASTER_ADMIN_EMAIL'),
-        getEnvValue('MASTER_USER_EMAIL')
-    ].map((value) => String(value || '').toLowerCase()).filter((value) => !!value);
-
-    return { employeeNos, emails };
-};
-
-const buildMasterDepartmentSet = () => {
-    const toNullable = (value) => {
-        const normalized = String(value || '').trim();
-        return normalized.length ? normalized : '';
-    };
-
-    const toDepartmentKey = (prefix) => [
-        toNullable(getEnvValue(`${prefix}_dep1_code`, `${prefix}_DEP1_CODE`)),
-        toNullable(getEnvValue(`${prefix}_dep1_name`, `${prefix}_DEP1_NAME`)),
-        toNullable(getEnvValue(`${prefix}_dep2_code`, `${prefix}_DEP2_CODE`)),
-        toNullable(getEnvValue(`${prefix}_dep2_name`, `${prefix}_DEP2_NAME`)),
-        toNullable(getEnvValue(`${prefix}_dep3_code`, `${prefix}_DEP3_CODE`)),
-        toNullable(getEnvValue(`${prefix}_dep3_name`, `${prefix}_DEP3_NAME`))
-    ].join('|');
-
-    return new Set([
-        toDepartmentKey('MASTER_ADMIN'),
-        toDepartmentKey('MASTER_USER')
-    ]);
-};
-
-const isMasterDepartmentRow = (row, departmentSet) => {
-    const key = [
-        String(row.dep1_code || '').trim(),
-        String(row.dep1_name || '').trim(),
-        String(row.dep2_code || '').trim(),
-        String(row.dep2_name || '').trim(),
-        String(row.dep3_code || '').trim(),
-        String(row.dep3_name || '').trim()
-    ].join('|');
-    return departmentSet.has(key);
-};
+import { getEnvValue } from '../utils/envUtils.js';
+import {
+    safeNumber,
+    safeDivide,
+    safeRate,
+    formatTokyoYmd,
+    isValidYmd,
+    buildAnalysisDateRange,
+    buildDateContext,
+    resolveRequestedScope,
+    getDepartmentFilters
+} from '../utils/dashboardUtils.js';
+import {
+    getMasterUserIdentities,
+    buildMasterDepartmentSet,
+    isMasterDepartmentRow
+} from '../utils/masterIdentityUtils.js';
 
 export const getOperationKpiSummary = async (req, res, next) => {
     try {
         const pool = getPool();
         const masterIdentities = getMasterUserIdentities();
-        const requestedScope = req.query?.scope === 'previous' ? 'previous' : 'current';
-        const dateContext = buildDateContext(requestedScope);
+        const dateContext = buildDateContext(resolveRequestedScope(req.query));
 
         const [dauMetrics, ragMetrics, retentionMetrics, errorMetrics] = await Promise.all([
             dashboardModel.getDauMetrics(pool, masterIdentities, dateContext),
@@ -205,8 +81,7 @@ export const getOperationTrend = async (req, res, next) => {
     try {
         const pool = getPool();
         const masterIdentities = getMasterUserIdentities();
-        const requestedScope = req.query?.scope === 'previous' ? 'previous' : 'current';
-        const dateContext = buildDateContext(requestedScope);
+        const dateContext = buildDateContext(resolveRequestedScope(req.query));
 
         const trendRows = await dashboardModel.getOperationTrendSeries(pool, masterIdentities, dateContext);
 
@@ -232,8 +107,7 @@ export const getOperationRagQuality = async (req, res, next) => {
     try {
         const pool = getPool();
         const masterIdentities = getMasterUserIdentities();
-        const requestedScope = req.query?.scope === 'previous' ? 'previous' : 'current';
-        const dateContext = buildDateContext(requestedScope);
+        const dateContext = buildDateContext(resolveRequestedScope(req.query));
 
         const ragQualityMetrics = await dashboardModel.getRagQualityMetrics(pool, masterIdentities, dateContext);
 
@@ -263,8 +137,7 @@ export const getOperationCost = async (req, res, next) => {
     try {
         const pool = getPool();
         const masterIdentities = getMasterUserIdentities();
-        const requestedScope = req.query?.scope === 'previous' ? 'previous' : 'current';
-        const dateContext = buildDateContext(requestedScope);
+        const dateContext = buildDateContext(resolveRequestedScope(req.query));
 
         const tokenMetrics = await dashboardModel.getCostTokenMetrics(pool, masterIdentities, dateContext);
 
@@ -303,8 +176,7 @@ export const getLowUsageDepartmentRanking = async (req, res, next) => {
     try {
         const pool = getPool();
         const masterIdentities = getMasterUserIdentities();
-        const requestedScope = req.query?.scope === 'previous' ? 'previous' : 'current';
-        const dateContext = buildDateContext(requestedScope);
+        const dateContext = buildDateContext(resolveRequestedScope(req.query));
         const masterDepartmentSet = buildMasterDepartmentSet();
 
         const rankingRows = await dashboardModel.getLowUsageDepartments(pool, masterIdentities, dateContext);
@@ -343,9 +215,7 @@ export const getAnalysisActiveUserTrend = async (req, res, next) => {
         const masterIdentities = getMasterUserIdentities();
 
         const { period, fromDate, toDate } = buildAnalysisDateRange(req.query || {});
-        const dep1Name = String(req.query?.dep1Name || '').trim() || null;
-        const dep2Name = String(req.query?.dep2Name || '').trim() || null;
-        const dep3Name = String(req.query?.dep3Name || '').trim() || null;
+        const { dep1Name, dep2Name, dep3Name } = getDepartmentFilters(req.query);
 
         const rows = await dashboardModel.getAnalysisActiveUserTrend(pool, masterIdentities, {
             fromDate,
@@ -380,9 +250,7 @@ export const getAnalysisRagQualityTrend = async (req, res, next) => {
         const masterIdentities = getMasterUserIdentities();
 
         const { period, fromDate, toDate } = buildAnalysisDateRange(req.query || {});
-        const dep1Name = String(req.query?.dep1Name || '').trim() || null;
-        const dep2Name = String(req.query?.dep2Name || '').trim() || null;
-        const dep3Name = String(req.query?.dep3Name || '').trim() || null;
+        const { dep1Name, dep2Name, dep3Name } = getDepartmentFilters(req.query);
 
         const rows = await dashboardModel.getAnalysisRagQualityTrend(pool, masterIdentities, {
             fromDate,
@@ -431,9 +299,7 @@ export const getAnalysisRagQualityDailyDetails = async (req, res, next) => {
             return next(new AppError('targetDate は YYYY-MM-DD 形式で指定してください', 400));
         }
 
-        const dep1Name = String(req.query?.dep1Name || '').trim() || null;
-        const dep2Name = String(req.query?.dep2Name || '').trim() || null;
-        const dep3Name = String(req.query?.dep3Name || '').trim() || null;
+        const { dep1Name, dep2Name, dep3Name } = getDepartmentFilters(req.query);
 
         const rows = await dashboardModel.getAnalysisRagQualityDailyDetails(pool, masterIdentities, {
             targetDate,
@@ -478,9 +344,7 @@ export const getAnalysisDepartmentUsage = async (req, res, next) => {
         const masterIdentities = getMasterUserIdentities();
 
         const { period, fromDate, toDate } = buildAnalysisDateRange(req.query || {});
-        const dep1Name = String(req.query?.dep1Name || '').trim() || null;
-        const dep2Name = String(req.query?.dep2Name || '').trim() || null;
-        const dep3Name = String(req.query?.dep3Name || '').trim() || null;
+        const { dep1Name, dep2Name, dep3Name } = getDepartmentFilters(req.query);
         const inputRatePer1kUsd = safeRate(getEnvValue('OPENAI_INPUT_COST_PER_1K_USD', 'COST_INPUT_USD_PER_1K'), 0.00015);
         const outputRatePer1kUsd = safeRate(getEnvValue('OPENAI_OUTPUT_COST_PER_1K_USD', 'COST_OUTPUT_USD_PER_1K'), 0.0006);
 
@@ -541,9 +405,7 @@ export const getAnalysisDepartmentMembers = async (req, res, next) => {
         const masterIdentities = getMasterUserIdentities();
 
         const { period, fromDate, toDate } = buildAnalysisDateRange(req.query || {});
-        const dep1Name = String(req.query?.dep1Name || '').trim() || null;
-        const dep2Name = String(req.query?.dep2Name || '').trim() || null;
-        const dep3Name = String(req.query?.dep3Name || '').trim() || null;
+        const { dep1Name, dep2Name, dep3Name } = getDepartmentFilters(req.query);
 
         if (!dep1Name && !dep2Name && !dep3Name) {
             return next(new AppError('部署情報が指定されていません', 400));
@@ -602,9 +464,7 @@ export const getAnalysisCostTrend = async (req, res, next) => {
         const pool = getPool();
 
         const { period, fromDate, toDate } = buildAnalysisDateRange(req.query || {});
-        const dep1Name = String(req.query?.dep1Name || '').trim() || null;
-        const dep2Name = String(req.query?.dep2Name || '').trim() || null;
-        const dep3Name = String(req.query?.dep3Name || '').trim() || null;
+        const { dep1Name, dep2Name, dep3Name } = getDepartmentFilters(req.query);
 
         const inputRatePer1kUsd = safeRate(getEnvValue('OPENAI_INPUT_COST_PER_1K_USD', 'COST_INPUT_USD_PER_1K'), 0.00015);
         const outputRatePer1kUsd = safeRate(getEnvValue('OPENAI_OUTPUT_COST_PER_1K_USD', 'COST_OUTPUT_USD_PER_1K'), 0.0006);

@@ -5,151 +5,17 @@ import { getPool } from '../config/db.js';
 import AppError from '../utils/appError.js';
 import { hashPassword } from '../utils/password.js';
 import logger from '../utils/logger.js';
-
-const getEnvValue = (...keys) => {
-    for (const key of keys) {
-        const value = process.env[key];
-        if (value !== undefined && String(value).trim() !== '') {
-            return String(value).trim();
-        }
-    }
-    return '';
-};
-
-const buildMasterUserIdentitySet = () => {
-    const identities = new Set();
-
-    const adminEmployeeNo = getEnvValue('MASTER_ADMIN_EMPLOYEE_NO');
-    const adminEmail = getEnvValue('MASTER_ADMIN_EMAIL');
-    const userEmployeeNo = getEnvValue('MASTER_USER_EMPLOYEE_NO');
-    const userEmail = getEnvValue('MASTER_USER_EMAIL');
-
-    if (adminEmployeeNo) identities.add(`employee_no:${adminEmployeeNo}`);
-    if (adminEmail) identities.add(`email:${adminEmail.toLowerCase()}`);
-    if (userEmployeeNo) identities.add(`employee_no:${userEmployeeNo}`);
-    if (userEmail) identities.add(`email:${userEmail.toLowerCase()}`);
-
-    return identities;
-};
-
-const buildMasterDepartmentSet = () => {
-    const toNullable = (value) => {
-        const normalized = String(value || '').trim();
-        return normalized.length ? normalized : '';
-    };
-
-    const toDepartmentKey = (prefix) => [
-        toNullable(getEnvValue(`${prefix}_dep1_code`, `${prefix}_DEP1_CODE`)),
-        toNullable(getEnvValue(`${prefix}_dep1_name`, `${prefix}_DEP1_NAME`)),
-        toNullable(getEnvValue(`${prefix}_dep2_code`, `${prefix}_DEP2_CODE`)),
-        toNullable(getEnvValue(`${prefix}_dep2_name`, `${prefix}_DEP2_NAME`)),
-        toNullable(getEnvValue(`${prefix}_dep3_code`, `${prefix}_DEP3_CODE`)),
-        toNullable(getEnvValue(`${prefix}_dep3_name`, `${prefix}_DEP3_NAME`))
-    ].join('|');
-
-    return new Set([
-        toDepartmentKey('MASTER_ADMIN'),
-        toDepartmentKey('MASTER_USER')
-    ]);
-};
-
-const isMasterUserRow = (row, identitySet) => {
-    const employeeNoKey = `employee_no:${String(row.employee_no || '').trim()}`;
-    const emailKey = `email:${String(row.email || '').trim().toLowerCase()}`;
-    return identitySet.has(employeeNoKey) || identitySet.has(emailKey);
-};
-
-const isMasterDepartmentRow = (row, departmentSet) => {
-    const key = [
-        String(row.dep1_code || '').trim(),
-        String(row.dep1_name || '').trim(),
-        String(row.dep2_code || '').trim(),
-        String(row.dep2_name || '').trim(),
-        String(row.dep3_code || '').trim(),
-        String(row.dep3_name || '').trim()
-    ].join('|');
-    return departmentSet.has(key);
-};
-
-const CSV_HEADERS = [
-    'employee_no',
-    'username',
-    'email',
-    'role',
-    'dep1_code',
-    'dep1_name',
-    'dep2_code',
-    'dep2_name',
-    'dep3_code',
-    'dep3_name'
-];
-
-const parseCsvLine = (line) => {
-    const values = [];
-    let current = '';
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-
-        if (char === '"') {
-            if (inQuotes && line[i + 1] === '"') {
-                current += '"';
-                i++;
-            } else {
-                inQuotes = !inQuotes;
-            }
-            continue;
-        }
-
-        if (char === ',' && !inQuotes) {
-            values.push(current.trim());
-            current = '';
-            continue;
-        }
-
-        current += char;
-    }
-    values.push(current.trim());
-    return values;
-};
-
-const parseCsv = (csvContent) => {
-    const normalized = String(csvContent || '')
-        .replace(/^\uFEFF/, '')
-        .replace(/\r\n/g, '\n')
-        .replace(/\r/g, '\n');
-
-    const lines = normalized
-        .split('\n')
-        .map((line) => line.trim())
-        .filter((line) => line.length > 0);
-
-    if (lines.length < 2) {
-        return [];
-    }
-
-    const headerColumns = parseCsvLine(lines[0]).map((col) => col.replace(/^\uFEFF/, '').trim());
-    const rows = [];
-
-    for (let i = 1; i < lines.length; i++) {
-        const values = parseCsvLine(lines[i]);
-        const row = {};
-
-        headerColumns.forEach((header, idx) => {
-            row[header] = (values[idx] || '').trim();
-        });
-
-        rows.push(row);
-    }
-
-    return rows;
-};
-
-const normalizeDepartmentValue = (value) => {
-    const normalized = String(value || '').trim();
-    return normalized.length > 0 ? normalized : null;
-};
+import {
+    buildMasterDepartmentSet,
+    buildMasterUserIdentitySet,
+    isMasterDepartmentRow,
+    isMasterUserRow
+} from '../utils/masterIdentityUtils.js';
+import {
+    CSV_HEADERS,
+    parseCsv,
+    normalizeDepartmentValue
+} from '../utils/csvUtils.js';
 
 export const downloadUserCsvTemplate = async (req, res, next) => {
     try {
