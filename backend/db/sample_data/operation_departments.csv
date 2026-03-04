@@ -1,0 +1,6 @@
+dep1_code,dep1_name,dep2_code,dep2_name,dep3_code,dep3_name
+CORP,コーポレート,HR,人事部,REC,採用課
+CORP,コーポレート,FIN,経理部,ACC,会計課
+BIZ,ビジネス,SALES,営業部,ENT,法人営業課
+BIZ,ビジネス,CS,カスタマーサクセス,ONB,オンボーディング課
+TECH,テクノロジー,ENG,開発部,PLT,プラットフォーム課

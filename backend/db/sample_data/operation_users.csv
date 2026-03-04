@@ -1,0 +1,6 @@
+employee_no,user_name,email,role,dep1_code,dep1_name,dep2_code,dep2_name,dep3_code,dep3_name
+100001,田中一郎,sample.op.100001@example.com,user,CORP,コーポレート,HR,人事部,REC,採用課
+100002,佐藤花子,sample.op.100002@example.com,user,TECH,テクノロジー,ENG,開発部,PLT,プラットフォーム課
+100003,鈴木次郎,sample.op.100003@example.com,user,BIZ,ビジネス,SALES,営業部,ENT,法人営業課
+100004,高橋美咲,sample.op.100004@example.com,admin,CORP,コーポレート,FIN,経理部,ACC,会計課
+100005,伊藤健太,sample.op.100005@example.com,user,BIZ,ビジネス,CS,カスタマーサクセス,ONB,オンボーディング課
