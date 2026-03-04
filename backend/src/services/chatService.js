@@ -1,6 +1,7 @@
 import { chatModel } from '../models/chatModel.js';
 import { llmService } from './llmService.js';
 import { ragService } from './ragService.js';
+import { estimateMessagesTokenCount, estimateTokenCount } from '../utils/tokenEstimator.js';
 
 export const chatService = {
     async createThread(pool, userId, title, modelName = 'gpt-4o-mini', documentId = null) {
@@ -53,8 +54,14 @@ export const chatService = {
             throw new Error('Thread not found');
         }
 
+        const userMessageTokenCount = estimateTokenCount(userMessage);
         await chatModel.saveMessage({
-            pool, threadId, sender: 'user', content: userMessage
+            pool,
+            threadId,
+            sender: 'user',
+            content: userMessage,
+            inputTokenCount: userMessageTokenCount,
+            outputTokenCount: 0
         });
         await chatModel.updateThreadTimestamp(pool, threadId);
 
@@ -101,6 +108,32 @@ ${contextText}`
         const reader = llmStreamResponse.body.getReader();
         const decoder = new TextDecoder();
         let fullResponse = '';
+        let lineBuffer = '';
+        let assistantTokenUsage = null;
+
+        const parseEventLine = (line) => {
+            try {
+                const parsed = JSON.parse(line);
+                return parsed && typeof parsed === 'object' ? parsed : null;
+            } catch {
+                return null;
+            }
+        };
+
+        const handleEvent = (event) => {
+            if (!event || !event.type) return;
+
+            if (event.type === 'text' && typeof event.content === 'string') {
+                fullResponse += event.content;
+            }
+
+            if (event.type === 'usage') {
+                assistantTokenUsage = {
+                    inputTokenCount: Number(event.input_tokens || 0),
+                    outputTokenCount: Number(event.output_tokens || 0)
+                };
+            }
+        };
 
         try {
             while (true) {
@@ -108,19 +141,54 @@ ${contextText}`
                 if (done) break;
                 
                 const chunk = decoder.decode(value, { stream: true });
-                fullResponse += chunk;
-                yield chunk;
+                lineBuffer += chunk;
+
+                const lines = lineBuffer.split('\n');
+                lineBuffer = lines.pop() || '';
+
+                for (const rawLine of lines) {
+                    const line = rawLine.trim();
+                    if (!line) continue;
+
+                    const event = parseEventLine(line);
+                    handleEvent(event);
+
+                    if (event?.type === 'text' && typeof event.content === 'string') {
+                        yield event.content;
+                    }
+                }
+            }
+
+            const remaining = lineBuffer.trim();
+            if (remaining) {
+                const event = parseEventLine(remaining);
+                handleEvent(event);
+                if (event?.type === 'text' && typeof event.content === 'string') {
+                    yield event.content;
+                }
             }
         } finally {
             reader.releaseLock();
         }
+
+        const assistantInputTokenCount =
+            assistantTokenUsage && assistantTokenUsage.inputTokenCount > 0
+                ? assistantTokenUsage.inputTokenCount
+                : estimateMessagesTokenCount(messages);
+
+        const assistantOutputTokenCount =
+            assistantTokenUsage && assistantTokenUsage.outputTokenCount > 0
+                ? assistantTokenUsage.outputTokenCount
+                : estimateTokenCount(fullResponse);
 
         // 7. アシスタントメッセージ保存
         const savedMessage = await chatModel.saveMessage({
             pool,
             threadId,
             sender: 'assistant',
-            content: fullResponse
+            content: fullResponse,
+            inputTokenCount: assistantInputTokenCount,
+            outputTokenCount: assistantOutputTokenCount
         });
 
         if (usedReferences.length > 0 && savedMessage) {

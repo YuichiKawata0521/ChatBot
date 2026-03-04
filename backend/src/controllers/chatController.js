@@ -1,7 +1,9 @@
 import { chatService } from '../services/chatService.js';
+import { chatModel } from '../models/chatModel.js';
 import { getPool } from '../config/db.js';
 import logger from '../utils/logger.js';
 import { llmService } from '../services/llmService.js';
+import { estimateTokenCount } from '../utils/tokenEstimator.js';
 
 // スレッド作成
 export const createThread = async (req, res, next) => {
@@ -166,18 +168,75 @@ export const deleteAllThreads = async (req, res, next) => {
 
 export const executeRDDAgent = async (req, res, next) => {
     try {
+        const pool = getPool();
+        const userId = req.session?.user?.id ?? null;
         const response = await llmService.fetchRDDAgent(req.body);
         const result = await response.json();
+        const draftText = result?.draft || '';
+        const serializedPayload = JSON.stringify(req.body || {});
+        const usage = result?.token_usage || result?.tokenUsage || {};
+        const tokenUsage = {
+            inputTokenCount: Number(usage.input_tokens || usage.inputTokenCount || 0) || estimateTokenCount(serializedPayload),
+            outputTokenCount: Number(usage.output_tokens || usage.outputTokenCount || 0) || estimateTokenCount(draftText)
+        };
+
+        if (userId) {
+            try {
+                const agentThread = await chatModel.createThread(
+                    pool,
+                    userId,
+                    null,
+                    'RDD Agent Execution',
+                    'agent',
+                    'gpt-4o-mini',
+                    null
+                );
+
+                await pool.query(
+                    `UPDATE threads SET show_history = true WHERE id = $1`,
+                    [agentThread.id]
+                );
+
+                await chatModel.saveMessage({
+                    pool,
+                    threadId: agentThread.id,
+                    sender: 'user',
+                    content: serializedPayload,
+                    inputTokenCount: tokenUsage.inputTokenCount,
+                    outputTokenCount: 0
+                });
+
+                await chatModel.saveMessage({
+                    pool,
+                    threadId: agentThread.id,
+                    sender: 'assistant',
+                    content: draftText,
+                    inputTokenCount: tokenUsage.inputTokenCount,
+                    outputTokenCount: tokenUsage.outputTokenCount
+                });
+            } catch (persistError) {
+                logger.warn('RDDエージェントのトークン情報保存に失敗しました', {
+                    option: {
+                        user_id: userId,
+                        detail: persistError.message
+                    }
+                });
+            }
+        }
 
         logger.info('RDDエージェントを実行しました', {
             option: {
-                user_id: req.session?.user?.id ?? null
+                user_id: userId,
+                token_usage: tokenUsage
             }
         });
 
         res.status(200).json({
             success: true,
-            data: result
+            data: {
+                ...result,
+                tokenUsage
+            }
         });
     } catch (error) {
         logger.error('RDDエージェント実行に失敗しました', {
