@@ -9,5 +9,5 @@ router = APIRouter()
 async def chat_endpoint(req: ChatRequest):
     return StreamingResponse(
         chat_stream_service(req.messages, req.model_name, req.temperature),
-        media_type="text/event-stream"
+        media_type="application/x-ndjson"
     )
