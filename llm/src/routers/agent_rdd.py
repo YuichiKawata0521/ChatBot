@@ -8,5 +8,5 @@ router = APIRouter()
 @router.post("/agent/rdd")
 def execute_rdd_agent(payload: InterviewPayload):
     formatted_request = build_user_request(payload.dict())
-    draft = create_first_draft(formatted_request) 
-    return {"draft": draft}
+    result = create_first_draft(formatted_request)
+    return result
