@@ -1,0 +1,3 @@
+employee_no,username,email,role,dep1_code,dep1_name,dep2_code,dep2_name,dep3_code,dep3_name
+100001,山田太郎,taro.yamada@example.com,user,HQ01,管理本部,IT01,情報システム部,DEV01,開発課
+100002,鈴木花子,hanako.suzuki@example.com,admin,HQ02,営業本部,SA01,第一営業部,,
