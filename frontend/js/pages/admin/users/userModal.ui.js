@@ -9,15 +9,21 @@ export class userModalUI {
         this.fileInput = document.getElementById('csv-file-input');
         this.selectedFileName = document.getElementById('selected-file-name');
         this.uploadBtn = document.getElementById('btn-upload-csv');
+        this.department1Select = this.singleForm?.elements['department1'];
+        this.department2Select = this.singleForm?.elements['department2'];
+        this.department3Select = this.singleForm?.elements['department3'];
+        this.departmentIdInput = this.singleForm?.elements['department_id'];
         this.dropAreaDefaultNodes = this.dropArea
             ? Array.from(this.dropArea.children).filter((el) => el.id !== 'selected-file-name')
             : [];
 
         this.callbacks = callbacks;
         this.selectedCsvFile = null;
+        this.departments = [];
 
         this._initTabs();
         this._initDragAndDrop();
+        this._initDepartmentDropdowns();
         this._initFormSubmits();
         this._initCloseHandler();
     }
@@ -26,6 +32,7 @@ export class userModalUI {
         if (mode === 'create') {
             this.modalTitle.textContent = '新規ユーザー登録';
             this.singleForm.reset();
+            this._initializeDepartmentFields();
             this.csvForm.reset();
             this._resetCsvArea();
             this.tabContainer.style.display = 'flex';
@@ -37,6 +44,11 @@ export class userModalUI {
             this._fillFormData(userData);
         }
         this.modal.style.display = 'flex';
+    }
+
+    setDepartments(departments = []) {
+        this.departments = Array.isArray(departments) ? departments : [];
+        this._initializeDepartmentFields();
     }
 
     close() {
@@ -101,6 +113,130 @@ export class userModalUI {
             const file = e.target.files?.[0] || null;
             this._updateCsvPreview(file);
         });
+    }
+
+    _initDepartmentDropdowns() {
+        if (!this.department1Select || !this.department2Select || !this.department3Select) return;
+
+        this.department1Select.addEventListener('change', () => {
+            this._renderDepartment2Options(this.department1Select.value);
+            this._renderDepartment3Options(this.department1Select.value, this.department2Select.value);
+            this._syncDepartmentId();
+        });
+
+        this.department2Select.addEventListener('change', () => {
+            this._renderDepartment3Options(this.department1Select.value, this.department2Select.value);
+            this._syncDepartmentId();
+        });
+
+        this.department3Select.addEventListener('change', () => {
+            this._syncDepartmentId();
+        });
+    }
+
+    _initializeDepartmentFields() {
+        if (!this.department1Select || !this.department2Select || !this.department3Select) return;
+
+        this._renderDepartment1Options();
+        this._renderDepartment2Options('');
+        this._renderDepartment3Options('', '');
+        this._syncDepartmentId();
+    }
+
+    _renderDepartment1Options(selectedValue = '') {
+        const options = this._uniqueValues(
+            this.departments.map((row) => row.dep1_name)
+        );
+        this._renderSelect(this.department1Select, options, selectedValue);
+    }
+
+    _renderDepartment2Options(dep1Name, selectedValue = '') {
+        const options = this._uniqueValues(
+            this.departments
+                .filter((row) => (row.dep1_name || '') === (dep1Name || ''))
+                .map((row) => row.dep2_name)
+        );
+        this._renderSelect(this.department2Select, options, selectedValue);
+    }
+
+    _renderDepartment3Options(dep1Name, dep2Name, selectedValue = '') {
+        const options = this._uniqueValues(
+            this.departments
+                .filter((row) => (row.dep1_name || '') === (dep1Name || ''))
+                .filter((row) => (row.dep2_name || '') === (dep2Name || ''))
+                .map((row) => row.dep3_name)
+        );
+        this._renderSelect(this.department3Select, options, selectedValue);
+    }
+
+    _renderSelect(selectEl, values, selectedValue = '') {
+        if (!selectEl) return;
+
+        selectEl.innerHTML = '<option value="">選択してください</option>';
+        values.forEach((value) => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = value;
+            selectEl.appendChild(option);
+        });
+        selectEl.value = selectedValue && values.includes(selectedValue) ? selectedValue : '';
+    }
+
+    _uniqueValues(values) {
+        return [...new Set((values || []).filter((value) => !!value))];
+    }
+
+    _syncDepartmentId() {
+        if (!this.departmentIdInput) return;
+
+        const dep1Name = this.department1Select?.value || '';
+        const dep2Name = this.department2Select?.value || '';
+        const dep3Name = this.department3Select?.value || '';
+
+        const exactMatch = this.departments.find((row) =>
+            (row.dep1_name || '') === dep1Name &&
+            (row.dep2_name || '') === dep2Name &&
+            (row.dep3_name || '') === dep3Name
+        );
+        if (exactMatch) {
+            this.departmentIdInput.value = String(exactMatch.id);
+            return;
+        }
+
+        if (dep2Name && !dep3Name) {
+            const dep2LevelMatch = this.departments.find((row) =>
+                (row.dep1_name || '') === dep1Name &&
+                (row.dep2_name || '') === dep2Name &&
+                !row.dep3_name
+            );
+            this.departmentIdInput.value = dep2LevelMatch ? String(dep2LevelMatch.id) : '';
+            return;
+        }
+
+        if (dep1Name && !dep2Name) {
+            const dep1LevelMatch = this.departments.find((row) =>
+                (row.dep1_name || '') === dep1Name &&
+                !row.dep2_name &&
+                !row.dep3_name
+            );
+            this.departmentIdInput.value = dep1LevelMatch ? String(dep1LevelMatch.id) : '';
+            return;
+        }
+
+        this.departmentIdInput.value = '';
+    }
+
+    _selectDepartmentById(departmentId) {
+        const target = this.departments.find((row) => String(row.id) === String(departmentId));
+        if (!target) {
+            this._initializeDepartmentFields();
+            return;
+        }
+
+        this._renderDepartment1Options(target.dep1_name || '');
+        this._renderDepartment2Options(target.dep1_name || '', target.dep2_name || '');
+        this._renderDepartment3Options(target.dep1_name || '', target.dep2_name || '', target.dep3_name || '');
+        this._syncDepartmentId();
     }
 
     _updateCsvPreview(file) {
@@ -204,5 +340,7 @@ export class userModalUI {
         if (this.singleForm.elements['password']) {
             this.singleForm.elements['password'].value = '';
         }
+
+        this._selectDepartmentById(userData.department_id);
     }
 }

@@ -57,7 +57,11 @@ export class userTableUI {
                 <td>${this._escapeHTML(user.employee_no)}</td>
                 <td>${this._escapeHTML(user.username)}</td>
                 <td>${this._escapeHTML(user.email)}</td>
-                <td>${this._escapeHTML(user.department)}</td>
+                <td>
+                    <div>${this._escapeHTML(user.dep1_name || '')}</div>
+                    <div>${this._escapeHTML(user.dep2_name || '')}</div>
+                    <div>${this._escapeHTML(user.dep3_name || '')}</div>
+                </td>
                 <td><span class="badge ${roleBadgeClass}">${roleText}</span></td>
                 <td><span class="status-dot ${statusClass}"></span> ${statusText}</td>
                 <td>

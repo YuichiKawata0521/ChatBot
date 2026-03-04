@@ -7,6 +7,11 @@ export class userService {
         return response?.data ?? [];
     }
 
+    async getDepartments() {
+        const response = await ApiClient.get('/users/departments');
+        return response?.data?.departments ?? [];
+    }
+
     async createUser(userData) {
         return await ApiClient.post('/users/', userData)
     }

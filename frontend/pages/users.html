@@ -31,37 +31,46 @@
                     <label>キーワード検索</label>
                     <div class="input-icon-wrapper">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" placeholder="社員番号 または 氏名">
+                        <input type="text" id="filter-keyword" placeholder="社員番号 または 氏名">
                     </div>
                 </div>
                 <div class="filter-item">
-                    <label>部署</label>
-                    <select>
+                    <label>部署（本部）</label>
+                    <select id="filter-department1">
                         <option value="">全部署</option>
-                        <option>開発部</option>
-                        <option>営業部</option>
-                        <option>人事部</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>部署（部）</label>
+                    <select id="filter-department2">
+                        <option value="">全部署</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>部署（課）</label>
+                    <select id="filter-department3">
+                        <option value="">全部署</option>
                     </select>
                 </div>
                 <div class="filter-item">
                     <label>権限</label>
-                    <select>
+                    <select id="filter-role">
                         <option value="">全権限</option>
-                        <option>Admin (管理者)</option>
-                        <option>User (一般)</option>
+                        <option value="admin">Admin (管理者)</option>
+                        <option value="user">User (一般)</option>
                     </select>
                 </div>
                 <div class="filter-item">
                     <label>状態</label>
-                    <select>
+                    <select id="filter-status">
                         <option value="">全て</option>
-                        <option>有効</option>
-                        <option>無効</option>
+                        <option value="active">有効</option>
+                        <option value="inactive">無効</option>
                     </select>
                 </div>
                 <div class="filter-item actions">
                     <label>&nbsp;</label>
-                    <button type="button" class="btn-secondary">検索</button>
+                    <button type="button" class="btn-secondary" id="btn-user-clear">クリア</button>
                 </div>
             </form>
         </div>
@@ -157,12 +166,25 @@
                         </div>
                         <div class="form-row">
                             <div class="form-group half">
-                                <label>部署</label>
-                                <select name="department">
-                                    <option value="開発部">開発部</option>
-                                    <option value="営業部">営業部</option>
-                                    <option value="人事部">人事部</option>
+                                <label>部署（本部）</label>
+                                <select name="department1">
+                                    <option value="">選択してください</option>
                                 </select>
+                            </div>
+                            <div class="form-group half">
+                                <label>部署（部）</label>
+                                <select name="department2">
+                                    <option value="">選択してください</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label>部署（課）</label>
+                                <select name="department3">
+                                    <option value="">選択してください</option>
+                                </select>
+                                <input type="hidden" name="department_id">
                             </div>
                             <div class="form-group half">
                                 <label>権限</label>
@@ -188,7 +210,7 @@
                     <form id="csv-user-form" class="modal-form">
                         <div class="csv-instruction">
                             <p>指定のフォーマットのCSVファイルをアップロードしてください。</p>
-                            <a href="/api/users/csv-template" class="download-link"><i class="fa-solid fa-download"></i> サンプルCSVをダウンロード</a>
+                            <a href="/api/v1/users/csv-template" class="download-link"><i class="fa-solid fa-download"></i> サンプルCSVをダウンロード</a>
                         </div>
                         
                         <div class="file-drop-area" id="csv-drop-area">
@@ -212,7 +234,5 @@
     </div>
 
     <script type="module" src="../js/pages/admin/users/main.js"></script>
-</body>
-</html>
 </body>
 </html>
