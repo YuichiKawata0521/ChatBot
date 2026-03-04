@@ -276,7 +276,8 @@ export const uploadUsersCsv = async (req, res, next) => {
                     email,
                     password: hashedPassword,
                     department_id,
-                    role
+                    role,
+                    registered_flag: false
                 });
                 insertedCount++;
             }
@@ -366,7 +367,7 @@ export const getUsers = async (req, res, next) => {
 
 export const createUser = async (req, res, next) => {
     try {
-        const { employee_no, username, email, department_id, role } = req.body;
+        const { employee_no, username, email, password, department_id, role } = req.body;
         const pool = getPool();
 
         if (!employee_no || !username || !email) {
@@ -374,13 +375,16 @@ export const createUser = async (req, res, next) => {
             return next(new AppError('社員番号、ユーザー名、メールアドレスは必須です', 400));
         }
 
+        if (!password || String(password).trim().length === 0) {
+            return next(new AppError('新規登録時はパスワードが必須です', 400));
+        }
+
         const existingUser = await userModel.getUserByEmployeeNoOrEmail(pool, employee_no, email);
         if (existingUser) {
             return next(new AppError('指定された社員番号またはメールアドレスはすでに登録されています', 400));
         }
 
-        const dummyPassword = crypto.randomBytes(16).toString('hex');
-        const hashedPassword = await hashPassword(dummyPassword);
+        const hashedPassword = await hashPassword(password);
 
         const userData = {
             employee_no,
@@ -388,7 +392,8 @@ export const createUser = async (req, res, next) => {
             email,
             password: hashedPassword,
             department_id: department_id || null,
-            role: role || 'user'
+            role: role || 'user',
+            registered_flag: true
         };
 
         const newUser = await userModel.createUser(pool, userData);
@@ -403,6 +408,54 @@ export const createUser = async (req, res, next) => {
     } catch (error) {
         logger.error('ユーザー登録エラー', {option: {detail: error.message}});
         return next(new AppError('ユーザー登録に失敗しました', 500));
+    }
+};
+
+export const updateUser = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { employee_no, username, email, department_id, role } = req.body;
+        const pool = getPool();
+
+        if (!id) {
+            return next(new AppError('ユーザーIDが欠落しています', 400));
+        }
+
+        if (!employee_no || !username || !email) {
+            return next(new AppError('社員番号、ユーザー名、メールアドレスは必須です', 400));
+        }
+
+        const existingByEmployeeNo = await userModel.getUserByEmployeeNo(pool, employee_no);
+        if (existingByEmployeeNo && String(existingByEmployeeNo.id) !== String(id)) {
+            return next(new AppError('指定された社員番号はすでに登録されています', 400));
+        }
+
+        const existingByEmail = await userModel.getUserByEmail(pool, email);
+        if (existingByEmail && String(existingByEmail.id) !== String(id)) {
+            return next(new AppError('指定されたメールアドレスはすでに登録されています', 400));
+        }
+
+        const updatedUser = await userModel.updateUserById(pool, id, {
+            employee_no,
+            username,
+            email,
+            department_id: department_id || null,
+            role: role || 'user'
+        });
+
+        if (!updatedUser) {
+            return next(new AppError('更新対象ユーザーが見つかりません', 404));
+        }
+
+        logger.info('ユーザー更新成功', {option: {id: updatedUser.id, employee_no: updatedUser.employee_no}});
+        res.status(200).json({
+            success: true,
+            message: 'ユーザー情報を更新しました',
+            data: updatedUser
+        });
+    } catch (error) {
+        logger.error('ユーザー更新エラー', {option: {id: req.params?.id, detail: error.message}});
+        return next(new AppError('ユーザー更新に失敗しました', 500));
     }
 };
 

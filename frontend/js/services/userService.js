@@ -16,6 +16,10 @@ export class userService {
         return await ApiClient.post('/users/', userData)
     }
 
+    async updateUser(userId, userData) {
+        return await ApiClient.put(`/users/${userId}`, userData);
+    }
+
     async deleteUser(userId) {
         return ApiClient.delete(`/users/${userId}`);
     }

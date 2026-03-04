@@ -143,13 +143,29 @@ export const updateUserById = async (pool, userId, userData) => {
 };
 
 export const createUser = async (pool, userData) => {
-    const { employee_no, username, email, password, department_id, role } = userData;
+    const {
+        employee_no,
+        username,
+        email,
+        password,
+        department_id,
+        role,
+        registered_flag = false
+    } = userData;
     const sql = `
-        INSERT INTO users (employee_no, user_name, email, password, department_id, role)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO users (employee_no, user_name, email, password, department_id, role, registered_flag)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING id, employee_no, user_name AS username, email, role;
     `;
-    const result = await pool.query(sql, [employee_no, username, email, password, department_id || null, role || 'user']);
+    const result = await pool.query(sql, [
+        employee_no,
+        username,
+        email,
+        password,
+        department_id || null,
+        role || 'user',
+        registered_flag
+    ]);
     return result.rows[0];
 }
 
