@@ -11,51 +11,65 @@
         <div class="header-logo">ChatBot Admin / 利用分析</div>
         <div class="header-actions">
             <span class="user-name">管理者 様</span>
-            <a href="./index.html" class="header-link">← 管理メニューへ</a>
+            <a href="/admin" class="header-link">← 管理メニューへ</a>
         </div>
     </header>
 
     <div class="dashboard-container">
         
         <div class="card">
-            <form class="filter-bar">
+            <form class="filter-bar" style="align-items:center; flex-wrap:nowrap;">
                 <div class="filter-item">
                     <label>期間</label>
-                    <select>
-                        <option>直近30日</option>
-                        <option>今月</option>
-                        <option>先月</option>
-                        <option>カスタム</option>
+                    <select id="analysis-filter-period">
+                        <option value="last30">直近30日</option>
+                        <option value="current">今月</option>
+                        <option value="previous">先月</option>
+                        <option value="custom">カスタム</option>
                     </select>
                 </div>
+                <div class="filter-item" id="analysis-custom-range" style="display:none; min-width:auto;">
+                    <label>カスタム期間</label>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="date" id="analysis-custom-start" style="min-width:auto;">
+                        <span>〜</span>
+                        <input type="date" id="analysis-custom-end" style="min-width:auto;">
+                    </div>
+                </div>
                 <div class="filter-item">
-                    <label>部署</label>
-                    <select>
+                    <label>部署（本部）</label>
+                    <select id="analysis-filter-dep1">
                         <option value="">全部署</option>
-                        <option>開発部</option>
-                        <option>営業部</option>
-                        <option>人事部</option>
                     </select>
                 </div>
                 <div class="filter-item">
-                    <label>モデル</label>
-                    <select>
-                        <option value="">全てのモデル</option>
-                        <option>GPT-4o</option>
-                        <option>GPT-3.5-Turbo</option>
+                    <label>部署（部）</label>
+                    <select id="analysis-filter-dep2">
+                        <option value="">全部署</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>部署（課）</label>
+                    <select id="analysis-filter-dep3">
+                        <option value="">全部署</option>
                     </select>
                 </div>
                 <div class="filter-item">
                     <label>&nbsp;</label>
-                    <button type="button" class="btn-apply">適用</button>
+                    <button id="analysis-btn-apply" type="button" class="btn-apply">適用</button>
+                </div>
+                <div class="filter-item">
+                    <label>&nbsp;</label>
+                    <button id="analysis-btn-clear" type="button" class="btn-secondary">クリア</button>
                 </div>
             </form>
+            <div id="analysis-period-label" style="margin-top:8px; font-size:0.82rem; color:#5c6b7a;">対象期間: --</div>
         </div>
 
         <div class="grid-2-col">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">ユーザーアクティブ推移</h3>
+                    <h3 class="card-title">アクティブユーザー推移</h3>
                 </div>
                 <div class="chart-container-wrapper">
                     <canvas id="activeUserChart"></canvas>
@@ -83,6 +97,20 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">部署別利用割合</h3>
+                    <button id="analysis-department-filter-clear" type="button" style="border:1px solid #d0d7de; background:#fff; color:#2c3e50; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:0.85rem;">
+                        クリア
+                    </button>
+                </div>
+                <div style="padding: 0 10px 8px 10px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content: space-between;">
+                    <select id="analysis-department-filter-dep1" style="min-width:auto; padding:6px 8px; border:1px solid #d0d7de; border-radius:6px;">
+                        <option value="">部署（本部）: 全部署</option>
+                    </select>
+                    <select id="analysis-department-filter-dep2" style="min-width:auto; padding:6px 8px; border:1px solid #d0d7de; border-radius:6px;">
+                        <option value="">部署（部）: 全部署</option>
+                    </select>
+                    <select id="analysis-department-filter-dep3" style="min-width:auto; padding:6px 8px; border:1px solid #d0d7de; border-radius:6px;">
+                        <option value="">部署（課）: 全部署</option>
+                    </select>
                 </div>
                 <div class="chart-container-wrapper" style="height: 250px;"> <canvas id="deptPieChart"></canvas>
                 </div>
@@ -103,25 +131,68 @@
                         <th style="padding: 12px;">推定コスト</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 12px;">開発部</td>
-                        <td style="padding: 12px;">45</td>
-                        <td style="padding: 12px;">1,200</td>
-                        <td style="padding: 12px;">60%</td>
-                        <td style="padding: 12px;">$45.20</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 12px;">営業部</td>
-                        <td style="padding: 12px;">32</td>
-                        <td style="padding: 12px;">850</td>
-                        <td style="padding: 12px;">25%</td>
-                        <td style="padding: 12px;">$12.80</td>
-                    </tr>
-                </tbody>
+                <tbody id="analysis-department-usage-tbody"></tbody>
             </table>
+            <div style="margin-top:8px; font-size:0.82rem; color:#5c6b7a;">部署行または円グラフのセグメントをクリックすると所属社員一覧を表示します</div>
         </div>
 
     </div>
+
+    <div id="analysis-rag-detail-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1200; align-items:center; justify-content:center;">
+        <div style="width:min(1100px, 94vw); max-height:84vh; overflow:auto; background:#fff; border-radius:8px; box-shadow:0 10px 28px rgba(0,0,0,.18);">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #eee;">
+                <div>
+                    <h3 id="analysis-rag-detail-title" style="margin:0; font-size:1rem; color:#2c3e50;">RAG日別質問/回答一覧</h3>
+                    <div id="analysis-rag-detail-summary" style="margin-top:6px; font-size:0.86rem; color:#5c6b7a;">-</div>
+                </div>
+                <button id="analysis-rag-detail-close" type="button" style="border:none; background:transparent; font-size:1.4rem; line-height:1; cursor:pointer; color:#7f8c8d;">×</button>
+            </div>
+            <div style="padding:12px 16px;">
+                <table style="width:100%; border-collapse: collapse; font-size: 0.9rem;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #eee; text-align:left; white-space:nowrap;">
+                            <th style="padding:10px;">日時</th>
+                            <th style="padding:10px;">質問</th>
+                            <th style="padding:10px;">回答</th>
+                            <th style="padding:10px; text-align:center;">hit</th>
+                            <th style="padding:10px; text-align:right;">max score</th>
+                            <th style="padding:10px; text-align:center;">rating</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysis-rag-detail-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="analysis-department-member-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1200; align-items:center; justify-content:center;">
+        <div style="width:min(1050px, 94vw); max-height:84vh; overflow:auto; background:#fff; border-radius:8px; box-shadow:0 10px 28px rgba(0,0,0,.18);">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #eee;">
+                <div>
+                    <h3 id="analysis-department-member-title" style="margin:0; font-size:1rem; color:#2c3e50;">所属社員一覧</h3>
+                    <div id="analysis-department-member-summary" style="margin-top:6px; font-size:0.86rem; color:#5c6b7a;">-</div>
+                </div>
+                <button id="analysis-department-member-close" type="button" style="border:none; background:transparent; font-size:1.4rem; line-height:1; cursor:pointer; color:#7f8c8d;">×</button>
+            </div>
+            <div style="padding:12px 16px;">
+                <table style="width:100%; border-collapse: collapse; font-size: 0.9rem;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #eee; text-align:left; white-space:nowrap;">
+                            <th style="padding:10px;">社員番号</th>
+                            <th style="padding:10px;">氏名</th>
+                            <th style="padding:10px;">メールアドレス</th>
+                            <th style="padding:10px; text-align:right;">期間内メッセージ数</th>
+                            <th style="padding:10px; text-align:right;">RAG利用数</th>
+                            <th style="padding:10px; text-align:right;">RAG利用率</th>
+                            <th style="padding:10px;">最終利用日時</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysis-department-member-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/pages/admin/dashboard_analysis/main.js"></script>
 </body>
 </html>
