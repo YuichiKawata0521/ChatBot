@@ -1,5 +1,15 @@
 import { ApiClient } from '../../common/apiClient.js';
 import { showToast } from '../../common/toast.js';
+import {
+    formatDateTime,
+    parseDateAtStartOfDay,
+    parseDateAtEndOfDay,
+    getLevelBadgeHTML,
+    escapeCsvCell,
+    formatFileTimestamp,
+    resolveUserName,
+    formatContextForCsv
+} from './logHelpers.js';
 
 const state = {
     allLogs: [],
@@ -180,15 +190,6 @@ function renderTable() {
     renderPagination();
 }
 
-// レベルに応じたバッジのHTMLを生成
-function getLevelBadgeHTML(level) {
-    const lower = level.toLowerCase();
-    let badgeClass = 'badge-info';
-    if (lower === 'error') badgeClass = 'badge-error';
-    if (lower === 'warn') badgeClass = 'badge-warn';
-    return `<span class="badge ${badgeClass}">${level.toUpperCase()}</span>`;
-}
-
 // --- Pagination ---
 function renderPagination() {
     dom.pagination.innerHTML = '';
@@ -245,26 +246,6 @@ function closeModal() {
     dom.modal.style.display = 'none';
 }
 
-// --- Utilities ---
-function formatDateTime(isoString) {
-    if (!isoString) return '-';
-    const d = new Date(isoString);
-    const pad = (n) => n.toString().padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}
-
-function parseDateAtStartOfDay(dateValue) {
-    if (!dateValue) return null;
-    const date = new Date(`${dateValue}T00:00:00`);
-    return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function parseDateAtEndOfDay(dateValue) {
-    if (!dateValue) return null;
-    const date = new Date(`${dateValue}T23:59:59.999`);
-    return Number.isNaN(date.getTime()) ? null : date;
-}
-
 function exportFilteredLogsToCsv() {
     if (!state.filteredLogs.length) {
         showToast('エクスポート対象のログがありません');
@@ -316,32 +297,6 @@ function getCurrentPageLogs() {
     const startIdx = (state.currentPage - 1) * state.itemPerPage;
     const endIdx = startIdx + state.itemPerPage;
     return state.filteredLogs.slice(startIdx, endIdx);
-}
-
-function escapeCsvCell(value) {
-    const normalized = String(value ?? '').replace(/\r?\n/g, ' ');
-    return `"${normalized.replace(/"/g, '""')}"`;
-}
-
-function formatFileTimestamp(date) {
-    const pad = (n) => n.toString().padStart(2, '0');
-    return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}_${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
-}
-
-function resolveUserName(log) {
-    if (log?.user_name) return log.user_name;
-    if (log?.context?.option?.user_name) return log.context.option.user_name;
-    if (log?.user_id) return String(log.user_id);
-    return 'system';
-}
-
-function formatContextForCsv(context) {
-    if (!context) return '';
-    try {
-        return JSON.stringify(context);
-    } catch {
-        return String(context);
-    }
 }
 
 
