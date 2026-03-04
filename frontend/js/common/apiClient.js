@@ -98,11 +98,15 @@ export class ApiClient {
         }
     }
 
-    static async put(endpoint) {
+    static async put(endpoint, body = {}) {
         const csrfToken = await this.#getCsrfToken();
-        const headers = {
-            'Content-Type': 'application/json',
-        };
+        const isFormData = body instanceof FormData;
+        const headers = {};
+
+        if (!isFormData) {
+            headers['Content-Type'] = 'application/json';
+        }
+
         if (csrfToken) {
             headers['x-csrf-token'] = csrfToken;
         }
@@ -110,7 +114,8 @@ export class ApiClient {
             const response = await fetch(`${BASE_URL}${endpoint}`, {
                 method: 'PUT',
                 credentials: 'include',
-                headers: headers
+                headers: headers,
+                body: isFormData ? body : JSON.stringify(body)
             });
             const data = await response.json();
 
