@@ -96,9 +96,12 @@
 | 2   | ユーザーID | user_id      | BIGINT      | -  | 不可     | -        | -  | users.id | REFERENCES users(id) ON DELETE CASCADE | 作成者    |
 | 3   | 部署ID    | department_id| BIGINT      | -  | 可      | -        | -  | departments.id | REFERENCES departments(id) | 所属部署（任意） |
 | 4   | タイトル   | title        | TEXT        | -  | 不可     | -        | -  | -        | -                 | スレッド名  |
-| 5   | 作成日時   | created_at   | TIMESTAMPTZ | -  | 不可     | now()    | -  | -        | -                 | 作成日時   |
-| 6   | 更新日時   | updated_at   | TIMESTAMPTZ | -  | 不可     | now()    | -  | -        | -                 | 更新日時   |
-| 7   | 履歴表示   | show_history | BOOLEAN     | -  | 不可     | false    | -  | -        | -                 | 履歴表示可否 |
+| 5   | モード     | mode         | VARCHAR     | 20 | 可      | 'normal' | -  | -        | CHECK (mode IN ('normal','rag','agent')) | スレッド種別 |
+| 6   | モデル名   | model_name   | VARCHAR     | 50 | 可      | 'gpt-4o-mini' | - | - | - | 使用モデル名 |
+| 7   | 対象ドキュメントID | document_id | BIGINT   | -  | 可      | NULL     | -  | documents.id | REFERENCES documents(id) ON DELETE SET NULL | RAG対象文書 |
+| 8   | 作成日時   | created_at   | TIMESTAMPTZ | -  | 不可     | now()    | -  | -        | -                 | 作成日時   |
+| 9   | 更新日時   | updated_at   | TIMESTAMPTZ | -  | 不可     | now()    | -  | -        | -                 | 更新日時   |
+| 10  | 履歴表示   | show_history | BOOLEAN     | -  | 不可     | false    | -  | -        | -                 | 履歴表示可否 |
 
 ## messages (メッセージ)
 
@@ -134,8 +137,25 @@
 | 4   | メッセージ   | message     | TEXT        | -  | 不可     | -        | -  | -  | -  | 要約              |
 | 5   | コンテキスト  | context     | JSONB       | -  | 可      | -        | -  | -  | -  | 付加情報            |
 | 6   | リクエストID | request_id  | TEXT        | -  | 可      | -        | -  | -  | -  | トレース用           |
-| 7   | ユーザーID  | user_id     | BIGINT      | -  | 可      | -        | -  | users.id | -  | 操作者             |
+| 7   | ユーザーID  | user_id     | BIGINT      | -  | 可      | -        | -  | - | -  | 操作者（FK制約なし） |
 | 8   | 部署ID      | department_id | BIGINT    | -  | 可      | -        | -  | departments.id | REFERENCES departments(id) | 関連部署 |
 | 9   | サービス名   | service     | TEXT        | -  | 不可     | -        | -  | -  | -  | api/batch等      |
 | 10  | 環境      | environment | TEXT        | -  | 不可     | -        | -  | -  | -  | prod/stg        |
 | 11  | 作成日時    | created_at  | TIMESTAMPTZ | -  | 不可     | now()    | -  | -  | -  | 発生日時            |
+
+## 付帯定義（インデックス / トリガ）
+
+`backend/db/02_indexes.sql`, `backend/db/03_triggers.sql` で以下を定義している。
+
+### インデックス
+- `idx_sessions_expire` : `sessions(expire)`
+- `idx_users_employee_no_active` : `users(employee_no)`（`deleted_at IS NULL` の部分ユニーク）
+- `idx_child_embedding` : `child_chunks` の `embedding` に対する HNSW インデックス
+- `idx_child_parent` : `child_chunks(parent_chunk_id)`
+- `idx_logs_created_at` : `system_logs(created_at DESC)`
+- `idx_logs_event` : `system_logs(event_type)`
+- `idx_logs_user` : `system_logs(user_id)`
+
+### トリガ
+- `trg_users_updated_at` : `users` 更新時に `updated_at` を自動更新
+- `trg_threads_updated_at` : `threads` 更新時に `updated_at` を自動更新

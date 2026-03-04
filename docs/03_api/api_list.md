@@ -1,89 +1,89 @@
-# APIエンドポイント一覧
+# APIエンドポイント一覧（現行実装準拠）
 
-## 1. 認証 (Auth)
+本ドキュメントは `backend/src/routes` に実装されているルートを基準とする。
 
-ログイン、セッション管理、自分自身の情報取得に関するAPI群です。
+## 1. 共通
 
-| メソッド | エンドポイント | 概要 | 関連画面/機能 |
+| メソッド | エンドポイント | 認証 | 概要 |
 | --- | --- | --- | --- |
-| **POST** | `/api/v1/auth/login` | ログイン (Cookieにセッション発行) | SCR-01 / FN-A01 |
-| **POST** | `/api/v1/auth/logout` | ログアウト (セッション破棄) | 共通 |
-| **GET** | `/api/v1/auth/me` | ログイン中のユーザー情報・権限を取得 | 共通 (初期化時) |
-| **POST** | `/api/v1/auth/register` | ユーザー自身の新規登録 (許可されている場合) | SCR-01 / FN-A02 |
-| **POST** | `/api/v1/auth/password_reset` | 初期パスワード変更や忘れた場合のリセット | 共通 |
+| **GET** | `/api/health` | 不要 | ヘルスチェック |
+| **GET** | `/api/v1/csrf-token` | 不要 | CSRFトークン取得（セッション中は user 情報も返却） |
 
+## 2. 認証 (Auth)
 
-## 2. チャット (Chat)
-
-チャットスレッドとメッセージの送受信を行う、アプリの中核機能です。
-
-| メソッド | エンドポイント | 概要 | 関連画面/機能 |
+| メソッド | エンドポイント | 認証 | 概要 |
 | --- | --- | --- | --- |
-| **GET** | `/api/v1/threads` | 自分のスレッド一覧を取得 (ページネーション) | SCR-02 / FN-B01 |
-| **POST** | `/api/v1/threads` | 新規スレッド作成 | SCR-02 / FN-B02 |
-| **PATCH** | `/api/v1/threads/{threadId}` | スレッドタイトル等の更新 | SCR-02 / FN-B06 |
-| **DELETE** | `/api/v1/threads/{threadId}` | スレッド削除 (論理削除) | SCR-02 / FN-B06 |
-| **GET** | `/api/v1/threads/{threadId}/messages` | スレッド内のメッセージ履歴取得 | SCR-02 / FN-B04 |
-| **POST** | `/api/v1/threads/{threadId}/messages` | メッセージ送信 (LLM応答生成)<br><br>※Bodyで `useRag: true/false` を指定 | SCR-02 / FN-B03, FN-B05 |
-| **POST** | `/api/v1/messages/{messageId}/rating` | 回答へのGood/Bad評価登録 | SCR-02 / FN-B07 |
+| **POST** | `/api/v1/auth/login` | 不要 | ログイン（セッション開始） |
+| **POST** | `/api/v1/auth/logout` | 必須 | ログアウト（セッション破棄） |
+| **GET** | `/api/v1/auth/me` | 必須 | ログイン中ユーザー情報を取得 |
+| **POST** | `/api/v1/auth/register` | 不要 | ユーザー登録 |
 
-## 3. ドキュメント管理 (Admin - RAG)
+## 3. チャット (Chat)
 
-RAGで使用するドキュメントのアップロードや管理を行います。管理者権限が必要です。
+※本セクションは全APIで認証必須。
 
-| メソッド | エンドポイント | 概要 | 関連画面/機能 |
-| --- | --- | --- | --- |
-| **GET** | `/api/v1/admin/documents` | ドキュメント一覧取得 (検索・フィルタ) | SCR-03 / FN-C02 |
-| **POST** | `/api/v1/admin/documents` | ドキュメント新規登録 (ファイルアップロード)<br><br>`multipart/form-data` | SCR-03 / FN-C01 |
-| **GET** | `/api/v1/admin/documents/{docId}` | ドキュメント詳細・メタデータ取得 | SCR-03 / FN-C05, C07 |
-| **DELETE** | `/api/v1/admin/documents/{docId}` | ドキュメント削除 | SCR-03 / FN-C06 |
-| **PATCH** | `/api/v1/admin/documents/{docId}/status` | 有効/無効ステータスの切り替え | SCR-03 / FN-C03 |
-| **POST** | `/api/v1/admin/documents/{docId}/reindex` | Embeddingの再生成実行 (非同期) | SCR-03 / FN-C04 |
+| メソッド | エンドポイント | 概要 |
+| --- | --- | --- |
+| **POST** | `/api/v1/chat/` | メッセージ送信（LLM応答生成） |
+| **POST** | `/api/v1/chat/agent/rdd` | RDDエージェント実行 |
+| **POST** | `/api/v1/chat/threads` | スレッド作成 |
+| **GET** | `/api/v1/chat/threads` | スレッド一覧取得 |
+| **POST** | `/api/v1/chat/delete-history` | 全スレッド削除 |
+| **GET** | `/api/v1/chat/documents` | チャット用ドキュメント一覧取得 |
+| **GET** | `/api/v1/chat/{threadId}` | スレッド履歴取得 |
 
-## 4. ダッシュボード・分析 (Dashboard)
+## 4. ドキュメント管理 (Documents)
 
-運用・分析画面に必要な集計データを返却します。
-※パラメータ (`?from=...&to=...&dep=...`) でフィルタリングを行います。
+※本セクションは全APIで「認証必須 + admin権限必須」。
 
-| メソッド | エンドポイント | 概要 | 関連画面/機能 |
-| --- | --- | --- | --- |
-| **GET** | `/api/v1/dashboard/kpi` | KPIサマリー (DAU, RAG利用率, エラー率等) | SCR-04 / FN-D01 |
-| **GET** | `/api/v1/dashboard/usage` | 利用推移 (Msg数, User数, スレッド数) | SCR-04, 05 / FN-D02, E07, E08 |
-| **GET** | `/api/v1/dashboard/rag` | RAG品質指標 (ヒット率, 参照数) | SCR-04, 05 / FN-D04, E13, E14 |
-| **GET** | `/api/v1/dashboard/cost` | コスト推移・集計 (トークン数ベース) | SCR-04, 05 / FN-D06, E15, E17 |
-| **GET** | `/api/v1/dashboard/errors` | エラー発生推移・内訳 | SCR-05 / FN-E18, E19 |
-| **GET** | `/api/v1/dashboard/ranking/departments` | 部署別利用ランキング | SCR-04, 05 / FN-D05, E16 |
-| **GET** | `/api/v1/dashboard/ranking/documents` | ドキュメント参照ランキング | SCR-05 / FN-E12 |
+| メソッド | エンドポイント | 概要 |
+| --- | --- | --- |
+| **GET** | `/api/v1/documents/` | ドキュメント一覧取得 |
+| **POST** | `/api/v1/documents/` | ドキュメント登録 |
+| **GET** | `/api/v1/documents/{id}` | ドキュメント内容取得 |
+| **POST** | `/api/v1/documents/upload` | ドキュメントファイルアップロード（`multipart/form-data`） |
+| **POST** | `/api/v1/documents/delete/{id}` | ドキュメント削除 |
+| **POST** | `/api/v1/documents/file/{id}` | ドキュメントファイル差し替え（`multipart/form-data`） |
+| **POST** | `/api/v1/documents/rename/{id}` | ドキュメント名更新 |
 
-## 5. ユーザー管理 (Admin - Users)
+## 5. ユーザー管理 (Users)
 
-管理者がユーザーを管理するためのAPIです。
+※本セクションは全APIで「認証必須 + admin権限必須」。
 
-| メソッド | エンドポイント | 概要 | 関連画面/機能 |
-| --- | --- | --- | --- |
-| **GET** | `/api/v1/admin/users` | ユーザー一覧取得 (検索・フィルタ) | SCR-06 / FN-F01, F04 |
-| **POST** | `/api/v1/admin/users` | 新規ユーザー作成 | SCR-06 / FN-F12 |
-| **GET** | `/api/v1/admin/users/{userId}` | ユーザー詳細取得 | SCR-06 / FN-F06 |
-| **PATCH** | `/api/v1/admin/users/{userId}` | ユーザー情報更新 (部署, 権限, 停止フラグ等) | SCR-06 / FN-F07, F09 |
-| **DELETE** | `/api/v1/admin/users/{userId}` | ユーザー削除 (論理削除) | SCR-06 / FN-F11 |
-| **POST** | `/api/v1/admin/users/{userId}/reset-password` | パスワード強制リセット | SCR-06 / FN-F10 |
+| メソッド | エンドポイント | 概要 |
+| --- | --- | --- |
+| **GET** | `/api/v1/users/departments` | 部署一覧取得 |
+| **GET** | `/api/v1/users/csv-template` | ユーザーCSVテンプレート取得 |
+| **POST** | `/api/v1/users/csv` | ユーザーCSVアップロード（`multipart/form-data`） |
+| **GET** | `/api/v1/users/` | ユーザー一覧取得 |
+| **POST** | `/api/v1/users/` | ユーザー作成 |
+| **PUT** | `/api/v1/users/{id}` | ユーザー更新 |
+| **DELETE** | `/api/v1/users/{id}` | ユーザー削除 |
 
-## 6. システムログ (Admin - Logs)
+## 6. システムログ (Logs)
 
-システムログを閲覧するためのAPIです。
+※本セクションは全APIで「認証必須 + admin権限必須」。
 
-| メソッド | エンドポイント | 概要 | 関連画面/機能 |
-| --- | --- | --- | --- |
-| **GET** | `/api/v1/admin/logs` | ログ一覧取得 (検索・フィルタ) | SCR-07 / FN-G01 |
-| **GET** | `/api/v1/admin/logs/{logId}` | ログ詳細取得 | SCR-07 / FN-G09 |
+| メソッド | エンドポイント | 概要 |
+| --- | --- | --- |
+| **GET** | `/api/v1/logs/` | ログ一覧取得 |
 
-## 7. マスターデータ・その他 (Common)
+## 7. ダッシュボード (Dashboard)
 
-プルダウンなどで使用するマスターデータ取得用です。
+※本セクションは全APIで「認証必須 + admin権限必須」。
 
-| メソッド | エンドポイント | 概要 | 関連画面/機能 |
-| --- | --- | --- | --- |
-| **GET** | `/api/v1/departments` | 部署階層構造の取得 (入力補完用) | SCR-05, 06 / FN-F02 |
-| **GET** | `/api/v1/health` | ヘルスチェック (死活監視用) | - |
+| メソッド | エンドポイント | 概要 |
+| --- | --- | --- |
+| **GET** | `/api/v1/dashboard/operation/kpi` | 運用ダッシュボードKPIサマリー |
+| **GET** | `/api/v1/dashboard/operation/trend` | 運用ダッシュボード利用推移 |
+| **GET** | `/api/v1/dashboard/operation/rag-quality` | 運用ダッシュボードRAG品質指標 |
+| **GET** | `/api/v1/dashboard/operation/cost` | 運用ダッシュボードコスト推移 |
+| **GET** | `/api/v1/dashboard/operation/low-usage-departments` | 低利用部署ランキング |
+| **GET** | `/api/v1/dashboard/analysis/active-user-trend` | 分析ダッシュボードアクティブユーザー推移 |
+| **GET** | `/api/v1/dashboard/analysis/rag-quality-trend` | 分析ダッシュボードRAG品質推移 |
+| **GET** | `/api/v1/dashboard/analysis/rag-quality-details` | 分析ダッシュボードRAG品質日次詳細 |
+| **GET** | `/api/v1/dashboard/analysis/department-usage` | 分析ダッシュボード部署別利用状況 |
+| **GET** | `/api/v1/dashboard/analysis/department-members` | 分析ダッシュボード部署メンバー詳細 |
+| **GET** | `/api/v1/dashboard/analysis/cost-trend` | 分析ダッシュボードコスト推移 |
 
 ---
