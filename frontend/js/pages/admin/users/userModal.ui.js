@@ -29,9 +29,14 @@ export class userModalUI {
     }
 
     open(mode = 'create', userData = null) {
+        const passwordInput = this.singleForm?.elements['password'];
+
         if (mode === 'create') {
             this.modalTitle.textContent = '新規ユーザー登録';
             this.singleForm.reset();
+            if (passwordInput) {
+                passwordInput.required = true;
+            }
             this._initializeDepartmentFields();
             this.csvForm.reset();
             this._resetCsvArea();
@@ -39,6 +44,10 @@ export class userModalUI {
             this._switchTab('tab-single');
         } else if (mode === 'edit') {
             this.modalTitle.textContent = 'ユーザー編集';
+            if (passwordInput) {
+                passwordInput.required = false;
+                passwordInput.value = '';
+            }
             this.tabContainer.style.display = 'none';
             this._switchTab('tab-single');
             this._fillFormData(userData);
