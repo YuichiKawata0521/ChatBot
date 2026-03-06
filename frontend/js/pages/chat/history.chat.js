@@ -117,6 +117,14 @@ function openHistoryMenuPopup(thread, menuButton) {
     activeMenuPopup = popup;
 }
 
+function renderRagHistoryBanner(documentTitle) {
+    const safeTitle = documentTitle || 'このドキュメント';
+    const banner = document.createElement('div');
+    banner.className = 'rag-history-banner';
+    banner.textContent = `${safeTitle}に対する質問チャットです`;
+    dom.chatContainer.appendChild(banner);
+}
+
 export async function loadMessages(threadId) {
     if (!threadId) return;
 
@@ -124,14 +132,22 @@ export async function loadMessages(threadId) {
         ui.hideAgentSelection();
         ui.showMessagesContainer();
         const res = await getThreadMessages(threadId);
-        const messages = Array.isArray(res?.data)
-            ? res.data
-            : (res?.data?.messages ?? []);
+        const data = res?.data;
+        const messages = Array.isArray(data)
+            ? data
+            : (data?.messages ?? []);
+        const threadMeta = Array.isArray(data)
+            ? null
+            : (data?.thread ?? null);
 
         // ChatStreamのcurrentThreadIdを設定
         ChatStream.setThreadId(threadId);
 
         dom.chatContainer.innerHTML = '';
+        if (threadMeta?.mode === 'rag') {
+            renderRagHistoryBanner(threadMeta.documentTitle);
+        }
+
         messages.forEach(msg => {
             const messageDiv = ui.addMessage(msg.sender, msg.content);
             if (msg.sender === 'assistant' && Array.isArray(msg.references) && msg.references.length > 0) {

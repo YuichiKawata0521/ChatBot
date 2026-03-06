@@ -31,7 +31,13 @@ export const chatModel = {
 
     async getThread(pool, threadId, userId) {
         const sql = `
-            SELECT * FROM threads WHERE id = $1 AND user_id = $2;
+            SELECT
+                t.*,
+                d.title AS document_title
+            FROM threads t
+            LEFT JOIN documents d ON d.id = t.document_id
+            WHERE t.id = $1
+              AND t.user_id = $2;
         `;
         const result = await pool.query(sql, [threadId, userId]);
         return result.rows[0];

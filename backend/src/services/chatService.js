@@ -37,11 +37,20 @@ export const chatService = {
             refsByMessageId.set(row.message_id, existing);
         });
 
-        return orderedMessages.map(msg => ({
+        const mappedMessages = orderedMessages.map(msg => ({
             sender: msg.sender,
             content: msg.content,
             references: refsByMessageId.get(msg.id) || []
         }));
+
+        return {
+            thread: {
+                id: thread.id,
+                mode: thread.mode,
+                documentTitle: thread.document_title || thread.title
+            },
+            messages: mappedMessages
+        };
     },
 
     async deleteAllThreads(pool, userId) {

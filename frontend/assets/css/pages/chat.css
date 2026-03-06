@@ -482,10 +482,30 @@ body.sidebar-closed .sidebar-content {
 
 .messages-container {
     flex: 1;
-    padding: 20px 15% 0 15%;
+    padding: 60px 15% 0 15%;
     overflow-y: auto;
     flex-direction: column;
     gap: 20px;
+}
+
+.rag-history-banner {
+    background-color: #f5faff;
+    border: 1px solid #bbdefb;
+    color: #1565c0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: bold;
+    width: min(95vw, 1200px);
+    max-width: calc(100vw - 16px);
+    position: fixed;
+    top: 68px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-sizing: border-box;
+    z-index: 2000;
+    text-align: center;
 }
 
 .assistant .message-bubble {
