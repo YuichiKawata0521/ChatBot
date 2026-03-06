@@ -30,3 +30,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         errorMessage.textContent = '通信エラー';
     }
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('loginForm');
+    form.reset();
+})
