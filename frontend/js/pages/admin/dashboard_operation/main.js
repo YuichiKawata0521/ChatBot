@@ -7,7 +7,15 @@ import { renderLowUsageDepartmentRanking } from './departmentRanking.ui.js';
 import { renderRagQualityMetrics } from './ragQuality.ui.js';
 import { renderOperationCost } from './cost.ui.js';
 
+function jumpToAnalysis() {
+    const btn = document.getElementById('analysis-link');
+    btn.addEventListener('click', () => {
+        window.open('/dashboard_analysis', '_blank')
+    })
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+    jumpToAnalysis();
     const service = new dashboardOperationService();
     const monthScopeSelect = document.getElementById('kpi-month-scope');
 

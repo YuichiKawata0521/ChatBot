@@ -642,7 +642,15 @@ const bindEvents = () => {
     });
 };
 
+function jumpToOperation() {
+    const btn = document.getElementById('operation-link');
+    btn.addEventListener('click', () => {
+        window.open('/dashboard_operation', '_blank');
+    })
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+    jumpToOperation();
     bindEvents();
     updatePeriodLabel();
     updateDepartmentFilterClearButtonVisibility();
