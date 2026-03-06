@@ -86,7 +86,7 @@ CREATE TABLE threads (
     document_id BIGINT REFERENCES documents(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    show_history BOOLEAN NOT NULL DEFAULT false
+    show_history BOOLEAN NOT NULL DEFAULT true
 );
 
 CREATE TABLE messages (
