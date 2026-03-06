@@ -1,6 +1,78 @@
 import { EXCLUDE_TZ, buildMasterIdentityParams } from './shared.js';
 
 export const dashboardAnalysisQueries = {
+    async getAnalysisRatedMessages(pool, masterIdentities, filters) {
+        const { employeeNos, emails } = buildMasterIdentityParams(masterIdentities);
+        const {
+            fromDate,
+            toDate,
+            dep1Name = null,
+            dep2Name = null,
+            dep3Name = null,
+            rating = null,
+            limit = null
+        } = filters;
+
+        const hasLimit = Number.isInteger(Number(limit)) && Number(limit) > 0;
+
+        const sql = `
+            SELECT
+                m.id AS message_id,
+                m.created_at,
+                m.rating,
+                m.content AS answer_content,
+                t.id AS thread_id,
+                t.title AS thread_title,
+                u.user_name,
+                d.dep1_name,
+                d.dep2_name,
+                d.dep3_name,
+                COALESCE(q.question_content, '') AS question_content
+            FROM messages m
+            INNER JOIN threads t ON t.id = m.thread_id
+            INNER JOIN users u ON u.id = t.user_id
+            LEFT JOIN departments d ON d.id = u.department_id
+            LEFT JOIN LATERAL (
+                SELECT
+                    um.content AS question_content
+                FROM messages um
+                WHERE um.thread_id = t.id
+                  AND um.sender = 'user'
+                  AND um.created_at <= m.created_at
+                ORDER BY um.created_at DESC, um.id DESC
+                LIMIT 1
+            ) q ON true
+            WHERE m.sender = 'assistant'
+              AND m.rating IN ('good', 'bad')
+              AND NOT (u.employee_no = ANY($1::text[]) OR LOWER(u.email) = ANY($2::text[]))
+              AND (m.created_at AT TIME ZONE '${EXCLUDE_TZ}')::date BETWEEN $3::date AND $4::date
+              AND ($5::text IS NULL OR d.dep1_name = $5::text)
+              AND ($6::text IS NULL OR d.dep2_name = $6::text)
+              AND ($7::text IS NULL OR d.dep3_name = $7::text)
+              AND ($8::text IS NULL OR m.rating = $8::text)
+            ORDER BY m.created_at DESC, m.id DESC
+            ${hasLimit ? 'LIMIT $9::int' : ''};
+        `;
+
+        const values = [
+            employeeNos,
+            emails,
+            fromDate,
+            toDate,
+            dep1Name,
+            dep2Name,
+            dep3Name,
+            rating
+        ];
+
+        if (hasLimit) {
+            values.push(Number(limit));
+        }
+
+        const result = await pool.query(sql, values);
+        return result.rows;
+    },
+
     async getAnalysisRagQualityDailyDetails(pool, masterIdentities, filters) {
         const { employeeNos, emails } = buildMasterIdentityParams(masterIdentities);
         const {

@@ -338,6 +338,122 @@ export const getAnalysisRagQualityDailyDetails = async (req, res, next) => {
     }
 };
 
+export const getAnalysisRatingRecent = async (req, res, next) => {
+    try {
+        const pool = getPool();
+        const masterIdentities = getMasterUserIdentities();
+
+        const { period, fromDate, toDate } = buildAnalysisDateRange(req.query || {});
+        const { dep1Name, dep2Name, dep3Name } = getDepartmentFilters(req.query);
+
+        const [goodRows, badRows] = await Promise.all([
+            dashboardModel.getAnalysisRatedMessages(pool, masterIdentities, {
+                fromDate,
+                toDate,
+                dep1Name,
+                dep2Name,
+                dep3Name,
+                rating: 'good',
+                limit: 5
+            }),
+            dashboardModel.getAnalysisRatedMessages(pool, masterIdentities, {
+                fromDate,
+                toDate,
+                dep1Name,
+                dep2Name,
+                dep3Name,
+                rating: 'bad',
+                limit: 5
+            })
+        ]);
+
+        const mapItem = (row) => ({
+            messageId: safeNumber(row.message_id),
+            createdAt: row.created_at,
+            threadId: safeNumber(row.thread_id),
+            threadTitle: row.thread_title || '',
+            userName: row.user_name || '',
+            dep1Name: row.dep1_name || '',
+            dep2Name: row.dep2_name || '',
+            dep3Name: row.dep3_name || '',
+            rating: row.rating || null,
+            question: row.question_content || '',
+            answer: row.answer_content || ''
+        });
+
+        res.status(200).json({
+            success: true,
+            data: {
+                period,
+                fromDate,
+                toDate,
+                dep1Name,
+                dep2Name,
+                dep3Name,
+                goodItems: goodRows.map(mapItem),
+                badItems: badRows.map(mapItem)
+            }
+        });
+    } catch (error) {
+        logger.error('分析用レーティング直近データ取得エラー', {option: {detail: error.message}});
+        next(new AppError('分析用レーティング直近データの取得に失敗しました', 500));
+    }
+};
+
+export const getAnalysisRatingList = async (req, res, next) => {
+    try {
+        const pool = getPool();
+        const masterIdentities = getMasterUserIdentities();
+
+        const { period, fromDate, toDate } = buildAnalysisDateRange(req.query || {});
+        const { dep1Name, dep2Name, dep3Name } = getDepartmentFilters(req.query);
+        const rating = String(req.query?.rating || '').trim();
+
+        if (!['good', 'bad'].includes(rating)) {
+            return next(new AppError('rating は good または bad を指定してください', 400));
+        }
+
+        const rows = await dashboardModel.getAnalysisRatedMessages(pool, masterIdentities, {
+            fromDate,
+            toDate,
+            dep1Name,
+            dep2Name,
+            dep3Name,
+            rating,
+            limit: null
+        });
+
+        res.status(200).json({
+            success: true,
+            data: {
+                period,
+                fromDate,
+                toDate,
+                dep1Name,
+                dep2Name,
+                dep3Name,
+                rating,
+                items: rows.map((row) => ({
+                    messageId: safeNumber(row.message_id),
+                    createdAt: row.created_at,
+                    threadId: safeNumber(row.thread_id),
+                    threadTitle: row.thread_title || '',
+                    userName: row.user_name || '',
+                    dep1Name: row.dep1_name || '',
+                    dep2Name: row.dep2_name || '',
+                    dep3Name: row.dep3_name || '',
+                    rating: row.rating || null,
+                    question: row.question_content || '',
+                    answer: row.answer_content || ''
+                }))
+            }
+        });
+    } catch (error) {
+        logger.error('分析用レーティング一覧取得エラー', {option: {detail: error.message}});
+        next(new AppError('分析用レーティング一覧の取得に失敗しました', 500));
+    }
+};
+
 export const getAnalysisDepartmentUsage = async (req, res, next) => {
     try {
         const pool = getPool();

@@ -15,6 +15,8 @@ router.get('/operation/low-usage-departments', dashboardController.getLowUsageDe
 router.get('/analysis/active-user-trend', dashboardController.getAnalysisActiveUserTrend);
 router.get('/analysis/rag-quality-trend', dashboardController.getAnalysisRagQualityTrend);
 router.get('/analysis/rag-quality-details', dashboardController.getAnalysisRagQualityDailyDetails);
+router.get('/analysis/rating-recent', dashboardController.getAnalysisRatingRecent);
+router.get('/analysis/rating-list', dashboardController.getAnalysisRatingList);
 router.get('/analysis/department-usage', dashboardController.getAnalysisDepartmentUsage);
 router.get('/analysis/department-members', dashboardController.getAnalysisDepartmentMembers);
 router.get('/analysis/cost-trend', dashboardController.getAnalysisCostTrend);

@@ -295,3 +295,43 @@ export const buildMemberRowsHtml = (items = []) => {
         `;
     }).join('');
 };
+
+export const truncateText = (value, maxLength = 48) => {
+    const text = String(value || '').trim();
+    if (!text) return '-';
+    if (text.length <= maxLength) return text;
+    return `${text.slice(0, maxLength)}...`;
+};
+
+export const buildRatingRowsHtml = (items = [], options = {}) => {
+    const {
+        emptyMessage = '対象データがありません',
+        questionLength = 42,
+        answerLength = 46
+    } = options;
+
+    if (!items.length) {
+        return `
+            <tr>
+                <td colspan="4" style="padding:12px; color:#7f8c8d;">${escapeHtml(emptyMessage)}</td>
+            </tr>
+        `;
+    }
+
+    return items.map((item, index) => {
+        const createdAtText = formatJpDateTime(item?.createdAt || '');
+        return `
+            <tr
+                class="analysis-rating-row"
+                data-index="${index}"
+                style="border-bottom:1px solid #eee; cursor:pointer;"
+                title="クリックで詳細を表示"
+            >
+                <td style="padding:10px; white-space:nowrap;">${escapeHtml(createdAtText || '-')}</td>
+                <td style="padding:10px; white-space:nowrap;">${escapeHtml(item?.userName || '-')}</td>
+                <td style="padding:10px;">${escapeHtml(truncateText(item?.question || '', questionLength))}</td>
+                <td style="padding:10px;">${escapeHtml(truncateText(item?.answer || '', answerLength))}</td>
+            </tr>
+        `;
+    }).join('');
+};

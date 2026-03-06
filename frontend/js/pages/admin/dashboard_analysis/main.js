@@ -14,7 +14,9 @@ import {
     buildDepartmentUsageRowsHtml,
     aggregateDepartmentUsageItems,
     buildDetailRowsHtml,
-    buildMemberRowsHtml
+    buildMemberRowsHtml,
+    buildRatingRowsHtml,
+    formatJpDateTime
 } from './analysisHelpers.js';
 
 const dom = {
@@ -30,6 +32,10 @@ const dom = {
     departmentDep2Select: document.getElementById('analysis-department-filter-dep2'),
     departmentDep3Select: document.getElementById('analysis-department-filter-dep3'),
     departmentFilterClearButton: document.getElementById('analysis-department-filter-clear'),
+    ratingGoodTbody: document.getElementById('analysis-rating-good-tbody'),
+    ratingBadTbody: document.getElementById('analysis-rating-bad-tbody'),
+    ratingGoodViewAllButton: document.getElementById('analysis-rating-good-view-all'),
+    ratingBadViewAllButton: document.getElementById('analysis-rating-bad-view-all'),
     applyButton: document.getElementById('analysis-btn-apply'),
     clearButton: document.getElementById('analysis-btn-clear'),
     departmentUsageTbody: document.getElementById('analysis-department-usage-tbody')
@@ -39,6 +45,9 @@ let departments = [];
 const service = new dashboardAnalysisService();
 let departmentUsageItems = [];
 let departmentUsageBaseItems = [];
+let ratingGoodItems = [];
+let ratingBadItems = [];
+let ratingListItems = [];
 
 const modalDom = {
     overlay: document.getElementById('analysis-rag-detail-modal'),
@@ -54,6 +63,23 @@ const memberModalDom = {
     title: document.getElementById('analysis-department-member-title'),
     summary: document.getElementById('analysis-department-member-summary'),
     tableBody: document.getElementById('analysis-department-member-tbody')
+};
+
+const ratingListModalDom = {
+    overlay: document.getElementById('analysis-rating-list-modal'),
+    closeButton: document.getElementById('analysis-rating-list-close'),
+    title: document.getElementById('analysis-rating-list-title'),
+    summary: document.getElementById('analysis-rating-list-summary'),
+    tableBody: document.getElementById('analysis-rating-list-tbody')
+};
+
+const messageDetailModalDom = {
+    overlay: document.getElementById('analysis-message-detail-modal'),
+    closeButton: document.getElementById('analysis-message-detail-close'),
+    title: document.getElementById('analysis-message-detail-title'),
+    meta: document.getElementById('analysis-message-detail-meta'),
+    question: document.getElementById('analysis-message-detail-question'),
+    answer: document.getElementById('analysis-message-detail-answer')
 };
 
 
@@ -180,6 +206,132 @@ const loadRagQualityTrend = async () => {
         });
     } catch (error) {
         console.error('RAG品質推移の取得に失敗しました', error);
+    }
+};
+
+const bindRatingRowEvents = (tableBody, items) => {
+    if (!tableBody) return;
+
+    const rows = tableBody.querySelectorAll('.analysis-rating-row');
+    rows.forEach((row) => {
+        row.addEventListener('click', () => {
+            const index = Number(row.getAttribute('data-index') || -1);
+            const item = items[index];
+            if (!item) return;
+            openMessageDetailModal(item);
+        });
+    });
+};
+
+const renderRatingRecentTables = () => {
+    if (dom.ratingGoodTbody) {
+        dom.ratingGoodTbody.innerHTML = buildRatingRowsHtml(ratingGoodItems, {
+            emptyMessage: 'good のデータがありません'
+        });
+        bindRatingRowEvents(dom.ratingGoodTbody, ratingGoodItems);
+    }
+
+    if (dom.ratingBadTbody) {
+        dom.ratingBadTbody.innerHTML = buildRatingRowsHtml(ratingBadItems, {
+            emptyMessage: 'bad のデータがありません'
+        });
+        bindRatingRowEvents(dom.ratingBadTbody, ratingBadItems);
+    }
+};
+
+const loadRatingRecent = async () => {
+    try {
+        const data = await service.getRatingRecent(getFilterState());
+        ratingGoodItems = data?.goodItems || [];
+        ratingBadItems = data?.badItems || [];
+    } catch (error) {
+        console.error('レーティング直近データの取得に失敗しました', error);
+        ratingGoodItems = [];
+        ratingBadItems = [];
+    }
+
+    renderRatingRecentTables();
+};
+
+const openMessageDetailModal = (item = {}) => {
+    if (!messageDetailModalDom.overlay) return;
+
+    if (messageDetailModalDom.title) {
+        const ratingText = String(item?.rating || '').toLowerCase();
+        messageDetailModalDom.title.textContent = `質問/回答 詳細 (${ratingText || '-'})`;
+    }
+
+    if (messageDetailModalDom.meta) {
+        const createdAt = formatJpDateTime(item?.createdAt || '') || '-';
+        const userName = item?.userName || '-';
+        messageDetailModalDom.meta.textContent = `${createdAt} / ${userName}`;
+    }
+
+    if (messageDetailModalDom.question) {
+        messageDetailModalDom.question.textContent = item?.question || '-';
+    }
+
+    if (messageDetailModalDom.answer) {
+        messageDetailModalDom.answer.textContent = item?.answer || '-';
+    }
+
+    messageDetailModalDom.overlay.style.display = 'flex';
+};
+
+const closeMessageDetailModal = () => {
+    if (messageDetailModalDom.overlay) {
+        messageDetailModalDom.overlay.style.display = 'none';
+    }
+};
+
+const openRatingListModal = async (rating) => {
+    if (!ratingListModalDom.overlay || !ratingListModalDom.tableBody) return;
+
+    const ratingLabel = String(rating || '').toLowerCase();
+    ratingListModalDom.overlay.style.display = 'flex';
+
+    if (ratingListModalDom.title) {
+        ratingListModalDom.title.textContent = `${ratingLabel} レーティング一覧`;
+    }
+    if (ratingListModalDom.summary) {
+        ratingListModalDom.summary.textContent = '読み込み中...';
+    }
+    ratingListModalDom.tableBody.innerHTML = `
+        <tr>
+            <td colspan="4" style="padding:12px; color:#7f8c8d;">読み込み中...</td>
+        </tr>
+    `;
+
+    try {
+        const data = await service.getRatingList(ratingLabel, getFilterState());
+        ratingListItems = data?.items || [];
+
+        ratingListModalDom.tableBody.innerHTML = buildRatingRowsHtml(ratingListItems, {
+            emptyMessage: `${ratingLabel} の対象データがありません`,
+            questionLength: 50,
+            answerLength: 58
+        });
+        bindRatingRowEvents(ratingListModalDom.tableBody, ratingListItems);
+
+        if (ratingListModalDom.summary) {
+            ratingListModalDom.summary.textContent = `件数: ${formatNumber(ratingListItems.length)}`;
+        }
+    } catch (error) {
+        console.error('レーティング一覧の取得に失敗しました', error);
+        if (ratingListModalDom.summary) {
+            ratingListModalDom.summary.textContent = 'データ取得に失敗しました';
+        }
+        ratingListModalDom.tableBody.innerHTML = `
+            <tr>
+                <td colspan="4" style="padding:12px; color:#e74c3c;">取得に失敗しました</td>
+            </tr>
+        `;
+    }
+};
+
+const closeRatingListModal = () => {
+    if (ratingListModalDom.overlay) {
+        ratingListModalDom.overlay.style.display = 'none';
     }
 };
 
@@ -354,7 +506,13 @@ const closeDepartmentMemberModal = () => {
 };
 
 const loadCharts = async () => {
-    await Promise.all([loadActiveUserTrend(), loadRagQualityTrend(), loadCostTrend(), loadDepartmentUsage()]);
+    await Promise.all([
+        loadActiveUserTrend(),
+        loadRagQualityTrend(),
+        loadCostTrend(),
+        loadDepartmentUsage(),
+        loadRatingRecent()
+    ]);
 };
 
 const applyFiltersImmediately = async () => {
@@ -458,6 +616,28 @@ const bindEvents = () => {
     memberModalDom.overlay?.addEventListener('click', (event) => {
         if (event.target === memberModalDom.overlay) {
             closeDepartmentMemberModal();
+        }
+    });
+
+    dom.ratingGoodViewAllButton?.addEventListener('click', async () => {
+        await openRatingListModal('good');
+    });
+
+    dom.ratingBadViewAllButton?.addEventListener('click', async () => {
+        await openRatingListModal('bad');
+    });
+
+    ratingListModalDom.closeButton?.addEventListener('click', closeRatingListModal);
+    ratingListModalDom.overlay?.addEventListener('click', (event) => {
+        if (event.target === ratingListModalDom.overlay) {
+            closeRatingListModal();
+        }
+    });
+
+    messageDetailModalDom.closeButton?.addEventListener('click', closeMessageDetailModal);
+    messageDetailModalDom.overlay?.addEventListener('click', (event) => {
+        if (event.target === messageDetailModalDom.overlay) {
+            closeMessageDetailModal();
         }
     });
 };

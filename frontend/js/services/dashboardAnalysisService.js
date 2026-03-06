@@ -88,4 +88,33 @@ export class dashboardAnalysisService {
         const response = await ApiClient.get(endpoint);
         return response?.data ?? null;
     }
+
+    async getRatingRecent(filters = {}) {
+        const query = this._toQuery(filters);
+        const endpoint = `/dashboard/analysis/rating-recent${query ? `?${query}` : ''}`;
+        const response = await ApiClient.get(endpoint);
+        return response?.data ?? null;
+    }
+
+    async getRatingList(rating, filters = {}) {
+        const params = new URLSearchParams();
+        params.set('rating', String(rating || ''));
+
+        const appendIf = (key, value) => {
+            if (value !== undefined && value !== null && String(value).trim() !== '') {
+                params.set(key, String(value));
+            }
+        };
+
+        appendIf('period', filters.period);
+        appendIf('fromDate', filters.fromDate);
+        appendIf('toDate', filters.toDate);
+        appendIf('dep1Name', filters.dep1Name);
+        appendIf('dep2Name', filters.dep2Name);
+        appendIf('dep3Name', filters.dep3Name);
+
+        const endpoint = `/dashboard/analysis/rating-list?${params.toString()}`;
+        const response = await ApiClient.get(endpoint);
+        return response?.data ?? null;
+    }
 }

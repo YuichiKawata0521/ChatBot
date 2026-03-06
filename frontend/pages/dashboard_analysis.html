@@ -136,6 +136,49 @@
             <div style="margin-top:8px; font-size:0.82rem; color:#5c6b7a;">部署行または円グラフのセグメントをクリックすると所属社員一覧を表示します</div>
         </div>
 
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">レーティング済み質問（直近5件）</h3>
+            </div>
+            <div class="analysis-rating-grid">
+                <section class="analysis-rating-section">
+                    <div class="analysis-rating-section-header">
+                        <h4>good</h4>
+                        <button id="analysis-rating-good-view-all" type="button" class="btn-secondary">view all</button>
+                    </div>
+                    <table style="width:100%; border-collapse: collapse; font-size: 0.88rem;">
+                        <thead>
+                            <tr style="border-bottom:2px solid #eee; text-align:left; white-space:nowrap;">
+                                <th style="padding:10px;">日時</th>
+                                <th style="padding:10px;">ユーザー</th>
+                                <th style="padding:10px;">質問</th>
+                                <th style="padding:10px;">AI回答</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analysis-rating-good-tbody"></tbody>
+                    </table>
+                </section>
+
+                <section class="analysis-rating-section">
+                    <div class="analysis-rating-section-header">
+                        <h4>bad</h4>
+                        <button id="analysis-rating-bad-view-all" type="button" class="btn-secondary">view all</button>
+                    </div>
+                    <table style="width:100%; border-collapse: collapse; font-size: 0.88rem;">
+                        <thead>
+                            <tr style="border-bottom:2px solid #eee; text-align:left; white-space:nowrap;">
+                                <th style="padding:10px;">日時</th>
+                                <th style="padding:10px;">ユーザー</th>
+                                <th style="padding:10px;">質問</th>
+                                <th style="padding:10px;">AI回答</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analysis-rating-bad-tbody"></tbody>
+                    </table>
+                </section>
+            </div>
+        </div>
+
     </div>
 
     <div id="analysis-rag-detail-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1200; align-items:center; justify-content:center;">
@@ -189,6 +232,53 @@
                     </thead>
                     <tbody id="analysis-department-member-tbody"></tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="analysis-rating-list-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1200; align-items:center; justify-content:center;">
+        <div style="width:min(1100px, 94vw); max-height:84vh; overflow:auto; background:#fff; border-radius:8px; box-shadow:0 10px 28px rgba(0,0,0,.18);">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #eee;">
+                <div>
+                    <h3 id="analysis-rating-list-title" style="margin:0; font-size:1rem; color:#2c3e50;">レーティング一覧</h3>
+                    <div id="analysis-rating-list-summary" style="margin-top:6px; font-size:0.86rem; color:#5c6b7a;">-</div>
+                </div>
+                <button id="analysis-rating-list-close" type="button" style="border:none; background:transparent; font-size:1.4rem; line-height:1; cursor:pointer; color:#7f8c8d;">×</button>
+            </div>
+            <div style="padding:12px 16px;">
+                <table style="width:100%; border-collapse: collapse; font-size: 0.9rem;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #eee; text-align:left; white-space:nowrap;">
+                            <th style="padding:10px;">日時</th>
+                            <th style="padding:10px;">ユーザー</th>
+                            <th style="padding:10px;">質問</th>
+                            <th style="padding:10px;">AI回答</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysis-rating-list-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="analysis-message-detail-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1300; align-items:center; justify-content:center;">
+        <div style="width:min(900px, 94vw); max-height:84vh; overflow:auto; background:#fff; border-radius:8px; box-shadow:0 10px 28px rgba(0,0,0,.18);">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #eee;">
+                <div>
+                    <h3 id="analysis-message-detail-title" style="margin:0; font-size:1rem; color:#2c3e50;">質問/回答 詳細</h3>
+                    <div id="analysis-message-detail-meta" style="margin-top:6px; font-size:0.86rem; color:#5c6b7a;">-</div>
+                </div>
+                <button id="analysis-message-detail-close" type="button" style="border:none; background:transparent; font-size:1.4rem; line-height:1; cursor:pointer; color:#7f8c8d;">×</button>
+            </div>
+            <div style="padding:16px; display:flex; flex-direction:column; gap:14px;">
+                <section>
+                    <div style="font-size:0.85rem; color:#5c6b7a; margin-bottom:6px;">質問</div>
+                    <div id="analysis-message-detail-question" style="padding:12px; background:#f8f9fa; border:1px solid #e5e7eb; border-radius:6px; white-space:pre-wrap;"></div>
+                </section>
+                <section>
+                    <div style="font-size:0.85rem; color:#5c6b7a; margin-bottom:6px;">AI回答</div>
+                    <div id="analysis-message-detail-answer" style="padding:12px; background:#f8f9fa; border:1px solid #e5e7eb; border-radius:6px; white-space:pre-wrap;"></div>
+                </section>
             </div>
         </div>
     </div>
