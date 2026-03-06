@@ -12,7 +12,6 @@ import { RequirementAgentWizard } from './agentWizard.js';
 
 const authChannel = new BroadcastChannel('auth_sync');
 
-// ログアウト: 機能ID FN-A04
 async function handleLogout() {
     const resutl = await api.logout();
     if (resutl.success) {
@@ -24,27 +23,29 @@ async function handleLogout() {
     }
 }
 
-// 新規チャット画面への初期化
 function initializeNewChat() {
-    // グローバル変数の初期化
     ChatStream.currentThreadId = null;
     
-    // UI のリセット
     ui.clearChatMessages();
     ui.clearInput();
     ui.setHeaderTitle('ChatBot');
+    ui.showAgentSelection();
+    ui.hideMessagesContainer();
     
-    // URL をリセット
     window.history.pushState({}, '', '/chat');
 }
 
 async function handleStream() {
     const pathParts = window.location.pathname.split('/');
     const threadId = pathParts[pathParts.length -1];
+    const isNumericThreadId = /^\d+$/.test(threadId);
 
-    if (!isNaN(threadId)) {
+    if (isNumericThreadId) {
         ChatStream.currentThreadId = threadId;
-        loadMessages(threadId);
+        await loadMessages(threadId);
+    } else {
+        ui.showAgentSelection();
+        ui.hideMessagesContainer();
     }
 }
 
@@ -87,6 +88,8 @@ async function handleDocumentSelect(doc) {
             // スレッドIDが返ってくるので、URLを変更してチャットを開始
             ChatStream.currentThreadId = res.threadId;
             window.history.pushState({}, '', `/chat/${res.threadId}`);
+            ui.hideAgentSelection();
+            ui.hideMessagesContainer();
             
             // UIリセット
             dom.chatContainer.innerHTML = '';
@@ -134,6 +137,7 @@ function handleRDDAgent() {
             showToast('エラーが発生しました。もう一度お試しください。');
         } finally {
             ui.switchOverlay('hide');
+            alert('要件定義書をダウンロードしました');
         }
     });
 
@@ -176,11 +180,16 @@ function setupEventListeners() {
 
 window.addEventListener('DOMContentLoaded', async () => {
     ui.switchOverlay('hide');
+    ui.showAgentSelection();
+    ui.hideMessagesContainer();
     setupEventListeners();
     loadThreadList();
+    await handleStream();
     initSettingsMenu();
     initializeAdminMenu();
     initInputHandlers(async (message) => {
+        ui.hideAgentSelection();
+        ui.showMessagesContainer();
         await ChatStream.sendMessage(message);
         loadThreadList();
     });

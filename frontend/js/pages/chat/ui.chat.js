@@ -16,7 +16,8 @@ export const dom = {
     get tabDocuments() { return document.getElementById('tab-documents'); },
     get contentHistory() { return document.getElementById('sidebar-content-history'); },
     get contentDocuments() { return document.getElementById('sidebar-content-documents'); },
-    get overlay() { return document.getElementById('loading-overlay');}
+    get overlay() { return document.getElementById('loading-overlay');},
+    get agentSelectionArea() { return document.getElementById('agent-selection-area'); }
 };
 
 export function addMessage(role, content) {
@@ -172,4 +173,28 @@ export function switchOverlay(mode) {
     } else {
         overlay.classList.add('hidden');
     }
+}
+
+export function showAgentSelection() {
+    const area = dom.agentSelectionArea;
+    if (!area) return;
+    area.classList.remove('hidden');
+}
+
+export function hideAgentSelection() {
+    const area = dom.agentSelectionArea;
+    if (!area) return;
+    area.classList.add('hidden');
+}
+
+export function showMessagesContainer() {
+    const chatContainer = dom.chatContainer;
+    if (!chatContainer) return;
+    chatContainer.classList.remove('hidden');
+}
+
+export function hideMessagesContainer() {
+    const chatContainer = dom.chatContainer;
+    if (!chatContainer) return;
+    chatContainer.classList.add('hidden');
 }

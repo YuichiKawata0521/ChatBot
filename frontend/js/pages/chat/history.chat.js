@@ -2,14 +2,127 @@ import * as ui from './ui.chat.js';
 import { dom } from './ui.chat.js';
 import { showToast } from '../../common/toast.js'
 import { ChatStream } from './stream.chat.js';
-import { getThreadMessages, getThreads } from '../../services/chatService.js';
+import { deleteThread, getThreadMessages, getThreads, updateThreadTitle } from '../../services/chatService.js';
 
 let currentThreadId = null;
+let activeMenuPopup = null;
+let menuListenersInitialized = false;
+
+function closeHistoryMenuPopup() {
+    if (!activeMenuPopup) return;
+    activeMenuPopup.remove();
+    activeMenuPopup = null;
+}
+
+function ensureHistoryMenuListeners() {
+    if (menuListenersInitialized) return;
+    menuListenersInitialized = true;
+
+    document.addEventListener('click', () => {
+        closeHistoryMenuPopup();
+    });
+
+    window.addEventListener('resize', () => {
+        closeHistoryMenuPopup();
+    });
+}
+
+async function handleThreadRename(thread) {
+    const nextTitle = prompt('新しいスレッド名を入力してください', thread.title || '');
+    if (nextTitle === null) return;
+
+    const trimmed = nextTitle.trim();
+    if (!trimmed) {
+        showToast('タイトルを入力してください');
+        return;
+    }
+
+    if (trimmed === thread.title) return;
+
+    try {
+        const response = await updateThreadTitle(thread.id, trimmed);
+        if (response.success) {
+            showToast('タイトルを更新しました', 'success');
+            await loadThreadList();
+        }
+    } catch (error) {
+        console.error('Failed to rename thread: ', error);
+        showToast('タイトルの更新に失敗しました');
+    }
+}
+
+async function handleThreadDelete(thread) {
+    if (!confirm(`「${thread.title}」を削除しますか？`)) return;
+
+    try {
+        const response = await deleteThread(thread.id);
+        if (response.success) {
+            const isCurrentThread = String(ChatStream.currentThreadId) === String(thread.id);
+            if (isCurrentThread) {
+                ChatStream.setThreadId(null);
+                ui.clearChatMessages();
+                ui.clearInput();
+                ui.showAgentSelection();
+                ui.hideMessagesContainer();
+                window.history.pushState({}, '', '/chat');
+            }
+
+            showToast('スレッドを削除しました', 'success');
+            await loadThreadList();
+        }
+    } catch (error) {
+        console.error('Failed to delete thread: ', error);
+        showToast('スレッドの削除に失敗しました');
+    }
+}
+
+function openHistoryMenuPopup(thread, menuButton) {
+    closeHistoryMenuPopup();
+
+    const popup = document.createElement('div');
+    popup.className = 'history-menu-popup';
+    const rect = menuButton.getBoundingClientRect();
+
+    popup.style.left = `${rect.right + 8}px`;
+    popup.style.top = `${rect.top + rect.height / 2}px`;
+
+    const editButton = document.createElement('button');
+    editButton.className = 'history-menu-item';
+    editButton.type = 'button';
+    editButton.textContent = '編集';
+    editButton.addEventListener('click', async (event) => {
+        event.stopPropagation();
+        closeHistoryMenuPopup();
+        await handleThreadRename(thread);
+    });
+
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'history-menu-item danger';
+    deleteButton.type = 'button';
+    deleteButton.textContent = '削除';
+    deleteButton.addEventListener('click', async (event) => {
+        event.stopPropagation();
+        closeHistoryMenuPopup();
+        await handleThreadDelete(thread);
+    });
+
+    popup.appendChild(editButton);
+    popup.appendChild(deleteButton);
+
+    popup.addEventListener('click', (event) => {
+        event.stopPropagation();
+    });
+
+    document.body.appendChild(popup);
+    activeMenuPopup = popup;
+}
 
 export async function loadMessages(threadId) {
     if (!threadId) return;
 
     try {
+        ui.hideAgentSelection();
+        ui.showMessagesContainer();
         const res = await getThreadMessages(threadId);
         const messages = Array.isArray(res?.data)
             ? res.data
@@ -33,6 +146,8 @@ export async function loadMessages(threadId) {
 
 export async function loadThreadList() {
     try {
+        ensureHistoryMenuListeners();
+        closeHistoryMenuPopup();
         const res = await getThreads();
         const threads = Array.isArray(res?.data)
             ? res.data
@@ -67,6 +182,16 @@ export async function loadThreadList() {
                 const menu = document.createElement('div');
                 menu.className = 'btn history-menu';
                 menu.textContent = '︙';
+                menu.addEventListener('click', (event) => {
+                    event.stopPropagation();
+
+                    if (activeMenuPopup && activeMenuPopup.parentElement === div) {
+                        closeHistoryMenuPopup();
+                        return;
+                    }
+
+                    openHistoryMenuPopup(thread, menu);
+                });
 
                 div.appendChild(leftDiv);
                 div.appendChild(menu);
