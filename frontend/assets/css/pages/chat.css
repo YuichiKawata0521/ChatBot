@@ -198,6 +198,7 @@ summary {
 .message-row {
     display: flex;
     width: 100%;
+    flex-direction: column;
 }
 
 .message-row.bot{
@@ -206,6 +207,11 @@ summary {
 
 .message-row.user {
     justify-content: flex-end;
+    align-items: flex-end;
+}
+
+.message-row.assistant {
+    align-items: flex-start;
 }
 
 .message-bubble {
@@ -217,6 +223,45 @@ summary {
     line-height: 1.5;
     position: relative;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.message-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: -8px;
+    margin-bottom: 15px;
+}
+
+.message-action-btn {
+    border: 1px solid #bbdefb;
+    background-color: #fff;
+    color: #1565c0;
+    border-radius: 999px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+}
+
+.message-action-btn:hover {
+    background-color: #e3f2fd;
+}
+
+.message-action-btn.is-active {
+    background-color: #8ff875;
+    border-color: #99f990;
+}
+.message-action-btn.bad.is-active {
+    background-color: #f87575;
+    border-color: #f99090;
+}
+
+.message-action-btn .material-symbols-outlined {
+    font-size: 18px;
+    line-height: 1;
 }
 
 .menu-toggle {

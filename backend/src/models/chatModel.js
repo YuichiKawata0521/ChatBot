@@ -56,13 +56,29 @@ export const chatModel = {
 
     async getRecentMessages(pool, threadId, limit = 6) {
         const sql = `
-            SELECT id, sender, content FROM messages
+            SELECT id, sender, content, rating FROM messages
             WHERE thread_id = $1
             ORDER BY created_at DESC
             LIMIT $2;
         `;
         const result = await pool.query(sql, [threadId, limit]);
         return result.rows;
+    },
+
+    async updateMessageRating(pool, messageId, userId, rating) {
+        const sql = `
+            UPDATE messages m
+            SET rating = $1
+            FROM threads t
+            WHERE m.id = $2
+              AND m.thread_id = t.id
+              AND t.user_id = $3
+              AND m.sender = 'assistant'
+            RETURNING m.id, m.thread_id, m.rating;
+        `;
+
+        const result = await pool.query(sql, [rating, messageId, userId]);
+        return result.rows[0] || null;
     },
 
     async deleteThreadsByUserId(pool, userId) {

@@ -38,8 +38,10 @@ export const chatService = {
         });
 
         const mappedMessages = orderedMessages.map(msg => ({
+            id: msg.id,
             sender: msg.sender,
             content: msg.content,
+            rating: msg.rating || null,
             references: refsByMessageId.get(msg.id) || []
         }));
 
@@ -59,6 +61,10 @@ export const chatService = {
 
     async updateThreadTitle(pool, threadId, userId, title) {
         return await chatModel.updateThreadTitle(pool, threadId, userId, title);
+    },
+
+    async updateMessageRating(pool, messageId, userId, rating) {
+        return await chatModel.updateMessageRating(pool, messageId, userId, rating);
     },
 
     async deleteThreadById(pool, threadId, userId) {
@@ -210,6 +216,14 @@ ${contextText}`
 
         if (usedReferences.length > 0 && savedMessage) {
             await chatModel.saveMessageReferences(pool, savedMessage.id, usedReferences);
+        }
+
+        if (savedMessage?.id) {
+            yield {
+                type: 'assistant_message',
+                messageId: savedMessage.id,
+                rating: savedMessage.rating || null
+            };
         }
     }
 };

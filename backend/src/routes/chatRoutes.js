@@ -13,6 +13,7 @@ router.post('/threads', chatController.createThread);
 router.get('/threads', chatController.getThreads);
 router.put('/threads/:threadId', chatController.updateThreadTitle);
 router.delete('/threads/:threadId', chatController.deleteThread);
+router.put('/messages/:messageId/rating', chatController.updateMessageRating);
 router.post('/delete-history', chatController.deleteAllThreads);
 router.get('/documents', documentController.getDocuments);
 router.get('/:threadId', chatController.getHistory);

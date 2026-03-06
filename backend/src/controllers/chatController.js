@@ -248,6 +248,52 @@ export const deleteThread = async (req, res, next) => {
     }
 };
 
+export const updateMessageRating = async (req, res, next) => {
+    try {
+        const { messageId } = req.params;
+        const { rating } = req.body;
+        const userId = req.session.user.id;
+
+        if (rating !== null && !['good', 'bad'].includes(rating)) {
+            return res.status(400).json({
+                success: false,
+                message: 'rating は good / bad / null を指定してください'
+            });
+        }
+
+        const updated = await chatService.updateMessageRating(getPool(), messageId, userId, rating);
+        if (!updated) {
+            return res.status(404).json({
+                success: false,
+                message: '対象メッセージが見つかりません'
+            });
+        }
+
+        logger.info('メッセージ評価を更新しました', {
+            option: {
+                user_id: userId,
+                message_id: messageId,
+                rating
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            data: updated
+        });
+    } catch (error) {
+        logger.error('メッセージ評価更新に失敗しました', {
+            option: {
+                user_id: req.session?.user?.id ?? null,
+                message_id: req.params?.messageId ?? null,
+                detail: error.message,
+                stack: error.stack
+            }
+        });
+        next(error);
+    }
+};
+
 export const executeRDDAgent = async (req, res, next) => {
     try {
         const pool = getPool();

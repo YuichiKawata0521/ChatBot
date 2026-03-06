@@ -199,3 +199,30 @@ body {
 .btn-secondary:hover {
     background-color: #7f8c8d;
 }
+
+.analysis-rating-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.analysis-rating-section {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.analysis-rating-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-color);
+    background: #fafbfc;
+}
+
+.analysis-rating-section-header h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #2c3e50;
+}
