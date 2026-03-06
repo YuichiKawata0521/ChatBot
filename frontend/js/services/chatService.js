@@ -54,6 +54,16 @@ export async function createThread(title, documentId = null, modelName = 'gpt-4o
     });
 }
 
+export async function updateThreadTitle(threadId, title) {
+    const endpoint = `/chat/threads/${threadId}`;
+    return await ApiClient.put(endpoint, { title });
+}
+
+export async function deleteThread(threadId) {
+    const endpoint = `/chat/threads/${threadId}`;
+    return await ApiClient.delete(endpoint);
+}
+
 export async function executeRDDAgent(interviewPayload) {
     const endpoint = '/chat/agent/rdd';
     return await ApiClient.post(endpoint, interviewPayload);

@@ -41,7 +41,7 @@ export const chatModel = {
         const sql = `
             SELECT id, title, created_at, updated_at, mode
             FROM threads
-            WHERE user_id = $1 AND show_history = false
+            WHERE user_id = $1 AND show_history = true
             ORDER BY updated_at DESC;
         `;
         const result = await pool.query(sql, [userId]);
@@ -67,6 +67,32 @@ export const chatModel = {
         `;
         const result = await pool.query(sql, [userId]);
         return result.rowCount;
+    },
+
+    async updateThreadTitle(pool, threadId, userId, title) {
+        const sql = `
+            UPDATE threads
+            SET title = $1,
+                updated_at = NOW()
+            WHERE id = $2
+              AND user_id = $3
+            RETURNING id, title, updated_at;
+        `;
+        const result = await pool.query(sql, [title, threadId, userId]);
+        return result.rows[0] || null;
+    },
+
+    async deleteThreadById(pool, threadId, userId) {
+        const sql = `
+            UPDATE threads
+            SET show_history = false,
+                updated_at = NOW()
+            WHERE id = $1
+              AND user_id = $2
+            RETURNING id;
+        `;
+        const result = await pool.query(sql, [threadId, userId]);
+        return result.rows[0] || null;
     },
 
     async updateThreadTimestamp(pool, threadId) {

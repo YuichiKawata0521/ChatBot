@@ -166,6 +166,88 @@ export const deleteAllThreads = async (req, res, next) => {
     }
 };
 
+export const updateThreadTitle = async (req, res, next) => {
+    try {
+        const { threadId } = req.params;
+        const { title } = req.body;
+        const userId = req.session.user.id;
+
+        const nextTitle = String(title || '').trim();
+        if (!nextTitle) {
+            return res.status(400).json({
+                success: false,
+                message: 'タイトルは必須です'
+            });
+        }
+
+        const updated = await chatService.updateThreadTitle(getPool(), threadId, userId, nextTitle);
+        if (!updated) {
+            return res.status(404).json({
+                success: false,
+                message: 'スレッドが見つかりません'
+            });
+        }
+
+        logger.info('スレッドタイトルを更新しました', {
+            option: {
+                user_id: userId,
+                thread_id: threadId
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            data: updated
+        });
+    } catch (error) {
+        logger.error('スレッドタイトル更新に失敗しました', {
+            option: {
+                user_id: req.session?.user?.id ?? null,
+                thread_id: req.params?.threadId ?? null,
+                detail: error.message,
+                stack: error.stack
+            }
+        });
+        next(error);
+    }
+};
+
+export const deleteThread = async (req, res, next) => {
+    try {
+        const { threadId } = req.params;
+        const userId = req.session.user.id;
+
+        const deleted = await chatService.deleteThreadById(getPool(), threadId, userId);
+        if (!deleted) {
+            return res.status(404).json({
+                success: false,
+                message: 'スレッドが見つかりません'
+            });
+        }
+
+        logger.info('スレッドを削除しました', {
+            option: {
+                user_id: userId,
+                thread_id: threadId
+            }
+        });
+
+        res.status(200).json({
+            success: true
+        });
+    } catch (error) {
+        logger.error('スレッド削除に失敗しました', {
+            option: {
+                user_id: req.session?.user?.id ?? null,
+                thread_id: req.params?.threadId ?? null,
+                detail: error.message,
+                stack: error.stack
+            }
+        });
+        next(error);
+    }
+};
+
 export const executeRDDAgent = async (req, res, next) => {
     try {
         const pool = getPool();

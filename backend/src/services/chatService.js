@@ -48,6 +48,14 @@ export const chatService = {
         return await chatModel.deleteThreadsByUserId(pool, userId);
     },
 
+    async updateThreadTitle(pool, threadId, userId, title) {
+        return await chatModel.updateThreadTitle(pool, threadId, userId, title);
+    },
+
+    async deleteThreadById(pool, threadId, userId) {
+        return await chatModel.deleteThreadById(pool, threadId, userId);
+    },
+
     async *processChatStream(pool, threadId, userId, userMessage, modelName = 'gpt-4o-mini') {
         const thread = await chatModel.getThread(pool, threadId, userId);
         if (!thread) {
