@@ -259,7 +259,7 @@ export const createUser = async (req, res, next) => {
             password: hashedPassword,
             department_id: department_id || null,
             role: role || 'user',
-            registered_flag: true
+            registered_flag: false
         };
 
         const newUser = await userModel.createUser(pool, userData);
