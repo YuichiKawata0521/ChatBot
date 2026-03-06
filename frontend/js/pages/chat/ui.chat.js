@@ -20,17 +20,106 @@ export const dom = {
     get agentSelectionArea() { return document.getElementById('agent-selection-area'); }
 };
 
-export function addMessage(role, content) {
+function createActionButton(action, iconName, label) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    if (action === 'bad') {
+        button.className = 'message-action-btn bad';
+    } else {
+        button.className = 'message-action-btn';
+    }
+    button.dataset.action = action;
+    button.title = label;
+    button.setAttribute('aria-label', label);
+    button.innerHTML = `<span class="material-symbols-outlined">${iconName}</span>`;
+    return button;
+}
+
+function createMessageActions(role, options = {}) {
+    if (role !== 'user' && role !== 'assistant') return null;
+
+    const actionContainer = document.createElement('div');
+    actionContainer.className = 'message-actions';
+
+    const copyButton = createActionButton('copy', 'content_copy', 'コピー');
+    if (role === 'assistant' && options.deferAssistantCopy) {
+        copyButton.classList.add('hidden');
+    }
+    actionContainer.appendChild(copyButton);
+
+    if (role === 'assistant') {
+        const goodButton = createActionButton('good', 'thumb_up', 'good');
+        actionContainer.appendChild(goodButton);
+
+        const badButton = createActionButton('bad', 'thumb_down', 'bad');
+        actionContainer.appendChild(badButton);
+    }
+
+    return actionContainer;
+}
+
+function applyRatingState(messageRow, rating) {
+    const goodButton = messageRow.querySelector('.message-action-btn[data-action="good"]');
+    const badButton = messageRow.querySelector('.message-action-btn[data-action="bad"]');
+    if (!goodButton || !badButton) return;
+
+    if (rating === 'good' || rating === 'bad') {
+        messageRow.dataset.rating = rating;
+    } else {
+        delete messageRow.dataset.rating;
+    }
+
+    goodButton.classList.toggle('is-active', rating === 'good');
+    badButton.classList.toggle('is-active', rating === 'bad');
+}
+
+export function setMessageMeta(contentDiv, { messageId, rating } = {}) {
+    const messageRow = contentDiv?.closest('.message-row');
+    if (!messageRow) return;
+
+    if (messageId !== undefined && messageId !== null) {
+        messageRow.dataset.messageId = String(messageId);
+    }
+
+    applyRatingState(messageRow, rating || null);
+}
+
+export function setMessageRating(messageRow, rating) {
+    if (!messageRow) return;
+    applyRatingState(messageRow, rating || null);
+}
+
+export function revealAssistantCopyButton(contentDiv) {
+    const messageRow = contentDiv?.closest('.message-row');
+    if (!messageRow) return;
+
+    const copyButton = messageRow.querySelector('.message-action-btn[data-action="copy"]');
+    if (!copyButton) return;
+
+    copyButton.classList.remove('hidden');
+}
+
+export function addMessage(role, content, options = {}) {
     const chatContainer = dom.chatContainer;
     
     const messageDiv = document.createElement('div');
     messageDiv.className = `message-row ${role}`;
+    messageDiv.dataset.sender = role;
 
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-bubble';
     contentDiv.innerHTML = marked.parse(content);
 
     messageDiv.appendChild(contentDiv);
+
+    const actionContainer = createMessageActions(role, options);
+    if (actionContainer) {
+        messageDiv.appendChild(actionContainer);
+    }
+
+    if (options.messageId !== undefined || options.rating !== undefined) {
+        setMessageMeta(contentDiv, options);
+    }
     
     chatContainer.appendChild(messageDiv);
     scrollToBottom();

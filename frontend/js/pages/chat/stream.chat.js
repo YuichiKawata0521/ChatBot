@@ -14,7 +14,7 @@ export const ChatStream = {
         ui.clearInput();
         ui.switchOverlay('show');
 
-        const assistantMsgDiv = ui.addMessage('assistant', '');
+        const assistantMsgDiv = ui.addMessage('assistant', '', { deferAssistantCopy: true });
         let currentReferences = [];
         let overlayHiddenOnStream = false;
 
@@ -71,6 +71,11 @@ export const ChatStream = {
                             } else if (data.type === 'meta' && data.threadId) {
                                 // メタデータ
                                 this.updateThreadId(data.threadId);
+                            } else if (data.type === 'assistant_message' && data.messageId) {
+                                ui.setMessageMeta(assistantMsgDiv, {
+                                    messageId: data.messageId,
+                                    rating: data.rating || null
+                                });
                             } else if (data.type === 'reference') {
                                 currentReferences = data.references;
                             } else if (data.type === 'error') {
@@ -90,6 +95,7 @@ export const ChatStream = {
             if (currentReferences.length > 0) {
                 ui.renderReferenceButtons(assistantMsgDiv, currentReferences);
             }
+            ui.revealAssistantCopyButton(assistantMsgDiv);
             ui.switchOverlay('hide');
         } catch (error) {
             console.error('Stream error: ', error);

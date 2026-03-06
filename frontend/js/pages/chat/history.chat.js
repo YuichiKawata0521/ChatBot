@@ -149,7 +149,10 @@ export async function loadMessages(threadId) {
         }
 
         messages.forEach(msg => {
-            const messageDiv = ui.addMessage(msg.sender, msg.content);
+            const messageDiv = ui.addMessage(msg.sender, msg.content, {
+                messageId: msg.id,
+                rating: msg.rating
+            });
             if (msg.sender === 'assistant' && Array.isArray(msg.references) && msg.references.length > 0) {
                 ui.renderReferenceButtons(messageDiv, msg.references);
             }

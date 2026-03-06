@@ -8,6 +8,7 @@ import { initSettingsMenu, initializeAdminMenu } from './settings.chat.js';
 import { initInputHandlers } from './input.chat.js';
 import { showToast } from '../../common/toast.js';
 import { RequirementAgentWizard } from './agentWizard.js';
+import { copyMessage } from './copy.chat.js';
 
 
 const authChannel = new BroadcastChannel('auth_sync');
@@ -168,6 +169,46 @@ function setupEventListeners() {
     });
 
     handleSidebarTab();
+
+    if (dom.chatContainer) {
+        dom.chatContainer.addEventListener('click', async (event) => {
+            const actionButton = event.target.closest('.message-action-btn');
+            if (!actionButton) return;
+
+            const action = actionButton.dataset.action;
+            const messageRow = actionButton.closest('.message-row');
+            if (!action || !messageRow) return;
+
+            if (action === 'copy') {
+                await copyMessage(messageRow);
+                return;
+            }
+
+            if (action === 'good' || action === 'bad') {
+                const messageId = messageRow.dataset.messageId;
+                if (!messageId) {
+                    showToast('保存前の回答は評価できません');
+                    return;
+                }
+
+                const currentRating = messageRow.dataset.rating || null;
+                const nextRating = currentRating === action ? null : action;
+
+                try {
+                    const response = await api.updateMessageRating(messageId, nextRating);
+                    if (response?.success) {
+                        ui.setMessageRating(messageRow, nextRating);
+                        showToast(nextRating ? '評価を保存しました' : '評価を解除しました', 'success');
+                    } else {
+                        showToast('評価の保存に失敗しました');
+                    }
+                } catch (error) {
+                    console.error('Failed to update message rating:', error);
+                    showToast('評価の保存に失敗しました');
+                }
+            }
+        });
+    }
 
     authChannel.onmessage = (event) => {
         if (event.data.type === 'LOGOUT') {

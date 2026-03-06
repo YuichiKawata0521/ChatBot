@@ -64,6 +64,11 @@ export async function deleteThread(threadId) {
     return await ApiClient.delete(endpoint);
 }
 
+export async function updateMessageRating(messageId, rating) {
+    const endpoint = `/chat/messages/${messageId}/rating`;
+    return await ApiClient.put(endpoint, { rating });
+}
+
 export async function executeRDDAgent(interviewPayload) {
     const endpoint = '/chat/agent/rdd';
     return await ApiClient.post(endpoint, interviewPayload);
