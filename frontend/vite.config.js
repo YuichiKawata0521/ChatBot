@@ -39,7 +39,29 @@ export default defineConfig({
     {
       name: 'rewrite-middleware',
       configureServer(server) {
-        server.middlewares.use((req, res, next) => {
+        server.middlewares.use(async (req, res, next) => {
+          if (req.url === '/') {
+            try {
+              const authResponse = await fetch('http://backend:3000/api/v1/auth/me', {
+                method: 'GET',
+                headers: {
+                  Cookie: req.headers.cookie || ''
+                }
+              });
+
+              if (authResponse.ok) {
+                res.statusCode = 302;
+                res.setHeader('Location', '/chat');
+                return res.end();
+              }
+            } catch (error) {
+            }
+
+            res.statusCode = 302;
+            res.setHeader('Location', '/login');
+            return res.end();
+          }
+
           if (req.url === '/favicon.ico') {
             req.url = '/favicon.svg';
             return next();
