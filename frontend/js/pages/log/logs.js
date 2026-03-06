@@ -127,6 +127,14 @@ function applyFilters() {
     renderTable();
 }
 
+function resolveModuleName(log) {
+    const raw = log?.context?.module_name;
+    if (!raw) return '-';
+    const normalized = String(raw).replace(/\\/g, '/');
+    const parts = normalized.split('/');
+    return parts[parts.length - 1] || '-';
+}
+
 function renderTable() {
     dom.tableBody.innerHTML = '';
     const startIdx = (state.currentPage - 1) * state.itemPerPage;
@@ -165,7 +173,7 @@ function renderTable() {
 
         // 3. モジュール
         const tdModule = document.createElement('td');
-        const moduleName = log.context?.module_name || '-';
+        const moduleName = resolveModuleName(log);
         tdModule.textContent = moduleName;
 
         // 4. メッセージ
@@ -267,7 +275,7 @@ function exportFilteredLogsToCsv() {
         return [
             formatDateTime(log.created_at),
             (log.level || '').toUpperCase(),
-            log.context?.module_name || '-',
+            resolveModuleName(log),
             log.message || '',
             resolveUserName(log),
             formatContextForCsv(log.context)
