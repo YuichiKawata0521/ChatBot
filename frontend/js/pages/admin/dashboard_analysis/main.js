@@ -285,8 +285,9 @@ const updatePeriodLabel = () => {
     if (dom.customRange) {
         dom.customRange.style.display = isCustom ? '' : 'none';
     }
-
+    
     if (isCustom) {
+        dom.customRange.classList.remove('analysis-hidden');
         const start = dom.customStart?.value || '--';
         const end = dom.customEnd?.value || '--';
         dom.periodLabel.textContent = `対象期間: ${start} 〜 ${end}`;
