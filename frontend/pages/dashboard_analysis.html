@@ -18,7 +18,7 @@
     <div class="dashboard-container">
         
         <div class="card">
-            <form class="filter-bar" style="align-items:center; flex-wrap:nowrap;">
+            <form class="filter-bar filter-bar-nowrap">
                 <div class="filter-item">
                     <label>期間</label>
                     <select id="analysis-filter-period">
@@ -28,12 +28,12 @@
                         <option value="custom">カスタム</option>
                     </select>
                 </div>
-                <div class="filter-item" id="analysis-custom-range" style="display:none; min-width:auto;">
+                <div class="filter-item filter-item-min-auto analysis-hidden" id="analysis-custom-range">
                     <label>カスタム期間</label>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <input type="date" id="analysis-custom-start" style="min-width:auto;">
+                    <div class="inline-date-range">
+                        <input type="date" id="analysis-custom-start" class="input-min-auto">
                         <span>〜</span>
-                        <input type="date" id="analysis-custom-end" style="min-width:auto;">
+                        <input type="date" id="analysis-custom-end" class="input-min-auto">
                     </div>
                 </div>
                 <div class="filter-item">
@@ -63,13 +63,16 @@
                     <button id="analysis-btn-clear" type="button" class="btn-secondary">クリア</button>
                 </div>
             </form>
-            <div id="analysis-period-label" style="margin-top:8px; font-size:0.82rem; color:#5c6b7a;">対象期間: --</div>
+            <div id="analysis-period-label" class="analysis-help-text">対象期間: --</div>
         </div>
 
         <div class="grid-2-col">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">アクティブユーザー推移</h3>
+                    <h3 class="card-title card-title-with-total">
+                        <span>アクティブユーザー推移</span>
+                        <span id="analysis-active-user-total" class="chart-total-value"></span>
+                    </h3>
                 </div>
                 <div class="chart-container-wrapper">
                     <canvas id="activeUserChart"></canvas>
@@ -78,7 +81,10 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">コスト推移 ($)</h3>
+                    <h3 class="card-title card-title-with-total">
+                        <span>コスト推移 ($)</span>
+                        <span id="analysis-cost-total" class="chart-total-value"></span>
+                    </h3>
                 </div>
                 <div class="chart-container-wrapper">
                     <canvas id="costChart"></canvas>
@@ -88,6 +94,7 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">RAGヒット率・回答精度</h3>
+                    <button id="analysis-rag-view-all" type="button" class="btn-secondary">view all</button>
                 </div>
                 <div class="chart-container-wrapper">
                     <canvas id="ragAccuracyChart"></canvas>
@@ -97,22 +104,22 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">部署別利用割合</h3>
-                    <button id="analysis-department-filter-clear" type="button" style="border:1px solid #d0d7de; background:#fff; color:#2c3e50; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:0.85rem;">
+                    <button id="analysis-department-filter-clear" type="button" class="btn-tertiary-sm">
                         クリア
                     </button>
                 </div>
-                <div style="padding: 0 10px 8px 10px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content: space-between;">
-                    <select id="analysis-department-filter-dep1" style="min-width:auto; padding:6px 8px; border:1px solid #d0d7de; border-radius:6px;">
+                <div class="department-inline-filters">
+                    <select id="analysis-department-filter-dep1" class="department-inline-select">
                         <option value="">部署（本部）: 全部署</option>
                     </select>
-                    <select id="analysis-department-filter-dep2" style="min-width:auto; padding:6px 8px; border:1px solid #d0d7de; border-radius:6px;">
+                    <select id="analysis-department-filter-dep2" class="department-inline-select">
                         <option value="">部署（部）: 全部署</option>
                     </select>
-                    <select id="analysis-department-filter-dep3" style="min-width:auto; padding:6px 8px; border:1px solid #d0d7de; border-radius:6px;">
+                    <select id="analysis-department-filter-dep3" class="department-inline-select">
                         <option value="">部署（課）: 全部署</option>
                     </select>
                 </div>
-                <div class="chart-container-wrapper" style="height: 250px;"> <canvas id="deptPieChart"></canvas>
+                <div class="chart-container-wrapper dept-pie-chart-wrapper"> <canvas id="deptPieChart"></canvas>
                 </div>
             </div>
         </div>
@@ -121,19 +128,19 @@
             <div class="card-header">
                 <h3 class="card-title">部署別 詳細利用データ</h3>
             </div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <table class="analysis-table">
                 <thead>
-                    <tr style="background: #f8f9fa; border-bottom: 2px solid #ddd; text-align: left;">
-                        <th style="padding: 12px;">部署名</th>
-                        <th style="padding: 12px;">ユーザー数</th>
-                        <th style="padding: 12px;">総メッセージ数</th>
-                        <th style="padding: 12px;">RAG利用率</th>
-                        <th style="padding: 12px;">推定コスト</th>
+                    <tr class="analysis-table-head-row">
+                        <th class="th-pad-12">部署名</th>
+                        <th class="th-pad-12">ユーザー数</th>
+                        <th class="th-pad-12">総メッセージ数</th>
+                        <th class="th-pad-12">RAG利用率</th>
+                        <th class="th-pad-12">推定コスト</th>
                     </tr>
                 </thead>
                 <tbody id="analysis-department-usage-tbody"></tbody>
             </table>
-            <div style="margin-top:8px; font-size:0.82rem; color:#5c6b7a;">部署行または円グラフのセグメントをクリックすると所属社員一覧を表示します</div>
+            <div class="analysis-help-text">部署行または円グラフのセグメントをクリックすると所属社員一覧を表示します</div>
         </div>
 
         <div class="card">
@@ -146,13 +153,13 @@
                         <h4>good</h4>
                         <button id="analysis-rating-good-view-all" type="button" class="btn-secondary">view all</button>
                     </div>
-                    <table style="width:100%; border-collapse: collapse; font-size: 0.88rem;">
+                    <table class="analysis-table analysis-table-sm">
                         <thead>
-                            <tr style="border-bottom:2px solid #eee; text-align:left; white-space:nowrap;">
-                                <th style="padding:10px;">日時</th>
-                                <th style="padding:10px;">ユーザー</th>
-                                <th style="padding:10px;">質問</th>
-                                <th style="padding:10px;">AI回答</th>
+                            <tr class="analysis-table-head-row-nowrap">
+                                <th class="th-pad-10">日時</th>
+                                <th class="th-pad-10">ユーザー</th>
+                                <th class="th-pad-10">質問</th>
+                                <th class="th-pad-10">AI回答</th>
                             </tr>
                         </thead>
                         <tbody id="analysis-rating-good-tbody"></tbody>
@@ -164,13 +171,13 @@
                         <h4>bad</h4>
                         <button id="analysis-rating-bad-view-all" type="button" class="btn-secondary">view all</button>
                     </div>
-                    <table style="width:100%; border-collapse: collapse; font-size: 0.88rem;">
+                    <table class="analysis-table analysis-table-sm">
                         <thead>
-                            <tr style="border-bottom:2px solid #eee; text-align:left; white-space:nowrap;">
-                                <th style="padding:10px;">日時</th>
-                                <th style="padding:10px;">ユーザー</th>
-                                <th style="padding:10px;">質問</th>
-                                <th style="padding:10px;">AI回答</th>
+                            <tr class="analysis-table-head-row-nowrap">
+                                <th class="th-pad-10">日時</th>
+                                <th class="th-pad-10">ユーザー</th>
+                                <th class="th-pad-10">質問</th>
+                                <th class="th-pad-10">AI回答</th>
                             </tr>
                         </thead>
                         <tbody id="analysis-rating-bad-tbody"></tbody>
@@ -183,25 +190,30 @@
         </div>
     </div>
 
-    <div id="analysis-rag-detail-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1200; align-items:center; justify-content:center;">
-        <div style="width:min(1100px, 94vw); max-height:84vh; overflow:auto; background:#fff; border-radius:8px; box-shadow:0 10px 28px rgba(0,0,0,.18);">
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #eee;">
+    <div id="analysis-rag-detail-modal" class="analysis-modal-overlay">
+        <div class="analysis-modal-panel analysis-modal-panel-rag">
+            <div class="analysis-modal-header">
                 <div>
-                    <h3 id="analysis-rag-detail-title" style="margin:0; font-size:1rem; color:#2c3e50;">RAG日別質問/回答一覧</h3>
-                    <div id="analysis-rag-detail-summary" style="margin-top:6px; font-size:0.86rem; color:#5c6b7a;">-</div>
+                    <h3 id="analysis-rag-detail-title" class="analysis-modal-title">RAG日別質問/回答一覧</h3>
+                    <div id="analysis-rag-detail-summary" class="analysis-modal-summary">-</div>
                 </div>
-                <button id="analysis-rag-detail-close" type="button" style="border:none; background:transparent; font-size:1.4rem; line-height:1; cursor:pointer; color:#7f8c8d;">×</button>
+                <button id="analysis-rag-detail-close" type="button" class="analysis-modal-close">×</button>
             </div>
-            <div style="padding:12px 16px;">
-                <table style="width:100%; border-collapse: collapse; font-size: 0.9rem;">
+            <div class="analysis-modal-content">
+                <div class="analysis-rag-sort-toolbar">
+                    <button id="analysis-rag-sort-score-toggle" type="button" class="btn-tertiary-sm">max score</button>
+                    <button id="analysis-rag-sort-doc-toggle" type="button" class="btn-tertiary-sm">ドキュメント名</button>
+                    <button id="analysis-rag-sort-clear" type="button" class="btn-tertiary-sm">クリア</button>
+                </div>
+                <table class="analysis-table">
                     <thead>
-                        <tr style="border-bottom:2px solid #eee; text-align:left; white-space:nowrap;">
-                            <th style="padding:10px;">日時</th>
-                            <th style="padding:10px;">質問</th>
-                            <th style="padding:10px;">回答</th>
-                            <th style="padding:10px; text-align:center;">hit</th>
-                            <th style="padding:10px; text-align:right;">max score</th>
-                            <th style="padding:10px; text-align:center;">rating</th>
+                        <tr class="analysis-table-head-row-nowrap">
+                            <th class="th-pad-10">日時</th>
+                            <th class="th-pad-10">ユーザー</th>
+                            <th class="th-pad-10">質問</th>
+                            <th class="th-pad-10">回答</th>
+                            <th class="th-pad-10 th-align-right">max score</th>
+                            <th class="th-pad-10">ドキュメント名</th>
                         </tr>
                     </thead>
                     <tbody id="analysis-rag-detail-tbody"></tbody>
@@ -210,26 +222,26 @@
         </div>
     </div>
 
-    <div id="analysis-department-member-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1200; align-items:center; justify-content:center;">
-        <div style="width:min(1050px, 94vw); max-height:84vh; overflow:auto; background:#fff; border-radius:8px; box-shadow:0 10px 28px rgba(0,0,0,.18);">
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #eee;">
+    <div id="analysis-department-member-modal" class="analysis-modal-overlay">
+        <div class="analysis-modal-panel analysis-modal-panel-member">
+            <div class="analysis-modal-header">
                 <div>
-                    <h3 id="analysis-department-member-title" style="margin:0; font-size:1rem; color:#2c3e50;">所属社員一覧</h3>
-                    <div id="analysis-department-member-summary" style="margin-top:6px; font-size:0.86rem; color:#5c6b7a;">-</div>
+                    <h3 id="analysis-department-member-title" class="analysis-modal-title">所属社員一覧</h3>
+                    <div id="analysis-department-member-summary" class="analysis-modal-summary">-</div>
                 </div>
-                <button id="analysis-department-member-close" type="button" style="border:none; background:transparent; font-size:1.4rem; line-height:1; cursor:pointer; color:#7f8c8d;">×</button>
+                <button id="analysis-department-member-close" type="button" class="analysis-modal-close">×</button>
             </div>
-            <div style="padding:12px 16px;">
-                <table style="width:100%; border-collapse: collapse; font-size: 0.9rem;">
+            <div class="analysis-modal-content">
+                <table class="analysis-table">
                     <thead>
-                        <tr style="border-bottom:2px solid #eee; text-align:left; white-space:nowrap;">
-                            <th style="padding:10px;">社員番号</th>
-                            <th style="padding:10px;">氏名</th>
-                            <th style="padding:10px;">メールアドレス</th>
-                            <th style="padding:10px; text-align:right;">期間内メッセージ数</th>
-                            <th style="padding:10px; text-align:right;">RAG利用数</th>
-                            <th style="padding:10px; text-align:right;">RAG利用率</th>
-                            <th style="padding:10px;">最終利用日時</th>
+                        <tr class="analysis-table-head-row-nowrap">
+                            <th class="th-pad-10">社員番号</th>
+                            <th class="th-pad-10">氏名</th>
+                            <th class="th-pad-10">メールアドレス</th>
+                            <th class="th-pad-10 th-align-right">期間内メッセージ数</th>
+                            <th class="th-pad-10 th-align-right">RAG利用数</th>
+                            <th class="th-pad-10 th-align-right">RAG利用率</th>
+                            <th class="th-pad-10">最終利用日時</th>
                         </tr>
                     </thead>
                     <tbody id="analysis-department-member-tbody"></tbody>
@@ -238,23 +250,23 @@
         </div>
     </div>
 
-    <div id="analysis-rating-list-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1200; align-items:center; justify-content:center;">
-        <div style="width:min(1100px, 94vw); max-height:84vh; overflow:auto; background:#fff; border-radius:8px; box-shadow:0 10px 28px rgba(0,0,0,.18);">
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #eee;">
+    <div id="analysis-rating-list-modal" class="analysis-modal-overlay">
+        <div class="analysis-modal-panel analysis-modal-panel-rag">
+            <div class="analysis-modal-header">
                 <div>
-                    <h3 id="analysis-rating-list-title" style="margin:0; font-size:1rem; color:#2c3e50;">レーティング一覧</h3>
-                    <div id="analysis-rating-list-summary" style="margin-top:6px; font-size:0.86rem; color:#5c6b7a;">-</div>
+                    <h3 id="analysis-rating-list-title" class="analysis-modal-title">レーティング一覧</h3>
+                    <div id="analysis-rating-list-summary" class="analysis-modal-summary">-</div>
                 </div>
-                <button id="analysis-rating-list-close" type="button" style="border:none; background:transparent; font-size:1.4rem; line-height:1; cursor:pointer; color:#7f8c8d;">×</button>
+                <button id="analysis-rating-list-close" type="button" class="analysis-modal-close">×</button>
             </div>
-            <div style="padding:12px 16px;">
-                <table style="width:100%; border-collapse: collapse; font-size: 0.9rem;">
+            <div class="analysis-modal-content">
+                <table class="analysis-table">
                     <thead>
-                        <tr style="border-bottom:2px solid #eee; text-align:left; white-space:nowrap;">
-                            <th style="padding:10px;">日時</th>
-                            <th style="padding:10px;">ユーザー</th>
-                            <th style="padding:10px;">質問</th>
-                            <th style="padding:10px;">AI回答</th>
+                        <tr class="analysis-table-head-row-nowrap">
+                            <th class="th-pad-10">日時</th>
+                            <th class="th-pad-10">ユーザー</th>
+                            <th class="th-pad-10">質問</th>
+                            <th class="th-pad-10">AI回答</th>
                         </tr>
                     </thead>
                     <tbody id="analysis-rating-list-tbody"></tbody>
@@ -263,23 +275,23 @@
         </div>
     </div>
 
-    <div id="analysis-message-detail-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1300; align-items:center; justify-content:center;">
-        <div style="width:min(900px, 94vw); max-height:84vh; overflow:auto; background:#fff; border-radius:8px; box-shadow:0 10px 28px rgba(0,0,0,.18);">
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #eee;">
+    <div id="analysis-message-detail-modal" class="analysis-modal-overlay analysis-modal-overlay-top">
+        <div class="analysis-modal-panel analysis-modal-panel-message">
+            <div class="analysis-modal-header">
                 <div>
-                    <h3 id="analysis-message-detail-title" style="margin:0; font-size:1rem; color:#2c3e50;">質問/回答 詳細</h3>
-                    <div id="analysis-message-detail-meta" style="margin-top:6px; font-size:0.86rem; color:#5c6b7a;">-</div>
+                    <h3 id="analysis-message-detail-title" class="analysis-modal-title">質問/回答 詳細</h3>
+                    <div id="analysis-message-detail-meta" class="analysis-modal-summary">-</div>
                 </div>
-                <button id="analysis-message-detail-close" type="button" style="border:none; background:transparent; font-size:1.4rem; line-height:1; cursor:pointer; color:#7f8c8d;">×</button>
+                <button id="analysis-message-detail-close" type="button" class="analysis-modal-close">×</button>
             </div>
-            <div style="padding:16px; display:flex; flex-direction:column; gap:14px;">
+            <div class="analysis-message-detail-content">
                 <section>
-                    <div style="font-size:0.85rem; color:#5c6b7a; margin-bottom:6px;">質問</div>
-                    <div id="analysis-message-detail-question" style="padding:12px; background:#f8f9fa; border:1px solid #e5e7eb; border-radius:6px; white-space:pre-wrap;"></div>
+                    <div class="analysis-message-detail-label">質問</div>
+                    <div id="analysis-message-detail-question" class="analysis-message-detail-box"></div>
                 </section>
                 <section>
-                    <div style="font-size:0.85rem; color:#5c6b7a; margin-bottom:6px;">AI回答</div>
-                    <div id="analysis-message-detail-answer" style="padding:12px; background:#f8f9fa; border:1px solid #e5e7eb; border-radius:6px; white-space:pre-wrap;"></div>
+                    <div class="analysis-message-detail-label">AI回答</div>
+                    <div id="analysis-message-detail-answer" class="analysis-message-detail-box"></div>
                 </section>
             </div>
         </div>
