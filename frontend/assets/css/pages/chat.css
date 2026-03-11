@@ -233,8 +233,8 @@ summary {
 }
 
 .message-action-btn {
-    border: 1px solid #bbdefb;
-    background-color: #fff;
+    border: none;
+    background-color: #e3f2fd;
     color: #1565c0;
     border-radius: 999px;
     width: 32px;
@@ -247,7 +247,7 @@ summary {
 }
 
 .message-action-btn:hover {
-    background-color: #e3f2fd;
+    border: 1px solid #bbdefb;
 }
 
 .message-action-btn.is-active {
