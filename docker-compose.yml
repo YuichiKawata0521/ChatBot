@@ -7,14 +7,22 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./backend/db:/docker-entrypoint-initdb.d
+    ports:
+      - "${DB_PORT}:5432"
     networks:
       - app_net
   
   backend:
-    build: 
+    build:
       context: ./backend
+      target: dev
     env_file:
       - .env
+    ports:
+      - "${BACKEND_PORT}:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
     depends_on:
       - db
     networks:
@@ -39,16 +47,29 @@ services:
   llm:
     build:
       context: ./llm
+    ports:
+      - "8000:8000"
     volumes:
-      - llm_cache:/app/.cache
+      - ./llm:/app
     env_file:
       - .env
     networks:
       - app_net
 
+  dozzle:
+    container_name: dozzle
+    image: amir20/dozzle:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "${DOZZLE_PORT}:8080"
+    networks:
+      - app_net
+    environment:
+      - DOZZLE_LEVEL=${DOZZLE_LEVEL}
+
 volumes:
   db_data:
-  llm_cache:
 
 networks:
   app_net:
