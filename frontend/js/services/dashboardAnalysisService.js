@@ -43,13 +43,17 @@ export class dashboardAnalysisService {
 
     async getRagQualityDetails(targetDate, filters = {}) {
         const params = new URLSearchParams();
-        params.set('targetDate', String(targetDate || ''));
 
         const appendIf = (key, value) => {
             if (value !== undefined && value !== null && String(value).trim() !== '') {
                 params.set(key, String(value));
             }
         };
+
+        appendIf('targetDate', targetDate);
+        appendIf('period', filters.period);
+        appendIf('fromDate', filters.fromDate);
+        appendIf('toDate', filters.toDate);
 
         appendIf('dep1Name', filters.dep1Name);
         appendIf('dep2Name', filters.dep2Name);

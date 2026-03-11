@@ -36,6 +36,10 @@ const dom = {
     ratingBadTbody: document.getElementById('analysis-rating-bad-tbody'),
     ratingGoodViewAllButton: document.getElementById('analysis-rating-good-view-all'),
     ratingBadViewAllButton: document.getElementById('analysis-rating-bad-view-all'),
+    ragViewAllButton: document.getElementById('analysis-rag-view-all'),
+    ragSortScoreToggleButton: document.getElementById('analysis-rag-sort-score-toggle'),
+    ragSortDocToggleButton: document.getElementById('analysis-rag-sort-doc-toggle'),
+    ragSortClearButton: document.getElementById('analysis-rag-sort-clear'),
     applyButton: document.getElementById('analysis-btn-apply'),
     clearButton: document.getElementById('analysis-btn-clear'),
     departmentUsageTbody: document.getElementById('analysis-department-usage-tbody')
@@ -48,6 +52,11 @@ let departmentUsageBaseItems = [];
 let ratingGoodItems = [];
 let ratingBadItems = [];
 let ratingListItems = [];
+let ragTrendData = null;
+let ragLastHoveredPoint = null;
+let ragDetailItems = [];
+let ragDetailSortKey = '';
+let ragDetailSortOrder = '';
 
 const modalDom = {
     overlay: document.getElementById('analysis-rag-detail-modal'),
@@ -80,6 +89,131 @@ const messageDetailModalDom = {
     meta: document.getElementById('analysis-message-detail-meta'),
     question: document.getElementById('analysis-message-detail-question'),
     answer: document.getElementById('analysis-message-detail-answer')
+};
+
+const sortRagDetailItems = (items = [], sortKey = '', sortOrder = '') => {
+    const sorted = [...items];
+    if (!sortKey || !sortOrder) return sorted;
+
+    const direction = sortOrder === 'asc' ? 1 : -1;
+
+    if (sortKey === 'score') {
+        return sorted.sort((a, b) => {
+            const left = Number(a?.maxRelevanceScore || 0);
+            const right = Number(b?.maxRelevanceScore || 0);
+            return (left - right) * direction;
+        });
+    }
+
+    if (sortKey === 'document') {
+        return sorted.sort((a, b) => {
+            const left = String(a?.referenceDocumentNames || '').trim();
+            const right = String(b?.referenceDocumentNames || '').trim();
+            return left.localeCompare(right, 'ja') * direction;
+        });
+    }
+
+    return sorted;
+};
+
+const renderRagDetailTable = () => {
+    if (!modalDom.tableBody) return;
+
+    const displayItems = sortRagDetailItems(ragDetailItems, ragDetailSortKey, ragDetailSortOrder);
+    modalDom.tableBody.innerHTML = buildDetailRowsHtml(displayItems);
+};
+
+const updateRagSortButtonLabels = () => {
+    if (dom.ragSortScoreToggleButton) {
+        if (ragDetailSortKey === 'score') {
+            dom.ragSortScoreToggleButton.textContent = ragDetailSortOrder === 'asc' ? 'max score ↑' : 'max score ↓';
+        } else {
+            dom.ragSortScoreToggleButton.textContent = 'max score';
+        }
+    }
+
+    if (dom.ragSortDocToggleButton) {
+        if (ragDetailSortKey === 'document') {
+            dom.ragSortDocToggleButton.textContent = ragDetailSortOrder === 'asc' ? 'ドキュメント名 ↑' : 'ドキュメント名 ↓';
+        } else {
+            dom.ragSortDocToggleButton.textContent = 'ドキュメント名';
+        }
+    }
+};
+
+const toggleRagSort = (sortKey) => {
+    if (ragDetailSortKey === sortKey) {
+        ragDetailSortOrder = ragDetailSortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+        ragDetailSortKey = sortKey;
+        ragDetailSortOrder = 'asc';
+    }
+
+    updateRagSortButtonLabels();
+    renderRagDetailTable();
+};
+
+const clearRagSort = (shouldRender = true) => {
+    ragDetailSortKey = '';
+    ragDetailSortOrder = '';
+    updateRagSortButtonLabels();
+    if (shouldRender) {
+        renderRagDetailTable();
+    }
+};
+
+const buildRagPointInfo = (trendData, index) => {
+    const labels = trendData?.labels || [];
+    if (!labels[index]) return null;
+
+    const ragResponseCounts = trendData?.ragResponseCounts || [];
+    const hitResponseCounts = trendData?.hitResponseCounts || [];
+    const ratedResponseCounts = trendData?.ratedResponseCounts || [];
+    const goodResponseCounts = trendData?.goodResponseCounts || [];
+    const hitRates = trendData?.hitRates || [];
+    const accuracyRates = trendData?.accuracyRates || [];
+
+    const total = Number(ragResponseCounts[index] || 0);
+    const hit = Number(hitResponseCounts[index] || 0);
+    const rated = Number(ratedResponseCounts[index] || 0);
+    const good = Number(goodResponseCounts[index] || 0);
+    const bad = Math.max(0, rated - good);
+
+    return {
+        index,
+        targetDate: labels[index],
+        displayDate: labels[index],
+        hitRate: Number(hitRates[index] || 0) * 100,
+        accuracyRate: Number(accuracyRates[index] || 0) * 100,
+        total,
+        hit,
+        rated,
+        good,
+        bad
+    };
+};
+
+const formatRagHoverSummary = (pointInfo) => {
+    if (!pointInfo) return '';
+
+    return `表示指標: ${pointInfo.displayDate} / ヒット率: ${Number(pointInfo.hitRate || 0).toFixed(1)}% / 回答精度: ${Number(pointInfo.accuracyRate || 0).toFixed(1)}% / 総質問: ${formatNumber(pointInfo.total)} / hit: ${formatNumber(pointInfo.hit)} / good: ${formatNumber(pointInfo.good)} / bad: ${formatNumber(pointInfo.bad)}`;
+};
+
+const getRagViewAllTarget = () => {
+    if (ragLastHoveredPoint?.targetDate) {
+        return ragLastHoveredPoint;
+    }
+
+    const labels = ragTrendData?.labels || [];
+    if (!labels.length) return null;
+
+    return buildRagPointInfo(ragTrendData, labels.length - 1);
+};
+
+const updateRagViewAllButtonState = () => {
+    if (!dom.ragViewAllButton) return;
+    const hasData = Boolean((ragTrendData?.labels || []).length);
+    dom.ragViewAllButton.disabled = !hasData;
 };
 
 
@@ -199,14 +333,31 @@ const loadCostTrend = async () => {
 const loadRagQualityTrend = async () => {
     try {
         const trendData = await service.getRagQualityTrend(getFilterState());
+        ragTrendData = trendData;
+        ragLastHoveredPoint = null;
         renderRagQualityTrendChart(trendData, {
             onPointClick: async ({ targetDate, displayDate }) => {
                 await openRagDetailModal(targetDate, displayDate);
+            },
+            onPointHover: (pointInfo) => {
+                if (pointInfo?.targetDate) {
+                    ragLastHoveredPoint = pointInfo;
+                }
             }
         });
+        updateRagViewAllButtonState();
     } catch (error) {
         console.error('RAG品質推移の取得に失敗しました', error);
+        ragTrendData = null;
+        ragLastHoveredPoint = null;
+        updateRagViewAllButtonState();
     }
+};
+
+const openRagDetailFromViewAll = async () => {
+    await openRagDetailModal('', 'フィルター条件の全期間', {
+        mode: 'all'
+    });
 };
 
 const bindRatingRowEvents = (tableBody, items) => {
@@ -298,7 +449,7 @@ const openRatingListModal = async (rating) => {
     }
     ratingListModalDom.tableBody.innerHTML = `
         <tr>
-            <td colspan="4" style="padding:12px; color:#7f8c8d;">読み込み中...</td>
+            <td colspan="4" class="analysis-status-cell analysis-status-muted">読み込み中...</td>
         </tr>
     `;
 
@@ -323,7 +474,7 @@ const openRatingListModal = async (rating) => {
         }
         ratingListModalDom.tableBody.innerHTML = `
             <tr>
-                <td colspan="4" style="padding:12px; color:#e74c3c;">取得に失敗しました</td>
+                <td colspan="4" class="analysis-status-cell analysis-status-error">取得に失敗しました</td>
             </tr>
         `;
     }
@@ -381,7 +532,7 @@ const loadDepartmentUsage = async () => {
         if (dom.departmentUsageTbody) {
             dom.departmentUsageTbody.innerHTML = `
                 <tr>
-                    <td colspan="5" style="padding:12px; color:#e74c3c;">取得に失敗しました</td>
+                    <td colspan="5" class="analysis-status-cell analysis-status-error">取得に失敗しました</td>
                 </tr>
             `;
         }
@@ -406,7 +557,7 @@ const openDepartmentMemberModal = async (departmentItem = {}) => {
     }
     memberModalDom.tableBody.innerHTML = `
         <tr>
-            <td colspan="7" style="padding:12px; color:#7f8c8d;">読み込み中...</td>
+            <td colspan="7" class="analysis-status-cell analysis-status-muted">読み込み中...</td>
         </tr>
     `;
 
@@ -430,64 +581,72 @@ const openDepartmentMemberModal = async (departmentItem = {}) => {
         }
         memberModalDom.tableBody.innerHTML = `
             <tr>
-                <td colspan="7" style="padding:12px; color:#e74c3c;">取得に失敗しました</td>
+                <td colspan="7" class="analysis-status-cell analysis-status-error">取得に失敗しました</td>
             </tr>
         `;
     }
 };
 
-const openRagDetailModal = async (targetDate, displayDate) => {
+const openRagDetailModal = async (targetDate, displayDate, options = {}) => {
     if (!modalDom.overlay || !modalDom.tableBody) return;
 
-    const normalizedTargetDate = normalizeToYmd(targetDate);
+    const mode = String(options?.mode || 'day');
+    const isAllMode = mode === 'all';
+    const normalizedTargetDate = isAllMode ? '' : normalizeToYmd(targetDate);
     const modalDisplayDate = displayDate || normalizedTargetDate || String(targetDate || '');
+    const hoverSummary = String(options?.hoverSummary || '').trim();
+    const shouldShowHoverSummary = !isAllMode && !!hoverSummary;
+
+    clearRagSort(false);
 
     modalDom.overlay.style.display = 'flex';
     if (modalDom.title) {
-        modalDom.title.textContent = `RAG日別質問/回答一覧 (${modalDisplayDate})`;
+        modalDom.title.textContent = isAllMode
+            ? `RAG質問/回答一覧 (${modalDisplayDate})`
+            : `RAG日別質問/回答一覧 (${modalDisplayDate})`;
     }
     if (modalDom.summary) {
-        modalDom.summary.textContent = '読み込み中...';
+        modalDom.summary.textContent = shouldShowHoverSummary ? `${hoverSummary} / 読み込み中...` : '読み込み中...';
     }
     modalDom.tableBody.innerHTML = `
         <tr>
-            <td colspan="6" style="padding:12px; color:#7f8c8d;">読み込み中...</td>
+            <td colspan="6" class="analysis-status-cell analysis-status-muted">読み込み中...</td>
         </tr>
     `;
 
-    if (!normalizedTargetDate) {
+    if (!isAllMode && !normalizedTargetDate) {
         if (modalDom.summary) {
-            modalDom.summary.textContent = '日付形式が不正です';
+            modalDom.summary.textContent = shouldShowHoverSummary ? `${hoverSummary} / 日付形式が不正です` : '日付形式が不正です';
         }
         modalDom.tableBody.innerHTML = `
             <tr>
-                <td colspan="6" style="padding:12px; color:#e67e22;">対象日の形式を解釈できませんでした</td>
+                <td colspan="6" class="analysis-status-cell analysis-status-warn">対象日の形式を解釈できませんでした</td>
             </tr>
         `;
         return;
     }
 
     try {
-        const details = await service.getRagQualityDetails(normalizedTargetDate, getFilterState());
+        const details = await service.getRagQualityDetails(isAllMode ? '' : normalizedTargetDate, getFilterState());
         const items = details?.items || [];
-        modalDom.tableBody.innerHTML = buildDetailRowsHtml(items);
+        ragDetailItems = items;
+        renderRagDetailTable();
 
         if (modalDom.summary) {
             const total = items.length;
             const hitCount = items.filter((row) => !!row.hasHit).length;
-            const ratedCount = items.filter((row) => row.rating === 'good' || row.rating === 'bad').length;
-            const goodCount = items.filter((row) => row.rating === 'good').length;
-            const badCount = items.filter((row) => row.rating === 'bad').length;
-            modalDom.summary.textContent = `総質問数: ${total} / 0.7超ヒット: ${hitCount} / レーティング済み: ${ratedCount} (good: ${goodCount}, bad: ${badCount})`;
+            const detailSummary = `総質問数: ${total} / 0.7超ヒット: ${hitCount}`;
+            modalDom.summary.textContent = shouldShowHoverSummary ? `${hoverSummary} / ${detailSummary}` : detailSummary;
         }
     } catch (error) {
         console.error('RAG日別詳細の取得に失敗しました', error);
+        ragDetailItems = [];
         if (modalDom.summary) {
-            modalDom.summary.textContent = 'データ取得に失敗しました';
+            modalDom.summary.textContent = shouldShowHoverSummary ? `${hoverSummary} / データ取得に失敗しました` : 'データ取得に失敗しました';
         }
         modalDom.tableBody.innerHTML = `
             <tr>
-                <td colspan="6" style="padding:12px; color:#e74c3c;">取得に失敗しました</td>
+                <td colspan="6" class="analysis-status-cell analysis-status-error">取得に失敗しました</td>
             </tr>
         `;
     }
@@ -627,6 +786,22 @@ const bindEvents = () => {
         await openRatingListModal('bad');
     });
 
+    dom.ragViewAllButton?.addEventListener('click', async () => {
+        await openRagDetailFromViewAll();
+    });
+
+    dom.ragSortScoreToggleButton?.addEventListener('click', () => {
+        toggleRagSort('score');
+    });
+
+    dom.ragSortDocToggleButton?.addEventListener('click', () => {
+        toggleRagSort('document');
+    });
+
+    dom.ragSortClearButton?.addEventListener('click', () => {
+        clearRagSort();
+    });
+
     ratingListModalDom.closeButton?.addEventListener('click', closeRatingListModal);
     ratingListModalDom.overlay?.addEventListener('click', (event) => {
         if (event.target === ratingListModalDom.overlay) {
@@ -650,6 +825,7 @@ function jumpToOperation() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    updateRagSortButtonLabels();
     jumpToOperation();
     bindEvents();
     updatePeriodLabel();

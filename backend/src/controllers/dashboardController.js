@@ -295,14 +295,19 @@ export const getAnalysisRagQualityDailyDetails = async (req, res, next) => {
         const masterIdentities = getMasterUserIdentities();
 
         const targetDate = String(req.query?.targetDate || '').trim();
-        if (!isValidYmd(targetDate)) {
+        const hasTargetDate = targetDate !== '';
+        if (hasTargetDate && !isValidYmd(targetDate)) {
             return next(new AppError('targetDate は YYYY-MM-DD 形式で指定してください', 400));
         }
+
+        const { period, fromDate, toDate } = buildAnalysisDateRange(req.query || {});
 
         const { dep1Name, dep2Name, dep3Name } = getDepartmentFilters(req.query);
 
         const rows = await dashboardModel.getAnalysisRagQualityDailyDetails(pool, masterIdentities, {
-            targetDate,
+            targetDate: hasTargetDate ? targetDate : null,
+            fromDate,
+            toDate,
             dep1Name,
             dep2Name,
             dep3Name
@@ -311,7 +316,10 @@ export const getAnalysisRagQualityDailyDetails = async (req, res, next) => {
         res.status(200).json({
             success: true,
             data: {
-                targetDate,
+                period,
+                fromDate,
+                toDate,
+                targetDate: hasTargetDate ? targetDate : null,
                 dep1Name,
                 dep2Name,
                 dep3Name,
@@ -328,7 +336,8 @@ export const getAnalysisRagQualityDailyDetails = async (req, res, next) => {
                     question: row.question_content || '',
                     answer: row.answer_content || '',
                     hasHit: safeNumber(row.has_hit) > 0,
-                    maxRelevanceScore: Number(row.max_relevance_score || 0)
+                    maxRelevanceScore: Number(row.max_relevance_score || 0),
+                    referenceDocumentNames: row.reference_document_names || ''
                 }))
             }
         });

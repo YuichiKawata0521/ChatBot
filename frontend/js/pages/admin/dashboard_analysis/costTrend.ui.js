@@ -1,4 +1,7 @@
 let costChart = null;
+const costTotalEl = document.getElementById('analysis-cost-total');
+
+const formatCost = (value) => Number(value || 0).toFixed(5);
 
 const toJpDateLabel = (rawDate) => {
     if (!rawDate) return '';
@@ -22,6 +25,11 @@ export const renderCostTrendChart = (trendData) => {
 
     const labels = (trendData?.labels || []).map(toJpDateLabel);
     const costAmounts = trendData?.costAmounts || [];
+    const totalCost = costAmounts.reduce((sum, value) => sum + Number(value || 0), 0);
+
+    if (costTotalEl) {
+        costTotalEl.textContent = `合計: $${formatCost(totalCost)}`;
+    }
 
     if (costChart) {
         costChart.destroy();
@@ -52,7 +60,7 @@ export const renderCostTrendChart = (trendData) => {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        callback: (value) => `$${Number(value || 0).toFixed(5)}`
+                        callback: (value) => `$${formatCost(value)}`
                     },
                     title: {
                         display: true,
@@ -67,7 +75,7 @@ export const renderCostTrendChart = (trendData) => {
                 },
                 tooltip: {
                     callbacks: {
-                        label: (ctx) => `コスト: $${Number(ctx?.parsed?.y || 0).toFixed(5)}`
+                        label: (ctx) => `コスト: $${formatCost(ctx?.parsed?.y)}`
                     }
                 }
             }

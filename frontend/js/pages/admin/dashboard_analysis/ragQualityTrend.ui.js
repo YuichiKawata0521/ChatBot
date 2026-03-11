@@ -20,6 +20,27 @@ const toPercent = (value) => Number(value || 0) * 100;
 
 const safeNumber = (value) => Number(value || 0);
 
+const buildHoverInfo = ({ index, rawLabels, labels, hitRates, accuracyRates, ragResponseCounts, hitResponseCounts, ratedResponseCounts, goodResponseCounts }) => {
+    const total = safeNumber(ragResponseCounts[index]);
+    const hit = safeNumber(hitResponseCounts[index]);
+    const rated = safeNumber(ratedResponseCounts[index]);
+    const good = safeNumber(goodResponseCounts[index]);
+    const bad = Math.max(0, rated - good);
+
+    return {
+        index,
+        targetDate: rawLabels[index],
+        displayDate: labels[index] || rawLabels[index],
+        hitRate: Number(hitRates[index] || 0),
+        accuracyRate: Number(accuracyRates[index] || 0),
+        total,
+        hit,
+        rated,
+        good,
+        bad
+    };
+};
+
 export const renderRagQualityTrendChart = (trendData, options = {}) => {
     const canvas = document.getElementById('ragAccuracyChart');
     if (!canvas || typeof Chart === 'undefined') return;
@@ -79,6 +100,30 @@ export const renderRagQualityTrendChart = (trendData, options = {}) => {
                     displayDate: labels[index] || targetDate
                 });
             },
+            onHover: (_event, elements) => {
+                const hasElement = Boolean(elements && elements.length > 0);
+                canvas.style.cursor = hasElement ? 'pointer' : 'default';
+
+                if (typeof options.onPointHover !== 'function') return;
+                if (!hasElement) {
+                    options.onPointHover(null);
+                    return;
+                }
+
+                const index = elements[0].index;
+                const hoverInfo = buildHoverInfo({
+                    index,
+                    rawLabels,
+                    labels,
+                    hitRates,
+                    accuracyRates,
+                    ragResponseCounts,
+                    hitResponseCounts,
+                    ratedResponseCounts,
+                    goodResponseCounts
+                });
+                options.onPointHover(hoverInfo);
+            },
             scales: {
                 y: {
                     beginAtZero: true,
@@ -108,26 +153,16 @@ export const renderRagQualityTrendChart = (trendData, options = {}) => {
                             const idx = items?.[0]?.dataIndex ?? 0;
                             const total = safeNumber(ragResponseCounts[idx]);
                             const hit = safeNumber(hitResponseCounts[idx]);
-                            const rated = safeNumber(ratedResponseCounts[idx]);
-                            const good = safeNumber(goodResponseCounts[idx]);
-                            const bad = Math.max(0, rated - good);
-                            const datasetLabel = items?.[0]?.dataset?.label || '';
-
-                            if (datasetLabel === '回答精度') {
-                                return [
-                                    '【回答精度 内訳】',
-                                    `・総質問数: ${total}`,
-                                    `・レーティング済み: ${rated}`,
-                                    `・good: ${good}`,
-                                    `・bad: ${bad}`
-                                ];
-                            }
 
                             return [
-                                '【RAGヒット率 内訳】',
+                                '【RAG利用内訳】',
                                 `・総質問数: ${total}`,
                                 `・0.7超ヒット数: ${hit}`
                             ];
+                        },
+                        footer: (items) => {
+                            if (!items || items.length === 0) return '';
+                            return 'クリックして詳細を確認';
                         }
                     }
                 }

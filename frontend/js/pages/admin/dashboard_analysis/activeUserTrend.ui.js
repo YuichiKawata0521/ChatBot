@@ -1,4 +1,7 @@
 let activeUserChart = null;
+const activeUserTotalEl = document.getElementById('analysis-active-user-total');
+
+const formatInt = (value) => new Intl.NumberFormat('ja-JP').format(Number(value || 0));
 
 const toJpDateLabel = (rawDate) => {
     if (!rawDate) return '';
@@ -22,6 +25,11 @@ export const renderActiveUserTrendChart = (trendData) => {
 
     const labels = (trendData?.labels || []).map(toJpDateLabel);
     const activeUserCounts = trendData?.activeUserCounts || [];
+    const totalActiveUsers = activeUserCounts.reduce((sum, value) => sum + Number(value || 0), 0);
+
+    if (activeUserTotalEl) {
+        activeUserTotalEl.textContent = `合計: ${formatInt(totalActiveUsers)}人`;
+    }
 
     if (activeUserChart) {
         activeUserChart.destroy();

@@ -127,7 +127,7 @@ export const buildDepartmentUsageRowsHtml = (items = []) => {
     if (!items.length) {
         return `
             <tr>
-                <td colspan="5" style="padding:12px; color:#7f8c8d;">対象データがありません</td>
+                <td colspan="5" class="analysis-status-cell analysis-status-muted">対象データがありません</td>
             </tr>
         `;
     }
@@ -138,16 +138,15 @@ export const buildDepartmentUsageRowsHtml = (items = []) => {
         const costText = formatUsd(item?.estimatedCostUsd || 0);
         return `
             <tr
-                class="analysis-department-usage-row"
+                class="analysis-department-usage-row analysis-row-clickable"
                 data-index="${index}"
-                style="border-bottom:1px solid #eee; cursor:pointer;"
                 title="クリックで所属社員一覧を表示"
             >
-                <td style="padding:12px; color:#1f6feb;">${escapeHtml(depLabel)}</td>
-                <td style="padding:12px;">${escapeHtml(formatNumber(item?.activeUserCount || 0))}</td>
-                <td style="padding:12px;">${escapeHtml(formatNumber(item?.messageCount || 0))}</td>
-                <td style="padding:12px;">${escapeHtml(rateText)}</td>
-                <td style="padding:12px;">${escapeHtml(costText)}</td>
+                <td class="analysis-cell-pad-12 analysis-cell-accent">${escapeHtml(depLabel)}</td>
+                <td class="analysis-cell-pad-12">${escapeHtml(formatNumber(item?.activeUserCount || 0))}</td>
+                <td class="analysis-cell-pad-12">${escapeHtml(formatNumber(item?.messageCount || 0))}</td>
+                <td class="analysis-cell-pad-12">${escapeHtml(rateText)}</td>
+                <td class="analysis-cell-pad-12">${escapeHtml(costText)}</td>
             </tr>
         `;
     }).join('');
@@ -247,24 +246,23 @@ export const buildDetailRowsHtml = (items = []) => {
     if (!items.length) {
         return `
             <tr>
-                <td colspan="6" style="padding:12px; color:#7f8c8d;">対象データがありません</td>
+                <td colspan="6" class="analysis-status-cell analysis-status-muted">対象データがありません</td>
             </tr>
         `;
     }
 
     return items.map((item) => {
         const scoreText = Number(item?.maxRelevanceScore || 0).toFixed(3);
-        const hitText = item?.hasHit ? 'hit' : '-';
-        const ratingText = item?.rating || '-';
         const createdAtText = formatJpDateTime(item?.createdAt || '');
+        const documentNames = String(item?.referenceDocumentNames || '').trim() || '-';
         return `
-            <tr style="border-bottom:1px solid #eee; vertical-align: top;">
-                <td style="padding:10px; white-space:nowrap;">${escapeHtml(createdAtText)}</td>
-                <td style="padding:10px; min-width:220px;">${escapeHtml(item?.question || '')}</td>
-                <td style="padding:10px; min-width:260px;">${escapeHtml(item?.answer || '')}</td>
-                <td style="padding:10px; text-align:center;">${escapeHtml(hitText)}</td>
-                <td style="padding:10px; text-align:right;">${escapeHtml(scoreText)}</td>
-                <td style="padding:10px; text-align:center;">${escapeHtml(ratingText)}</td>
+            <tr class="analysis-row-default">
+                <td class="analysis-cell-pad-10 analysis-cell-nowrap">${escapeHtml(createdAtText)}</td>
+                <td class="analysis-cell-pad-10 analysis-cell-nowrap">${escapeHtml(item?.userName || '-')}</td>
+                <td class="analysis-cell-pad-10 analysis-cell-min-220">${escapeHtml(item?.question || '')}</td>
+                <td class="analysis-cell-pad-10 analysis-cell-min-260">${escapeHtml(item?.answer || '')}</td>
+                <td class="analysis-cell-pad-10 analysis-cell-right">${escapeHtml(scoreText)}</td>
+                <td class="analysis-cell-pad-10 analysis-cell-min-220">${escapeHtml(documentNames)}</td>
             </tr>
         `;
     }).join('');
@@ -274,7 +272,7 @@ export const buildMemberRowsHtml = (items = []) => {
     if (!items.length) {
         return `
             <tr>
-                <td colspan="7" style="padding:12px; color:#7f8c8d;">対象データがありません</td>
+                <td colspan="7" class="analysis-status-cell analysis-status-muted">対象データがありません</td>
             </tr>
         `;
     }
@@ -283,14 +281,14 @@ export const buildMemberRowsHtml = (items = []) => {
         const ragRateText = `${Number(item?.ragUsageRate || 0).toFixed(1)}%`;
         const lastMessageAt = item?.lastMessageAt ? formatJpDateTime(item.lastMessageAt) : '-';
         return `
-            <tr style="border-bottom:1px solid #eee; vertical-align: top;">
-                <td style="padding:10px; white-space:nowrap;">${escapeHtml(item?.employeeNo || '-')}</td>
-                <td style="padding:10px; white-space:nowrap;">${escapeHtml(item?.userName || '-')}</td>
-                <td style="padding:10px; min-width:240px;">${escapeHtml(item?.email || '-')}</td>
-                <td style="padding:10px; text-align:right;">${escapeHtml(formatNumber(item?.messageCount || 0))}</td>
-                <td style="padding:10px; text-align:right;">${escapeHtml(formatNumber(item?.ragMessageCount || 0))}</td>
-                <td style="padding:10px; text-align:right;">${escapeHtml(ragRateText)}</td>
-                <td style="padding:10px; white-space:nowrap;">${escapeHtml(lastMessageAt)}</td>
+            <tr class="analysis-row-default">
+                <td class="analysis-cell-pad-10 analysis-cell-nowrap">${escapeHtml(item?.employeeNo || '-')}</td>
+                <td class="analysis-cell-pad-10 analysis-cell-nowrap">${escapeHtml(item?.userName || '-')}</td>
+                <td class="analysis-cell-pad-10 analysis-cell-min-240">${escapeHtml(item?.email || '-')}</td>
+                <td class="analysis-cell-pad-10 analysis-cell-right">${escapeHtml(formatNumber(item?.messageCount || 0))}</td>
+                <td class="analysis-cell-pad-10 analysis-cell-right">${escapeHtml(formatNumber(item?.ragMessageCount || 0))}</td>
+                <td class="analysis-cell-pad-10 analysis-cell-right">${escapeHtml(ragRateText)}</td>
+                <td class="analysis-cell-pad-10 analysis-cell-nowrap">${escapeHtml(lastMessageAt)}</td>
             </tr>
         `;
     }).join('');
@@ -313,7 +311,7 @@ export const buildRatingRowsHtml = (items = [], options = {}) => {
     if (!items.length) {
         return `
             <tr>
-                <td colspan="4" style="padding:12px; color:#7f8c8d;">${escapeHtml(emptyMessage)}</td>
+                <td colspan="4" class="analysis-status-cell analysis-status-muted">${escapeHtml(emptyMessage)}</td>
             </tr>
         `;
     }
@@ -322,15 +320,14 @@ export const buildRatingRowsHtml = (items = [], options = {}) => {
         const createdAtText = formatJpDateTime(item?.createdAt || '');
         return `
             <tr
-                class="analysis-rating-row"
+                class="analysis-rating-row analysis-row-clickable"
                 data-index="${index}"
-                style="border-bottom:1px solid #eee; cursor:pointer;"
                 title="クリックで詳細を表示"
             >
-                <td style="padding:10px; white-space:nowrap;">${escapeHtml(createdAtText || '-')}</td>
-                <td style="padding:10px; white-space:nowrap;">${escapeHtml(item?.userName || '-')}</td>
-                <td style="padding:10px;">${escapeHtml(truncateText(item?.question || '', questionLength))}</td>
-                <td style="padding:10px;">${escapeHtml(truncateText(item?.answer || '', answerLength))}</td>
+                <td class="analysis-cell-pad-10 analysis-cell-nowrap">${escapeHtml(createdAtText || '-')}</td>
+                <td class="analysis-cell-pad-10 analysis-cell-nowrap">${escapeHtml(item?.userName || '-')}</td>
+                <td class="analysis-cell-pad-10">${escapeHtml(truncateText(item?.question || '', questionLength))}</td>
+                <td class="analysis-cell-pad-10">${escapeHtml(truncateText(item?.answer || '', answerLength))}</td>
             </tr>
         `;
     }).join('');

@@ -76,7 +76,9 @@ export const dashboardAnalysisQueries = {
     async getAnalysisRagQualityDailyDetails(pool, masterIdentities, filters) {
         const { employeeNos, emails } = buildMasterIdentityParams(masterIdentities);
         const {
-            targetDate,
+            targetDate = null,
+            fromDate,
+            toDate,
             dep1Name = null,
             dep2Name = null,
             dep3Name = null
@@ -102,17 +104,23 @@ export const dashboardAnalysisQueries = {
                 WHERE m.sender = 'assistant'
                   AND t.mode = 'rag'
                   AND NOT (u.employee_no = ANY($1::text[]) OR LOWER(u.email) = ANY($2::text[]))
-                  AND (m.created_at AT TIME ZONE '${EXCLUDE_TZ}')::date = $3::date
-                  AND ($4::text IS NULL OR d.dep1_name = $4::text)
-                  AND ($5::text IS NULL OR d.dep2_name = $5::text)
-                  AND ($6::text IS NULL OR d.dep3_name = $6::text)
+                                    AND (
+                                        ($3::date IS NOT NULL AND (m.created_at AT TIME ZONE '${EXCLUDE_TZ}')::date = $3::date)
+                                        OR
+                                        ($3::date IS NULL AND (m.created_at AT TIME ZONE '${EXCLUDE_TZ}')::date BETWEEN $4::date AND $5::date)
+                                    )
+                                    AND ($6::text IS NULL OR d.dep1_name = $6::text)
+                                    AND ($7::text IS NULL OR d.dep2_name = $7::text)
+                                    AND ($8::text IS NULL OR d.dep3_name = $8::text)
             ),
             reference_stats AS (
                 SELECT
                     mr.message_id,
                     COALESCE(MAX(mr.relevance_score), 0) AS max_relevance_score,
-                    COALESCE(MAX(CASE WHEN mr.relevance_score >= 0.7 THEN 1 ELSE 0 END), 0) AS has_hit
+                    COALESCE(MAX(CASE WHEN mr.relevance_score >= 0.7 THEN 1 ELSE 0 END), 0) AS has_hit,
+                    COALESCE(string_agg(DISTINCT d.title, ', ' ORDER BY d.title), '') AS reference_document_names
                 FROM message_references mr
+                LEFT JOIN documents d ON d.id = mr.document_id
                 GROUP BY mr.message_id
             )
             SELECT
@@ -128,7 +136,8 @@ export const dashboardAnalysisQueries = {
                 ram.answer_content,
                 COALESCE(q.question_content, '') AS question_content,
                 COALESCE(rs.max_relevance_score, 0) AS max_relevance_score,
-                COALESCE(rs.has_hit, 0) AS has_hit
+                COALESCE(rs.has_hit, 0) AS has_hit,
+                COALESCE(rs.reference_document_names, '') AS reference_document_names
             FROM rag_assistant_messages ram
             LEFT JOIN LATERAL (
                 SELECT
@@ -142,13 +151,15 @@ export const dashboardAnalysisQueries = {
             ) q ON true
             LEFT JOIN reference_stats rs ON rs.message_id = ram.message_id
             ORDER BY ram.created_at DESC, ram.message_id DESC
-            LIMIT 200;
+            ;
         `;
 
         const result = await pool.query(sql, [
             employeeNos,
             emails,
             targetDate,
+            fromDate,
+            toDate,
             dep1Name,
             dep2Name,
             dep3Name
