@@ -1,0 +1,61 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: always
+    env_file:
+      - .env.production
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./backend/db:/docker-entrypoint-initdb.d:ro
+    networks:
+      - app_net
+
+  backend:
+    build:
+      context: ./backend
+      target: prod
+    restart: always
+    env_file:
+      - .env.production
+    command: ["node", "dist/server.js"]
+    depends_on:
+      - db
+      - llm
+    networks:
+      - app_net
+
+  llm:
+    build:
+      context: ./llm
+    restart: always
+    env_file:
+      - .env.production
+    volumes:
+      - llm_cache:/app/.cache
+    networks:
+      - app_net
+
+  frontend:
+    build:
+      context: ./frontend
+      target: prod
+    restart: always
+    env_file:
+      - .env.production
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /opt/nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - app_net
+
+volumes:
+  db_data:
+  llm_cache:
+
+networks:
+  app_net:
+    driver: bridge
