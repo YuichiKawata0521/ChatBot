@@ -39,10 +39,14 @@ jobs:
         run: npm install --prefix frontend
 
       - name: Audit backend dependencies
+        id: audit_backend
         run: npm run audit:security --prefix backend
+        continue-on-error: true
 
       - name: Audit frontend dependencies
+        id: audit_frontend
         run: npm run audit:security --prefix frontend
+        continue-on-error: true
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -53,12 +57,16 @@ jobs:
         run: pip install pip-audit
 
       - name: Audit llm requirements
+        id: audit_llm
         run: |
           pip-audit -r llm/requirements.txt
           pip-audit -r llm/requirements-heavy.txt
+        continue-on-error: true
 
       - name: Run Trivy filesystem scan
+        id: trivy_scan
         uses: aquasecurity/trivy-action@0.30.0
+        continue-on-error: true
         with:
           scan-type: fs
           scan-ref: .
@@ -66,11 +74,29 @@ jobs:
           output: trivy-results.sarif
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+          exit-code: "1"
 
       - name: Upload Trivy report to code scanning
+        if: ${{ always() && hashFiles('trivy-results.sarif') != '' }}
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-results.sarif
+
+      - name: Enforce security gate
+        if: ${{ always() }}
+        run: |
+          echo "backend audit outcome: ${{ steps.audit_backend.outcome }}"
+          echo "frontend audit outcome: ${{ steps.audit_frontend.outcome }}"
+          echo "llm audit outcome: ${{ steps.audit_llm.outcome }}"
+          echo "trivy outcome: ${{ steps.trivy_scan.outcome }}"
+
+          if [ "${{ steps.audit_backend.outcome }}" != "success" ] || \
+             [ "${{ steps.audit_frontend.outcome }}" != "success" ] || \
+             [ "${{ steps.audit_llm.outcome }}" != "success" ] || \
+             [ "${{ steps.trivy_scan.outcome }}" != "success" ]; then
+            echo "At least one static security check failed."
+            exit 1
+          fi
 
   dynamic-security:
     name: Dynamic Security Scan (DAST)
