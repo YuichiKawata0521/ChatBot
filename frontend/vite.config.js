@@ -22,15 +22,16 @@ export default defineConfig({
         outDir: 'dist',
         rollupOptions: {
             input: {
-                login: resolve(__dirname, 'pages/login.html'),
-                admin: resolve(__dirname, 'pages/admin.html'),
-                dashboard_operation: resolve(__dirname, 'pages/dashboard_operation.html'),
-                dashboard_analysis: resolve(__dirname, 'pages/dashboard_analysis.html'),
-                chat: resolve(__dirname, 'pages/chat.html'),
-                users: resolve(__dirname, 'pages/users.html'),
-                logs: resolve(__dirname, 'pages/logs.html'),
-                change_password: resolve(__dirname, 'pages/change_password.html'),
-                documents: resolve(__dirname, 'pages/documents.html')
+              login: resolve(__dirname, 'pages/login.html'),
+              signup: resolve(__dirname, 'pages/signup.html'),
+              admin: resolve(__dirname, 'pages/admin.html'),
+              dashboard_operation: resolve(__dirname, 'pages/dashboard_operation.html'),
+              dashboard_analysis: resolve(__dirname, 'pages/dashboard_analysis.html'),
+              chat: resolve(__dirname, 'pages/chat.html'),
+              users: resolve(__dirname, 'pages/users.html'),
+              logs: resolve(__dirname, 'pages/logs.html'),
+              change_password: resolve(__dirname, 'pages/change_password.html'),
+              documents: resolve(__dirname, 'pages/documents.html')
             },
         },
     },
@@ -75,6 +76,8 @@ export default defineConfig({
           // URLとHTMLファイルのマッピング
           if (req.url.startsWith('/login')) {
             req.url = '/pages/login.html';
+          } else if (req.url.startsWith('/signup')) {
+            req.url = '/pages/signup.html';
           } else if (req.url.startsWith('/admin')) {
             req.url = '/pages/admin.html';
           } else if (req.url.startsWith('/dashboard_ope')) {
