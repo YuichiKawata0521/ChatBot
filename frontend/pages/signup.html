@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新規登録 - ChatBot</title>
+    <link rel="stylesheet" href="../assets/css/common/toast.css">
+    <link rel="stylesheet" href="../assets/css/pages/login.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h2>ChatBot Signup</h2>
+            <p>ポートフォリオ向けテストユーザー登録</p>
+        </div>
+
+        <form id="signupForm" class="login-form">
+            <div class="form-group">
+                <label for="user_name">名前</label>
+                <input type="text" id="user_name" name="user_name" required maxlength="20" placeholder="例: 山田 太郎">
+            </div>
+
+            <div class="form-group">
+                <label for="email">メールアドレス</label>
+                <input type="email" id="email" name="email" required maxlength="100" placeholder="example@company.com">
+            </div>
+
+            <div class="form-group">
+                <label for="employee_no">従業員番号</label>
+                <input type="text" id="employee_no" name="employee_no" required maxlength="20" placeholder="例: 123456">
+            </div>
+
+            <div class="form-group">
+                <label for="department_id">部署（テスト）</label>
+                <select id="department_id" name="department_id" required>
+                    <option value="">選択してください</option>
+                    <option value="1">部署1</option>
+                    <option value="2">部署2</option>
+                    <option value="3">部署3</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="password">パスワード</label>
+                <input type="password" id="password" name="password" required minlength="10" maxlength="128" placeholder="英字・数字・記号を含む10文字以上">
+            </div>
+
+            <button type="submit" class="login-btn" id="signupBtn">新規登録</button>
+
+            <p class="helper-text">登録後の権限は管理者（admin）として作成されます。</p>
+            <p class="helper-link"><a href="/login">ログイン画面へ戻る</a></p>
+        </form>
+    </div>
+
+    <script type="module" src="../js/pages/signup/main.signup.js"></script>
+</body>
+</html>
