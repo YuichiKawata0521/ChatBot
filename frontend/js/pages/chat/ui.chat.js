@@ -31,7 +31,13 @@ function createActionButton(action, iconName, label) {
     button.dataset.action = action;
     button.title = label;
     button.setAttribute('aria-label', label);
-    button.innerHTML = `<span class="material-symbols-outlined">${iconName}</span>`;
+
+    const icon = document.createElement('span');
+    icon.className = 'material-symbols-outlined';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = iconName;
+    button.appendChild(icon);
+
     return button;
 }
 
