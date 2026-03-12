@@ -2,15 +2,36 @@ import { ApiClient } from "../common/apiClient.js";
 
 // ログイン処理: 機能ID FN-A01
 export async function fetchLogin(dataObject) {
-    const endpoint = '/auth/login';
+    const endpoint = '/api/v1/auth/login';
     const body = {
         employee_no: dataObject.employee_no,
         email: dataObject.email,
         password: dataObject.password
-    }
+    };
 
     try {
-        return await ApiClient.post(endpoint, body);
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            return {
+                success: false,
+                message: data.message || 'ログイン処理でエラーが発生しました',
+                statusCode: response.status,
+                shouldRedirectToSignup: Boolean(data.shouldRedirectToSignup),
+                prefill: data.prefill || null,
+                errorCode: data.errorCode || null
+            };
+        }
+
+        return data;
     } catch (error) {
         return {
             success: false,
@@ -39,7 +60,11 @@ export async function logout() {
 export async function authMe() {
     const endpoint = '/auth/me';
     try {
-        return await ApiClient.get(endpoint);
+        const result = await ApiClient.get(endpoint);
+        return {
+            success: Boolean(result?.user),
+            user: result?.user ?? null
+        };
     } catch (error) {
         return {
             success: false,
@@ -62,3 +87,16 @@ export async function registration(dataObject) {
         };
     }
 } 
+
+export async function portfolioRegistration(dataObject) {
+    const endpoint = '/auth/portfolio-register';
+    try {
+        return await ApiClient.post(endpoint, dataObject);
+    } catch (error) {
+        return {
+            success: false,
+            message: error.message || '新規登録失敗',
+            statusCode: error.statusCode
+        };
+    }
+}

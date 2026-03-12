@@ -12,7 +12,8 @@ const router = express.Router();
 const csrfExcludePaths = [
     '/csrf-token',
     '/auth/login',
-    '/auth/register'
+    '/auth/register',
+    '/auth/portfolio-register'
 ];
 
 // CSRF保護ミドルウェアの適用

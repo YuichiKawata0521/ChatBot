@@ -65,7 +65,18 @@ body {
     transition: border-color 0.3s;
 }
 
-.form-group input:focus {
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 1rem;
+    background: #fff;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
     outline: none;
     border-color: #3498db;
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
@@ -102,4 +113,26 @@ body {
     margin-top: 1rem;
     font-size: 0.9rem;
     min-height: 1.2em; /* メッセージがない時も高さを確保してレイアウト崩れを防ぐ */
+}
+
+.helper-text {
+    margin-top: 1rem;
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 0.85rem;
+}
+
+.helper-link {
+    margin-top: 0.8rem;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.helper-link a {
+    color: #2980b9;
+    text-decoration: none;
+}
+
+.helper-link a:hover {
+    text-decoration: underline;
 }

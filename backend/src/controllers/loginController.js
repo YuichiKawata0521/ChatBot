@@ -7,14 +7,59 @@ import { verifyPassword, hashPassword } from '../utils/password.js';
 import { generateToken } from '../config/csrf.js';
 import logger from '../utils/logger.js';
 
+const PORTFOLIO_DEPARTMENT_IDS = new Set([1, 2, 3]);
+
+function validatePasswordRule(password) {
+    if (password.length < 10 || password.length > 128) {
+        return 'パスワードは10文字以上、128文字以下で\n設定してください';
+    }
+
+    const asciiRegex = /^[\x20-\x7E]+$/;
+    if (!asciiRegex.test(password)) {
+        return '使用できない文字が含まれています\n(半角英数字記号のみ使用可能です)';
+    }
+
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSymbol = /[\x20-\x2F\x3A-\x40\x5B-\x60\x7B-\x7E]/.test(password);
+
+    if (!(hasLetter && hasNumber && hasSymbol)) {
+        return 'パスワードは英字、数字、記号を\nそれぞれ1文字以上含めてください';
+    }
+
+    if (/(.)\1{2,}/.test(password)) {
+        return 'パスワードに同じ文字を3回以上\n連続させることは出来ません';
+    }
+
+    return null;
+}
+
 export async function login(req, res, next) {
     const { employee_no, email, password } = req.body;
     const pool = getPool();
+    const inputEmployeeNo = typeof employee_no === 'string' ? employee_no.trim() : '';
+    const inputEmail = typeof email === 'string' ? email.trim() : '';
 
-    const userData = await loginModel.getUserData(pool, employee_no, email);
+    const userData = await loginModel.getUserData(pool, inputEmployeeNo, inputEmail);
     if (!userData) {
-        logger.warn('ユーザーデータが見つかりませんでした', {option: {employee_no}})
-        return next(new AppError('Not Found userData', 404));
+        const existingByEmail = await loginModel.getUserByEmail(pool, inputEmail);
+
+        if (!existingByEmail) {
+            logger.info('未登録メールアドレスでログインが試行されました', {option: {email: inputEmail}});
+            return res.status(404).json({
+                success: false,
+                message: 'メールアドレスが未登録です。新規登録へ進んでください。',
+                errorCode: 'EMAIL_NOT_REGISTERED',
+                shouldRedirectToSignup: true,
+                prefill: {
+                    email: inputEmail,
+                    employee_no: inputEmployeeNo
+                }
+            });
+        }
+
+        logger.warn('ログイン情報が一致しませんでした', {option: {employee_no: inputEmployeeNo, email: inputEmail}})
+        return next(new AppError('Incorrect email or password', 401));
     }
 
     // PWチェック
@@ -43,14 +88,18 @@ export async function login(req, res, next) {
             try {
                 const resetToken = crypto.randomBytes(32).toString('hex');
                 const passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
+                const resetMailUser = {
+                    ...userData,
+                    email: inputEmail || userData.email
+                };
                 
                 await loginModel.saveResetToken(pool, userData.id, resetToken, passwordResetExpires);
 
                 const frontendURL = process.env.FRONTEND_URL || `http://localhost:${process.env.FRONTEND_PORT}`
                 const resetUrl = `${frontendURL}/pages/change_password.html?token=${resetToken}`;
-                await new Email(userData, resetUrl).sendPasswordReset();
+                await new Email(resetMailUser, resetUrl).sendPasswordReset();
 
-                logger.info('初回ログインの為、パスワード変更メールを送信しました', {option: {email: userData.email}});
+                logger.info('初回ログインの為、パスワード変更メールを送信しました', {option: {email: resetMailUser.email}});
                 return res.status(200).json({
                     success: true,
                     message: "初回ログインの為パスワードの変更が必要です。メールを送信しました",
@@ -106,23 +155,9 @@ export async function register(req, res, next) {
     try {
         const { token, password } = req.body;
 
-        if (password.length < 10 || password.length > 128) {
-            return next (new AppError('パスワードは10文字以上、128文字以下で\n設定してください', 400));
-        }
-        const asciiRegex = /^[\x20-\x7E]+$/;
-
-        if (!asciiRegex.test(password)) {
-            return next (new AppError('使用できない文字が含まれています\n(半角英数字記号のみ使用可能です)', 400))
-        }
-        const hasLetter = /[a-zA-Z]/.test(password);
-        const hasNumber = /[0-9]/.test(password);
-        const hasSymbol = /[\x20-\x2F\x3A-\x40\x5B-\x60\x7B-\x7E]/.test(password);
-
-        if (!(hasLetter && hasNumber && hasSymbol)) {
-            return next (new AppError('パスワードは英字、数字、記号を\nそれぞれ1文字以上含めてください', 400));
-        }
-        if (/(.)\1{2,}/.test(password)) {
-            return next(new AppError('パスワードに同じ文字を3回以上\n連続させることは出来ません', 400));
+        const passwordRuleError = validatePasswordRule(String(password || ''));
+        if (passwordRuleError) {
+            return next(new AppError(passwordRuleError, 400));
         }
         const pool = getPool();
 
@@ -174,3 +209,93 @@ export async function register(req, res, next) {
         return next (new AppError('新規登録に失敗しました', 400));
     }
 } 
+
+export async function portfolioRegister(req, res, next) {
+    try {
+        const { user_name, email, employee_no, password, department_id } = req.body;
+        const normalizedUserName = typeof user_name === 'string' ? user_name.trim() : '';
+        const normalizedEmail = typeof email === 'string' ? email.trim() : '';
+        const normalizedEmployeeNo = typeof employee_no === 'string' ? employee_no.trim() : '';
+        const normalizedPassword = String(password || '');
+        const normalizedDepartmentId = Number.parseInt(department_id, 10);
+
+        if (!normalizedUserName || !normalizedEmail || !normalizedEmployeeNo || !normalizedPassword) {
+            return next(new AppError('名前・メールアドレス・従業員番号・パスワードは必須です', 400));
+        }
+
+        if (normalizedUserName.length > 20) {
+            return next(new AppError('名前は20文字以内で入力してください', 400));
+        }
+
+        if (normalizedEmail.length > 100) {
+            return next(new AppError('メールアドレスは100文字以内で入力してください', 400));
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+            return next(new AppError('メールアドレスの形式が不正です', 400));
+        }
+
+        if (normalizedEmployeeNo.length > 20) {
+            return next(new AppError('従業員番号は20文字以内で入力してください', 400));
+        }
+
+        if (!PORTFOLIO_DEPARTMENT_IDS.has(normalizedDepartmentId)) {
+            return next(new AppError('部署はテスト用の1〜3から選択してください', 400));
+        }
+
+        const passwordRuleError = validatePasswordRule(normalizedPassword);
+        if (passwordRuleError) {
+            return next(new AppError(passwordRuleError, 400));
+        }
+
+        const pool = getPool();
+
+        const department = await loginModel.getDepartmentById(pool, normalizedDepartmentId);
+        if (!department) {
+            return next(new AppError('選択された部署が存在しません。部署ID 1〜3を作成してください', 400));
+        }
+
+        const existingByEmail = await loginModel.getUserByEmail(pool, normalizedEmail);
+        if (existingByEmail) {
+            return next(new AppError('このメールアドレスは既に登録されています', 400));
+        }
+
+        const existingByEmployeeNo = await loginModel.getUserByEmployeeNo(pool, normalizedEmployeeNo);
+        if (existingByEmployeeNo) {
+            return next(new AppError('この従業員番号は既に登録されています', 400));
+        }
+
+        const hashedPassword = await hashPassword(normalizedPassword);
+        const createdUser = await loginModel.createPortfolioUser(pool, {
+            user_name: normalizedUserName,
+            email: normalizedEmail,
+            employee_no: normalizedEmployeeNo,
+            password: hashedPassword,
+            department_id: normalizedDepartmentId
+        });
+
+        logger.info('ポートフォリオ向け自己登録が完了しました', {
+            option: {
+                employee_no: createdUser.employee_no,
+                email: createdUser.email,
+                department_id: createdUser.department_id
+            }
+        });
+
+        res.status(201).json({
+            success: true,
+            message: '登録が完了しました。ログインしてください。',
+            data: {
+                id: createdUser.id,
+                employee_no: createdUser.employee_no,
+                email: createdUser.email,
+                user_name: createdUser.user_name,
+                role: createdUser.role,
+                department_id: createdUser.department_id
+            }
+        });
+    } catch (error) {
+        logger.error('ポートフォリオ向け自己登録に失敗しました', {option: {detail: error.message, stack: error.stack}});
+        return next(new AppError('登録に失敗しました', 500));
+    }
+}
