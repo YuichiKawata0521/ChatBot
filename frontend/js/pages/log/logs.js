@@ -1,5 +1,6 @@
 import { ApiClient } from '../../common/apiClient.js';
 import { showToast } from '../../common/toast.js';
+import { requireAuth } from '../../common/authGuard.js';
 import {
     formatDateTime,
     parseDateAtStartOfDay,
@@ -310,7 +311,11 @@ function getCurrentPageLogs() {
 }
 
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!(await requireAuth())) {
+        return;
+    }
+
     initEvents();
     fetchLogs();
 })

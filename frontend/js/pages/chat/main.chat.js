@@ -9,6 +9,7 @@ import { initInputHandlers } from './input.chat.js';
 import { showToast } from '../../common/toast.js';
 import { RequirementAgentWizard } from './agentWizard.js';
 import { copyMessage } from './copy.chat.js';
+import { requireAuth } from '../../common/authGuard.js';
 
 
 const authChannel = new BroadcastChannel('auth_sync');
@@ -220,6 +221,10 @@ function setupEventListeners() {
 
 
 window.addEventListener('DOMContentLoaded', async () => {
+    if (!(await requireAuth())) {
+        return;
+    }
+
     ui.switchOverlay('hide');
     ui.showAgentSelection();
     ui.hideMessagesContainer();

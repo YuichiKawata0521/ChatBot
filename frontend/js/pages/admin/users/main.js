@@ -2,8 +2,13 @@ import { userService } from "../../../services/userService.js";
 import { userTableUI } from "./userTable.ui.js";
 import { userModalUI } from "./userModal.ui.js";
 import { showToast } from "../../../common/toast.js";
+import { requireAuth } from "../../../common/authGuard.js";
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!(await requireAuth())) {
+        return;
+    }
+
     const user_Service = new userService();
     let currentEditId = null;
     let usersCache = [];
@@ -67,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('ユーザーを登録しました。', 'success');
                 }
                 modalUI.close();
-                // loadUsers(); // テーブル再描画
+                loadUsers(); // テーブル再描画
             } catch (error) {
                 console.error('新規登録エラー', error.message);
                 showToast(error.message || '保存に失敗しました。', 'error');
@@ -285,5 +290,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     setupFilterEvents();
-    Promise.all([loadUsers(), loadDepartments()]);
+    await Promise.all([loadUsers(), loadDepartments()]);
 });

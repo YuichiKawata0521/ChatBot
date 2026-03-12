@@ -1,5 +1,6 @@
 import { ApiClient } from '../../common/apiClient.js';
 import { showToast } from '../../common/toast.js';
+import { requireAuth } from '../../common/authGuard.js';
 
 let currentMode = 'text';
 
@@ -30,7 +31,11 @@ async function uploadDocumentFile(file) {
     return await ApiClient.post('/documents/upload', formData);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!(await requireAuth())) {
+        return;
+    }
+
     const modal = document.getElementById('modal-doc-manage');
     const openBtn = document.getElementById('btn-doc-manage');
     const closeBtn = document.getElementById('close-doc-modal');

@@ -4,6 +4,7 @@ import { renderActiveUserTrendChart } from './activeUserTrend.ui.js';
 import { renderCostTrendChart } from './costTrend.ui.js';
 import { renderRagQualityTrendChart } from './ragQualityTrend.ui.js';
 import { renderDepartmentUsageChart } from './departmentUsage.ui.js';
+import { requireAuth } from '../../../common/authGuard.js';
 import {
     toYmd,
     normalizeToYmd,
@@ -826,6 +827,10 @@ function jumpToOperation() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    if (!(await requireAuth())) {
+        return;
+    }
+
     updateRagSortButtonLabels();
     jumpToOperation();
     bindEvents();

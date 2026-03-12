@@ -6,6 +6,7 @@ import { renderOperationTrendChart } from './operationTrend.ui.js';
 import { renderLowUsageDepartmentRanking } from './departmentRanking.ui.js';
 import { renderRagQualityMetrics } from './ragQuality.ui.js';
 import { renderOperationCost } from './cost.ui.js';
+import { requireAuth } from '../../../common/authGuard.js';
 
 function jumpToAnalysis() {
     const btn = document.getElementById('analysis-link');
@@ -15,6 +16,10 @@ function jumpToAnalysis() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    if (!(await requireAuth())) {
+        return;
+    }
+
     jumpToAnalysis();
     const service = new dashboardOperationService();
     const monthScopeSelect = document.getElementById('kpi-month-scope');

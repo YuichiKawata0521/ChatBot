@@ -1,7 +1,12 @@
 import { ApiClient } from '../../common/apiClient.js';
 import { showToast } from '../../common/toast.js';
+import { requireAuth } from '../../common/authGuard.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!(await requireAuth())) {
+        return;
+    }
+
     const tableBody = document.getElementById('docs-table-body');
     const btnReload = document.getElementById('btn-reload');
 
