@@ -5,18 +5,18 @@ const rankingState = {
 const buildCardRowsHtml = (rows) => {
     if (!rows.length) {
         return `
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 8px;" colspan="3">データがありません</td>
+            <tr class="department-ranking-row">
+                <td class="department-ranking-cell" colspan="3">データがありません</td>
             </tr>
         `;
     }
 
     return rows
         .map((row) => `
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 8px;">${row.rank}</td>
-                <td style="padding: 8px;">${row.departmentName}</td>
-                <td style="padding: 8px; text-align: right;">${row.messageCount}</td>
+            <tr class="department-ranking-row">
+                <td class="department-ranking-cell">${row.rank}</td>
+                <td class="department-ranking-cell">${row.departmentName}</td>
+                <td class="department-ranking-cell department-ranking-cell-right">${row.messageCount}</td>
             </tr>
         `)
         .join('');
@@ -25,20 +25,20 @@ const buildCardRowsHtml = (rows) => {
 const buildModalRowsHtml = (rows) => {
     if (!rows.length) {
         return `
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 8px;" colspan="5">データがありません</td>
+            <tr class="department-ranking-row">
+                <td class="department-ranking-cell" colspan="5">データがありません</td>
             </tr>
         `;
     }
 
     return rows
         .map((row) => `
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 8px;">${row.rank}</td>
-                <td style="padding: 8px;">${row.dep1Name || ''}</td>
-                <td style="padding: 8px;">${row.dep2Name || ''}</td>
-                <td style="padding: 8px;">${row.dep3Name || ''}</td>
-                <td style="padding: 8px; text-align: right;">${row.messageCount}</td>
+            <tr class="department-ranking-row">
+                <td class="department-ranking-cell">${row.rank}</td>
+                <td class="department-ranking-cell">${row.dep1Name || ''}</td>
+                <td class="department-ranking-cell">${row.dep2Name || ''}</td>
+                <td class="department-ranking-cell">${row.dep3Name || ''}</td>
+                <td class="department-ranking-cell department-ranking-cell-right">${row.messageCount}</td>
             </tr>
         `)
         .join('');
@@ -125,11 +125,11 @@ const setupDepartmentRankingModal = (() => {
         openBtn.addEventListener('click', () => {
             updateCascadeFilters();
             applyModalFilter();
-            modal.style.display = 'flex';
+            modal.classList.add('is-open');
         });
 
         const closeModal = () => {
-            modal.style.display = 'none';
+            modal.classList.remove('is-open');
         };
 
         closeBtn.addEventListener('click', closeModal);

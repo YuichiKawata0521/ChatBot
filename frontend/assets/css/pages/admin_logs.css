@@ -96,6 +96,14 @@
     max-width: 300px;
 }
 
+.log-empty-message-cell {
+    padding: 20px;
+}
+
+.log-row-chevron {
+    color: #ccc;
+}
+
 /* モーダル (Large) */
 .modal-lg {
     max-width: 800px; /* 通常より幅広く */

@@ -11,13 +11,13 @@ function switchMode(mode) {
     const sectionFile = document.getElementById('form-section-file');
 
     if (mode === 'text') {
-        sectionText.style.display = 'block';
-        sectionFile.style.display = 'none';
+        sectionText.hidden = false;
+        sectionFile.hidden = true;
         tabText?.classList.add('active');
         tabFile?.classList.remove('active');
     } else {
-        sectionText.style.display = 'none';
-        sectionFile.style.display = 'block';
+        sectionText.hidden = true;
+        sectionFile.hidden = false;
         tabText?.classList.remove('active');
         tabFile?.classList.add('active');
     }
@@ -49,8 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnClearFile = document.getElementById('btn-clear-file');
     function updateFilePreview(file) {
         if (!file) {
-            defaultUi.style.display = 'block';
-            previewUi.style.display = 'none';
+            defaultUi.hidden = false;
+            previewUi.hidden = true;
             fileInput.value = ''; 
             return;
         }
@@ -75,11 +75,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         previewIcon.className = `fa-solid ${iconClass} fa-3x`;
-        previewIcon.style.color = iconColor;
+        previewIcon.classList.remove('preview-icon-pdf', 'preview-icon-word', 'preview-icon-powerpoint', 'preview-icon-lines', 'preview-icon-default');
+        if (extension === 'pdf') {
+            previewIcon.classList.add('preview-icon-pdf');
+        } else if (['doc', 'docx'].includes(extension)) {
+            previewIcon.classList.add('preview-icon-word');
+        } else if (['ppt', 'pptx'].includes(extension)) {
+            previewIcon.classList.add('preview-icon-powerpoint');
+        } else if (['md', 'txt'].includes(extension)) {
+            previewIcon.classList.add('preview-icon-lines');
+        } else {
+            previewIcon.classList.add('preview-icon-default');
+        }
         previewName.textContent = file.name;
 
-        defaultUi.style.display = 'none';
-        previewUi.style.display = 'block';
+        defaultUi.hidden = true;
+        previewUi.hidden = false;
     }
 
     // --- 追加：ファイル選択時のイベント ---
@@ -91,20 +102,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 追加：ドラッグ＆ドロップのイベント ---
     uploadArea?.addEventListener('dragover', (e) => {
         e.preventDefault();
-        uploadArea.style.backgroundColor = '#f0f8ff'; // ドラッグ中の背景色変更
-        uploadArea.style.borderColor = '#007bff';
+        uploadArea.classList.add('is-dragover');
     });
 
     uploadArea?.addEventListener('dragleave', (e) => {
         e.preventDefault();
-        uploadArea.style.backgroundColor = ''; // 元に戻す
-        uploadArea.style.borderColor = '';
+        uploadArea.classList.remove('is-dragover');
     });
 
     uploadArea?.addEventListener('drop', (e) => {
         e.preventDefault();
-        uploadArea.style.backgroundColor = '';
-        uploadArea.style.borderColor = '';
+        uploadArea.classList.remove('is-dragover');
         
         if (e.dataTransfer?.files?.length) {
             const file = e.dataTransfer.files[0];
@@ -123,12 +131,12 @@ document.addEventListener('DOMContentLoaded', () => {
         updateFilePreview(null);
     });
     openBtn?.addEventListener('click', () => {
-        modal.style.display = 'flex';
+        modal.hidden = false;
         switchMode('text');
     });
 
     closeBtn?.addEventListener('click', () => {
-        modal.style.display = 'none';
+        modal.hidden = true;
         titleInput.value = '';
         contentInput.value = '';
     });
@@ -168,19 +176,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 saveBtn.textContent = 'アップロード中...';
-                loading.style.display = 'block';
+                loading.hidden = false;
 
                 await uploadDocumentFile(file);
                 showToast('ファイルをアップロードして解析を開始しました', 'success');
                 fileInput.value = '';
             }
 
-            modal.style.display = 'none';
+            modal.hidden = true;
         } catch (error) {
             console.error(error);
             alert('保存に失敗しました: ' + error.message);
         } finally {
-            loading.style.display = 'none';
+            loading.hidden = true;
             saveBtn.disabled = false;
             saveBtn.textContent = '保存して解析開始';
         }

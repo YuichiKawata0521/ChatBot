@@ -18,7 +18,7 @@
     <div class="dashboard-container">
         <div class="page-title">
             <h1>Operational Status</h1>
-            <select id="kpi-month-scope" style="margin-left:auto; margin-right: 12px; padding: 6px 10px; border: 1px solid #d0d7de; border-radius: 6px;">
+            <select id="kpi-month-scope" class="operation-month-scope-select">
                 <option value="current">当月</option>
                 <option value="previous">先月</option>
             </select>
@@ -49,7 +49,7 @@
             </div>
         </div>
 
-        <div class="grid-2-col" style="grid-template-columns: 2fr 1fr;">
+        <div class="grid-2-col operation-grid-2-1">
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">利用トレンド（日次）</h3>
@@ -63,20 +63,20 @@
                 <div class="card-header">
                     <h3 class="card-title">利用低迷部署ランキング</h3>
                 </div>
-                <div style="padding: 10px;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <div class="operation-card-table-wrap">
+                    <table class="operation-ranking-table">
                         <thead>
-                            <tr style="border-bottom: 2px solid #eee; text-align: left; white-space: nowrap;">
-                                <th style="padding: 8px;">順位</th>
-                                <th style="padding: 8px;">部署名</th>
-                                <th style="padding: 8px; text-align: right;">メッセージ数</th>
+                            <tr class="operation-table-head-row operation-table-head-row-nowrap">
+                                <th class="operation-th-pad-8">順位</th>
+                                <th class="operation-th-pad-8">部署名</th>
+                                <th class="operation-th-pad-8 operation-th-align-right">メッセージ数</th>
                             </tr>
                         </thead>
                         <tbody id="department-ranking-table">
                         </tbody>
                     </table>
-                    <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
-                        <button id="btn-view-all-departments" type="button" style="border: 1px solid #d0d7de; background: #fff; color: #2c3e50; margin: 0 auto; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">
+                    <div class="operation-dept-viewall-wrap">
+                        <button id="btn-view-all-departments" type="button" class="operation-btn-secondary-sm operation-btn-center">
                             View All Departments
                         </button>
                     </div>
@@ -89,39 +89,39 @@
                 <div class="card-header">
                     <h3 class="card-title">RAG精度・品質指標</h3>
                 </div>
-                <table style="width: 100%; border-collapse: collapse;">
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 15px 10px;">
+                <table class="operation-kpi-table">
+                    <tr class="operation-kpi-row">
+                        <td class="operation-kpi-label-cell">
                             RAGヒット率
                             <span
                                 title="RAGモードの回答のうち、relevance_score が 0.7 以上の参照チャンクを1件以上含む回答の割合"
                                 aria-label="RAGヒット率の定義"
-                                style="display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; margin-left:6px; border:1px solid #95a5a6; border-radius:50%; font-size:11px; color:#7f8c8d; cursor:help; user-select:none;"
+                                class="operation-help-icon"
                             >i</span>
                         </td>
-                        <td style="text-align: right; font-weight: bold; font-size: 1.2rem;" id="rag-hit-rate">88%</td>
+                        <td class="operation-kpi-value-cell" id="rag-hit-rate">88%</td>
                     </tr>
                     <tr>
-                        <td style="padding: 15px 10px;">
+                        <td class="operation-kpi-label-cell">
                             平均参照親チャンク数
                             <span
                                 title="RAGモードの回答1件あたりに参照された親チャンク数（distinct parent_chunk_id）の平均。参照なし回答は0件として計算"
                                 aria-label="平均参照親チャンク数の定義"
-                                style="display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; margin-left:6px; border:1px solid #95a5a6; border-radius:50%; font-size:11px; color:#7f8c8d; cursor:help; user-select:none;"
+                                class="operation-help-icon"
                             >i</span>
                         </td>
-                        <td style="text-align: right; font-weight: bold; font-size: 1.2rem;" id="rag-avg-chunks">3.2</td>
+                        <td class="operation-kpi-value-cell" id="rag-avg-chunks">3.2</td>
                     </tr>
                 </table>
             </div>
 
-            <div class="card" style="border-top: 4px solid #f1c40f;">
+            <div class="card operation-cost-card">
                 <div class="card-header">
                     <h3 class="card-title">コスト</h3>
                 </div>
-                <div style="padding: 20px 10px;">
-                    <span style="font-size: 0.9rem; color: #7f8c8d;">今月の推定コスト</span>
-                    <div style="font-size: 2.5rem; font-weight: bold; margin-top: 10px;" id="estimated-cost"></div>
+                <div class="operation-cost-wrap">
+                    <span class="operation-cost-caption">今月の推定コスト</span>
+                    <div class="operation-cost-value" id="estimated-cost"></div>
                 </div>
             </div>
         </div>
@@ -130,35 +130,35 @@
         </div>
     </div>
 
-    <div id="department-ranking-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1200; align-items:center; justify-content:center;">
-        <div style="width:min(900px, 92vw); max-height:80vh; overflow:auto; background:#fff; border-radius:8px; box-shadow:0 10px 28px rgba(0,0,0,.18);">
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #eee;">
-                <h3 style="margin:0; font-size:1rem; color:#2c3e50;">全部署ランキング</h3>
-                <button id="btn-close-department-modal" type="button" style="border:none; background:transparent; font-size:1.4rem; line-height:1; cursor:pointer; color:#7f8c8d;">×</button>
+    <div id="department-ranking-modal" class="operation-modal-overlay">
+        <div class="operation-modal-panel">
+            <div class="operation-modal-header">
+                <h3 class="operation-modal-title">全部署ランキング</h3>
+                <button id="btn-close-department-modal" type="button" class="operation-modal-close-btn">×</button>
             </div>
-            <div style="padding:12px 16px;">
-                <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px;">
-                    <select id="department-modal-filter-dep1" style="min-width:160px; padding:6px 8px; border:1px solid #d0d7de; border-radius:6px;">
+            <div class="operation-modal-content">
+                <div class="operation-modal-filter-row">
+                    <select id="department-modal-filter-dep1" class="operation-modal-select">
                         <option value="">部署1: すべて</option>
                     </select>
-                    <select id="department-modal-filter-dep2" style="min-width:160px; padding:6px 8px; border:1px solid #d0d7de; border-radius:6px;">
+                    <select id="department-modal-filter-dep2" class="operation-modal-select">
                         <option value="">部署2: すべて</option>
                     </select>
-                    <select id="department-modal-filter-dep3" style="min-width:160px; padding:6px 8px; border:1px solid #d0d7de; border-radius:6px;">
+                    <select id="department-modal-filter-dep3" class="operation-modal-select">
                         <option value="">部署3: すべて</option>
                     </select>
-                    <button id="btn-clear-department-modal-filter" type="button" style="border:1px solid #d0d7de; background:#fff; color:#2c3e50; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:0.85rem;">
+                    <button id="btn-clear-department-modal-filter" type="button" class="operation-btn-secondary-sm">
                         クリア
                     </button>
                 </div>
-                <table style="width:100%; border-collapse: collapse; font-size: 0.9rem;">
+                <table class="operation-ranking-modal-table">
                     <thead>
-                        <tr style="border-bottom: 2px solid #eee; text-align: left; white-space: nowrap;">
-                            <th style="padding: 8px;">順位</th>
-                            <th style="padding: 8px;">部署1</th>
-                            <th style="padding: 8px;">部署2</th>
-                            <th style="padding: 8px;">部署3</th>
-                            <th style="padding: 8px; text-align: right;">メッセージ数</th>
+                        <tr class="operation-table-head-row operation-table-head-row-nowrap">
+                            <th class="operation-th-pad-8">順位</th>
+                            <th class="operation-th-pad-8">部署1</th>
+                            <th class="operation-th-pad-8">部署2</th>
+                            <th class="operation-th-pad-8">部署3</th>
+                            <th class="operation-th-pad-8 operation-th-align-right">メッセージ数</th>
                         </tr>
                     </thead>
                     <tbody id="department-ranking-modal-table"></tbody>

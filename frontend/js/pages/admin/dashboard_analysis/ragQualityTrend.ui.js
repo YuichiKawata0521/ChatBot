@@ -102,7 +102,7 @@ export const renderRagQualityTrendChart = (trendData, options = {}) => {
             },
             onHover: (_event, elements) => {
                 const hasElement = Boolean(elements && elements.length > 0);
-                canvas.style.cursor = hasElement ? 'pointer' : 'default';
+                canvas.classList.toggle('chart-hover-pointer', hasElement);
 
                 if (typeof options.onPointHover !== 'function') return;
                 if (!hasElement) {

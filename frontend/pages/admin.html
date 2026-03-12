@@ -69,7 +69,7 @@
 
     </main>
 
-    <div id="modal-doc-manage" class="modal-overlay" style="display:none;">
+    <div id="modal-doc-manage" class="modal-overlay" hidden>
     <div class="modal-content">
         <div class="modal-header">
             <h3>ドキュメント登録</h3>
@@ -92,7 +92,7 @@
                 </div>
             </div>
 
-            <div id="form-section-file" style="display: none;">
+            <div id="form-section-file" hidden>
                 <div class="upload-area" id="upload-area">
                     <div id="upload-default-ui">
                         <p>ここにファイルをドラッグ&ドロップ<br>または</p>
@@ -103,16 +103,16 @@
                         </small>
                     </div>
                     
-                    <div id="upload-preview-ui" style="display: none; text-align: center; padding: 20px;">
+                    <div id="upload-preview-ui" class="upload-preview-ui" hidden>
                         <div style="margin-bottom: 10px;">
-                            <i id="preview-icon" class="fa-solid fa-file fa-3x" style="color: #6c757d;"></i>
+                            <i id="preview-icon" class="fa-solid fa-file fa-3x preview-icon-default"></i>
                         </div>
-                        <div id="preview-name" style="font-weight: bold; margin-bottom: 10px; word-break: break-all;">filename.pdf</div>
-                        <button type="button" id="btn-clear-file" class="btn" style="background-color: #6c757d; padding: 5px 15px; font-size: 0.9em;">別のファイルを選ぶ</button>
+                        <div id="preview-name" class="upload-preview-name">filename.pdf</div>
+                        <button type="button" id="btn-clear-file" class="btn upload-preview-clear-btn">別のファイルを選ぶ</button>
                     </div>
                 </div>
                 
-                <div id="upload-loading" class="mt-3 text-center" style="display: none;">
+                <div id="upload-loading" class="mt-3 text-center" hidden>
                     <div class="spinner-border text-primary" role="status"></div>
                     <p class="mt-2 text-primary">ファイルを解析・変換中...<br>（数分かかる場合があります）</p>
                 </div>

@@ -274,7 +274,7 @@ const updateDepartmentFilterClearButtonVisibility = () => {
         (dom.dep3Select?.value || '')
     );
 
-    dom.departmentFilterClearButton.style.display = isTopDepartmentFiltered ? 'none' : '';
+    dom.departmentFilterClearButton.hidden = isTopDepartmentFiltered;
 };
 
 const updatePeriodLabel = () => {
@@ -283,7 +283,7 @@ const updatePeriodLabel = () => {
     const period = dom.periodSelect.value;
     const isCustom = period === 'custom';
     if (dom.customRange) {
-        dom.customRange.style.display = isCustom ? '' : 'none';
+        dom.customRange.hidden = !isCustom;
     }
     
     if (isCustom) {
@@ -427,12 +427,12 @@ const openMessageDetailModal = (item = {}) => {
         messageDetailModalDom.answer.textContent = item?.answer || '-';
     }
 
-    messageDetailModalDom.overlay.style.display = 'flex';
+    messageDetailModalDom.overlay.classList.add('is-open');
 };
 
 const closeMessageDetailModal = () => {
     if (messageDetailModalDom.overlay) {
-        messageDetailModalDom.overlay.style.display = 'none';
+        messageDetailModalDom.overlay.classList.remove('is-open');
     }
 };
 
@@ -440,7 +440,7 @@ const openRatingListModal = async (rating) => {
     if (!ratingListModalDom.overlay || !ratingListModalDom.tableBody) return;
 
     const ratingLabel = String(rating || '').toLowerCase();
-    ratingListModalDom.overlay.style.display = 'flex';
+    ratingListModalDom.overlay.classList.add('is-open');
 
     if (ratingListModalDom.title) {
         ratingListModalDom.title.textContent = `${ratingLabel} レーティング一覧`;
@@ -483,7 +483,7 @@ const openRatingListModal = async (rating) => {
 
 const closeRatingListModal = () => {
     if (ratingListModalDom.overlay) {
-        ratingListModalDom.overlay.style.display = 'none';
+        ratingListModalDom.overlay.classList.remove('is-open');
     }
 };
 
@@ -549,7 +549,7 @@ const openDepartmentMemberModal = async (departmentItem = {}) => {
     const dep3Name = String(departmentItem?.dep3Name || '').trim();
     const departmentName = departmentItem?.departmentName || [dep1Name, dep2Name, dep3Name].filter(Boolean).join(' / ') || '未設定';
 
-    memberModalDom.overlay.style.display = 'flex';
+    memberModalDom.overlay.classList.add('is-open');
     if (memberModalDom.title) {
         memberModalDom.title.textContent = `所属社員一覧 (${departmentName})`;
     }
@@ -600,7 +600,7 @@ const openRagDetailModal = async (targetDate, displayDate, options = {}) => {
 
     clearRagSort(false);
 
-    modalDom.overlay.style.display = 'flex';
+    modalDom.overlay.classList.add('is-open');
     if (modalDom.title) {
         modalDom.title.textContent = isAllMode
             ? `RAG質問/回答一覧 (${modalDisplayDate})`
@@ -655,13 +655,13 @@ const openRagDetailModal = async (targetDate, displayDate, options = {}) => {
 
 const closeRagDetailModal = () => {
     if (modalDom.overlay) {
-        modalDom.overlay.style.display = 'none';
+        modalDom.overlay.classList.remove('is-open');
     }
 };
 
 const closeDepartmentMemberModal = () => {
     if (memberModalDom.overlay) {
-        memberModalDom.overlay.style.display = 'none';
+        memberModalDom.overlay.classList.remove('is-open');
     }
 };
 

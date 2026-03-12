@@ -25,8 +25,7 @@ export async function copyMessage(messageRow) {
     } catch {
         const textarea = document.createElement('textarea');
         textarea.value = text;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
+        textarea.className = 'copy-helper-textarea';
         document.body.appendChild(textarea);
         textarea.focus();
         textarea.select();

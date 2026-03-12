@@ -29,11 +29,11 @@
             <table class="docs-table">
                 <thead>
                     <tr>
-                        <th style="width: 35%;">ドキュメント名</th>
-                        <th style="width: 10%;">種類</th>
-                        <th style="width: 15%;">ステータス</th>
-                        <th style="width: 15%;">登録日時</th>
-                        <th style="width: 20%;">操作</th>
+                        <th class="docs-col-title">ドキュメント名</th>
+                        <th class="docs-col-type">種類</th>
+                        <th class="docs-col-status">ステータス</th>
+                        <th class="docs-col-uploaded">登録日時</th>
+                        <th class="docs-col-actions">操作</th>
                     </tr>
                 </thead>
                 <tbody id="docs-table-body">
@@ -42,7 +42,7 @@
         </div>
     </main>
 
-    <div id="modal-preview" class="modal-overlay" style="display:none;">
+    <div id="modal-preview" class="modal-overlay" hidden>
         <div class="modal-content modal-lg">
             <div class="modal-header">
                 <h3>抽出テキストのプレビュー</h3>
@@ -54,7 +54,7 @@
         </div>
     </div>
 
-    <div id="modal-rename" class="modal-overlay" style="display:none;">
+    <div id="modal-rename" class="modal-overlay" hidden>
         <div class="modal-content">
             <div class="modal-header">
                 <h3>タイトル変更</h3>
@@ -73,14 +73,14 @@
         </div>
     </div>
 
-    <div id="modal-reupload" class="modal-overlay" style="display:none;">
+    <div id="modal-reupload" class="modal-overlay" hidden>
         <div class="modal-content">
             <div class="modal-header">
                 <h3>ファイルの再アップロード</h3>
                 <button class="close-modal" id="close-reupload-modal">&times;</button>
             </div>
             <div class="modal-body">
-                <p class="text-muted" style="margin-bottom: 15px; font-size: 0.9em;">
+                <p class="text-muted docs-reupload-note">
                     ドキュメントIDを維持したまま、中身を新しいファイルで上書き・再解析します。
                 </p>
                 <input type="hidden" id="reupload-doc-id">

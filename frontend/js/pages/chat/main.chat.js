@@ -126,7 +126,7 @@ function handleRDDAgent() {
 
             a.href = url;
             a.download = `要件定義書・仕様書_draft_${day}.md`;
-            a.style.display = 'none';
+            a.hidden = true;
 
             document.body.appendChild(a)
             a.click();

@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
             docs.forEach(doc => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td style="word-break: break-all;">${doc.title}</td>
+                    <td class="docs-title-break">${doc.title}</td>
                     <td>${doc.source.toUpperCase()}</td>
                     <td><span class="status-badge status-${doc.status}">${getStatusText(doc.status)}</span></td>
                     <td>${new Date(doc.uploaded_at).toLocaleString('ja-JP')}</td>
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const res = await ApiClient.get(`/documents/${id}`);
                     document.getElementById('preview-content').value = res.content || 'テキストがありません。';
-                    modalPreview.style.display = 'flex';
+                    modalPreview.hidden = false;
                 } catch (error) {
                     showToast('プレビューの取得に失敗しました', 'error');
                 }
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const title = e.currentTarget.dataset.title;
                 document.getElementById('rename-doc-id').value = id;
                 document.getElementById('rename-title-input').value = title;
-                modalRename.style.display = 'flex';
+                modalRename.hidden = false;
             });
         });
 
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', (e) => {
                 document.getElementById('reupload-doc-id').value = e.currentTarget.dataset.id;
                 document.getElementById('reupload-file-input').value = '';
-                modalReupload.style.display = 'flex';
+                modalReupload.hidden = false;
             });
         });
 
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await ApiClient.post(`/documents/rename/${id}`, { title: newTitle });
             showToast('タイトルを変更しました', 'success');
-            modalRename.style.display = 'none';
+            modalRename.hidden = true;
             loadDocuments();
         } catch (error) {
             showToast('タイトルの変更に失敗しました', 'error');
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await ApiClient.post(`/documents/file/${id}`, formData);
             
             showToast('再アップロードと解析が完了しました', 'success');
-            modalReupload.style.display = 'none';
+            modalReupload.hidden = true;
             loadDocuments();
         } catch (error) {
             console.error(error);
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // モーダルを閉じる処理
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            e.target.closest('.modal-overlay').style.display = 'none';
+            e.target.closest('.modal-overlay').hidden = true;
         });
     });
 });

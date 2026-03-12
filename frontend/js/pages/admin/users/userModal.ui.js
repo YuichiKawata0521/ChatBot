@@ -40,7 +40,7 @@ export class userModalUI {
             this._initializeDepartmentFields();
             this.csvForm.reset();
             this._resetCsvArea();
-            this.tabContainer.style.display = 'flex';
+            this.tabContainer.hidden = false;
             this._switchTab('tab-single');
         } else if (mode === 'edit') {
             this.modalTitle.textContent = 'ユーザー編集';
@@ -48,11 +48,11 @@ export class userModalUI {
                 passwordInput.required = false;
                 passwordInput.value = '';
             }
-            this.tabContainer.style.display = 'none';
+            this.tabContainer.hidden = true;
             this._switchTab('tab-single');
             this._fillFormData(userData);
         }
-        this.modal.style.display = 'flex';
+        this.modal.hidden = false;
     }
 
     setDepartments(departments = []) {
@@ -61,7 +61,7 @@ export class userModalUI {
     }
 
     close() {
-        this.modal.style.display = 'none';
+        this.modal.hidden = true;
     }
 
 
@@ -76,7 +76,7 @@ export class userModalUI {
 
     _switchTab(tabId) {
         this.modal?.querySelectorAll('.tab-content').forEach(content => {
-            content.style.display = 'none';
+            content.hidden = true;
             content.classList.remove('active');
         });
         this.modal?.querySelectorAll('.tab-btn').forEach((btn) => {
@@ -85,7 +85,7 @@ export class userModalUI {
 
         const target = this.modal?.querySelector(`#${tabId}`);
         if (!target) return;
-        target.style.display = 'block';
+        target.hidden = false;
         setTimeout(() => target.classList.add('active'), 10);
     }
 
@@ -265,14 +265,10 @@ export class userModalUI {
         this._setDropAreaDefaultVisible(false);
         if (this.selectedFileName) {
             this.selectedFileName.innerHTML = `
-                <i class="fa-solid fa-file-csv fa-3x" style="color:#2ecc71;"></i>
-                <div style="margin-top:10px; word-break:break-all;">${file.name}</div>
+                <i class="fa-solid fa-file-csv fa-3x csv-preview-icon"></i>
+                <div class="csv-preview-file-name">${file.name}</div>
             `;
-            this.selectedFileName.style.display = 'flex';
-            this.selectedFileName.style.flexDirection = 'column';
-            this.selectedFileName.style.alignItems = 'center';
-            this.selectedFileName.style.justifyContent = 'center';
-            this.selectedFileName.style.textAlign = 'center';
+            this.selectedFileName.classList.add('selected-file-preview');
         }
         if (this.uploadBtn) {
             this.uploadBtn.disabled = false;
@@ -285,11 +281,7 @@ export class userModalUI {
         if (this.selectedFileName) {
             this.selectedFileName.innerHTML = '';
             this.selectedFileName.textContent = '';
-            this.selectedFileName.style.display = '';
-            this.selectedFileName.style.flexDirection = '';
-            this.selectedFileName.style.alignItems = '';
-            this.selectedFileName.style.justifyContent = '';
-            this.selectedFileName.style.textAlign = '';
+            this.selectedFileName.classList.remove('selected-file-preview');
         }
         if (this.fileInput) {
             this.fileInput.value = '';
@@ -301,7 +293,7 @@ export class userModalUI {
 
     _setDropAreaDefaultVisible(isVisible) {
         this.dropAreaDefaultNodes.forEach((node) => {
-            node.style.display = isVisible ? '' : 'none';
+            node.hidden = !isVisible;
         });
     }
 

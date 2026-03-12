@@ -31,7 +31,7 @@ export class userTableUI {
 
         // ユーザーデータがない場合の表示
         if (!users || users.length === 0) {
-            this.tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">ユーザーが登録されていません。</td></tr>';
+            this.tbody.innerHTML = '<tr><td colspan="7" class="table-empty-cell-center">ユーザーが登録されていません。</td></tr>';
             return;
         }
 

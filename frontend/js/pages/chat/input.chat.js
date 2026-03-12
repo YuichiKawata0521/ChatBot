@@ -45,14 +45,6 @@ export function initInputHandlers(onSend) {
     messageInput.addEventListener('input', resizeTextarea);
 
     function resizeTextarea() {
-        messageInput.style.height = 'auto';
-        const scrollHeight = messageInput.scrollHeight;
-        const maxHeight = parseInt(window.getComputedStyle(messageInput).maxHeight);
-
-        if (scrollHeight <= maxHeight) {
-            messageInput.style.height = scrollHeight + 'px';
-        } else {
-            messageInput.style.height = maxHeight + 'px';
-        }
+        // style-src 'self' 環境では element.style の更新を避ける
     }
 }

@@ -345,6 +345,10 @@ body {
     justify-content: center;
 }
 
+.analysis-modal-overlay.is-open {
+    display: flex;
+}
+
 .analysis-modal-overlay-top {
     z-index: 1300;
 }
@@ -496,4 +500,198 @@ body {
 
 .analysis-hidden {
     display: none;
+}
+
+.chart-hover-pointer {
+    cursor: pointer;
+}
+
+.department-ranking-row {
+    border-bottom: 1px solid #eee;
+}
+
+.department-ranking-cell {
+    padding: 8px;
+}
+
+.department-ranking-cell-right {
+    text-align: right;
+}
+
+.operation-month-scope-select {
+    margin-left: auto;
+    margin-right: 12px;
+    padding: 6px 10px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+}
+
+.operation-grid-2-1 {
+    grid-template-columns: 2fr 1fr;
+}
+
+.operation-card-table-wrap {
+    padding: 10px;
+}
+
+.operation-ranking-table,
+.operation-kpi-table,
+.operation-ranking-modal-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.operation-ranking-table,
+.operation-ranking-modal-table {
+    font-size: 0.9rem;
+}
+
+.operation-table-head-row {
+    border-bottom: 2px solid #eee;
+    text-align: left;
+}
+
+.operation-table-head-row-nowrap {
+    white-space: nowrap;
+}
+
+.operation-th-pad-8 {
+    padding: 8px;
+}
+
+.operation-th-align-right {
+    text-align: right;
+}
+
+.operation-dept-viewall-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.operation-btn-secondary-sm {
+    border: 1px solid #d0d7de;
+    background: #fff;
+    color: #2c3e50;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.operation-btn-center {
+    margin: 0 auto;
+}
+
+.operation-kpi-row {
+    border-bottom: 1px solid #eee;
+}
+
+.operation-kpi-label-cell {
+    padding: 15px 10px;
+}
+
+.operation-help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: 6px;
+    border: 1px solid #95a5a6;
+    border-radius: 50%;
+    font-size: 11px;
+    color: #7f8c8d;
+    cursor: help;
+    user-select: none;
+}
+
+.operation-kpi-value-cell {
+    text-align: right;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.operation-cost-card {
+    border-top: 4px solid #f1c40f;
+}
+
+.operation-cost-wrap {
+    padding: 20px 10px;
+}
+
+.operation-cost-caption {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+.operation-cost-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.operation-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1200;
+    align-items: center;
+    justify-content: center;
+}
+
+.operation-modal-overlay.is-open {
+    display: flex;
+}
+
+.operation-modal-panel {
+    width: min(900px, 92vw);
+    max-height: 80vh;
+    overflow: auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+}
+
+.operation-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid #eee;
+}
+
+.operation-modal-title {
+    margin: 0;
+    font-size: 1rem;
+    color: #2c3e50;
+}
+
+.operation-modal-close-btn {
+    border: none;
+    background: transparent;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #7f8c8d;
+}
+
+.operation-modal-content {
+    padding: 12px 16px;
+}
+
+.operation-modal-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.operation-modal-select {
+    min-width: 160px;
+    padding: 6px 8px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
 }

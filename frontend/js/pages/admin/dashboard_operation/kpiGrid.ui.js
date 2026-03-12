@@ -47,7 +47,7 @@ export const renderKpiGrid = (displayData) => {
 
     if (!displayData.showTrend) {
         trendElements.forEach((element) => {
-            element.style.display = 'none';
+            element.hidden = true;
             element.textContent = '';
             element.classList.remove('trend-up', 'trend-down');
         });
@@ -55,7 +55,7 @@ export const renderKpiGrid = (displayData) => {
     }
 
     trendElements.forEach((element) => {
-        element.style.display = '';
+        element.hidden = false;
     });
 
     applyTrend(dauTrendEl, displayData.dau.trend);

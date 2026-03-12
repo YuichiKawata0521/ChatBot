@@ -77,6 +77,7 @@ summary {
     justify-content: space-between;
     cursor: pointer;
     gap: 8px;
+    position: relative;
 }
 
 
@@ -108,7 +109,8 @@ summary {
 }
 
 .history-menu-popup {
-    position: fixed;
+    position: absolute;
+    right: -104px;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
@@ -119,6 +121,12 @@ summary {
     border-radius: 8px;
     overflow: hidden;
     z-index: 1200;
+}
+
+.copy-helper-textarea {
+    position: fixed;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .history-menu-item {
@@ -153,6 +161,15 @@ summary {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.history-mode-icon {
+    margin-right: 4px;
+}
+
+.documents-empty-message {
+    padding: 10px;
+    color: #888;
 }
 
 .input-container {
@@ -759,4 +776,36 @@ body.sidebar-closed .sidebar-content {
     text-decoration: underline;
     background: none;
     border: none;
+}
+
+.wizard-confirm-note-box {
+    background: #fff3cd;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.wizard-empty-answer {
+    color: #888;
+}
+
+.wizard-confirm-item-value {
+    font-size: 0.95rem;
+}
+
+.wizard-question-number {
+    color: #1565c0;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.wizard-question-text {
+    margin-bottom: 24px;
+}
+
+.wizard-question-help {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: #666;
 }

@@ -103,20 +103,20 @@ export class RequirementAgentWizard {
             this.btnSubmit.textContent = '実行';
 
             let html = `
-                <div style="background:#fff3cd; padding:12px; border-radius:8px; margin-bottom:20px; font-size:0.9rem;">
+                <div class="wizard-confirm-note-box">
                     💡 空欄の項目は「特になし(AI側で定義)」として処理されます。問題なければ「実行」を押してください。
                 </div>
                 <div class="confirm-list">
             `;
             this.questions.forEach((q, index) => {
-                const answer = this.answers[q.id] || '<span style="color:#888;">特になし(AI側で定義してください)</span>';
+                const answer = this.answers[q.id] || '<span class="wizard-empty-answer">特になし(AI側で定義してください)</span>';
                 html += `
                     <div class="confirm-item">
                         <div class="confirm-item-header">
                             <strong>${q.number}</strong>
                             <button class="edit-btn" data-index="${index}">修正する</button>
                         </div>
-                        <div class="confirm-item-value" style="font-size:0.95rem;">${answer.replace(/\n/g, '<br>')}</div>
+                        <div class="confirm-item-value wizard-confirm-item-value">${answer.replace(/\n/g, '<br>')}</div>
                     </div>
                 `;
             });
@@ -150,10 +150,10 @@ export class RequirementAgentWizard {
             : `<input type="text" id="wizard-input" class="answer-input" value="${currentValue}" placeholder="入力または空欄のまま次へ (Ctrl + Enterで次の質問へ)">`;
 
         this.modalBody.innerHTML = `
-            <div style="color:#1565c0; font-weight:bold; margin-bottom:8px;">${q.number}</div>
-            <div class="question-text" style="margin-bottom: 24px;">${formattedText}</div>
+            <div class="wizard-question-number">${q.number}</div>
+            <div class="question-text wizard-question-text">${formattedText}</div>
             ${inputHtml}
-            <div style="margin-top:10px; font-size:0.8rem; color:#666;">※思いつく範囲でざっくりと回答してください。空欄で次へ進むとスキップ（AIにお任せ）になります。</div>
+            <div class="wizard-question-help">※思いつく範囲でざっくりと回答してください。空欄で次へ進むとスキップ（AIにお任せ）になります。</div>
         `;
 
         const inputElement = document.getElementById('wizard-input');

@@ -143,7 +143,7 @@ function renderTable() {
 
     if (logsToShow.length === 0) {
         dom.tableBody.innerHTML = `
-        <tr><td colspan="6" class="text-center" style="padding: 20px;">条件に一致するログが見つかりません</td></tr>
+        <tr><td colspan="6" class="text-center log-empty-message-cell">条件に一致するログが見つかりません</td></tr>
         `;
         renderPagination();
         return;
@@ -188,7 +188,9 @@ function renderTable() {
         // 6. アイコン
         const tdIcon = document.createElement('td');
         tdIcon.className = 'text-center';
-        tdIcon.innerHTML = '<i class="fa-solid fa-chevron-right" style="color:#ccc;"></i>';
+        const chevronIcon = document.createElement('i');
+        chevronIcon.className = 'fa-solid fa-chevron-right log-row-chevron';
+        tdIcon.appendChild(chevronIcon);
 
         tr.append(tdDate, tdLevel, tdModule, tdMessage, tdUser, tdIcon);
         fragment.appendChild(tr);
@@ -247,11 +249,11 @@ function openModal(log) {
     // JSONを見やすくフォーマットして表示
     dom.modalContext.innerHTML = log.context ? JSON.stringify(log.context, null, 2) : 'No context data';
 
-    dom.modal.style.display = 'flex';
+    dom.modal.hidden = false;
 }
 
 function closeModal() {
-    dom.modal.style.display = 'none';
+    dom.modal.hidden = true;
 }
 
 function exportFilteredLogsToCsv() {

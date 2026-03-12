@@ -19,12 +19,10 @@ export function toggleButtonsState(isLoading) {
 
         btn.disabled = true;
         btn.textContent = 'ログイン中...';
-        btn.style.opacity = '0.7';
-        btn.style.cursor = 'wait';
+        btn.classList.add('is-loading');
     } else {
         btn.disabled = false;
         btn.textContent = btn.dataset.originalText || 'ログイン';
-        btn.style.opacity = '';
-        btn.style.cursor = '';
+        btn.classList.remove('is-loading');
     }
 }

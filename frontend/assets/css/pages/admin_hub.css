@@ -148,6 +148,10 @@ body {
     backdrop-filter: blur(2px); /* 背景を少しぼかす */
 }
 
+.modal-overlay.is-open {
+    display: flex;
+}
+
 /* モーダル本体 */
 .modal-content {
     background-color: #fff;
@@ -238,6 +242,48 @@ body {
     background: white;
     border-radius: 5px;
     padding: 10px;
+}
+
+.upload-area.is-dragover {
+    background-color: #f0f8ff;
+    border-color: #007bff;
+}
+
+.upload-preview-ui {
+    text-align: center;
+    padding: 20px;
+}
+
+.upload-preview-name {
+    font-weight: bold;
+    margin-bottom: 10px;
+    word-break: break-all;
+}
+
+.upload-preview-clear-btn {
+    background-color: #6c757d;
+    padding: 5px 15px;
+    font-size: 0.9em;
+}
+
+.preview-icon-default {
+    color: #6c757d;
+}
+
+.preview-icon-pdf {
+    color: #e2574c;
+}
+
+.preview-icon-word {
+    color: #2b579a;
+}
+
+.preview-icon-powerpoint {
+    color: #d24726;
+}
+
+.preview-icon-lines {
+    color: #4a5568;
 }
 
 /* フォーム要素 */

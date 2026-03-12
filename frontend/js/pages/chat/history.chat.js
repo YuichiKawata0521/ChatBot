@@ -81,10 +81,8 @@ function openHistoryMenuPopup(thread, menuButton) {
 
     const popup = document.createElement('div');
     popup.className = 'history-menu-popup';
-    const rect = menuButton.getBoundingClientRect();
-
-    popup.style.left = `${rect.right + 8}px`;
-    popup.style.top = `${rect.top + rect.height / 2}px`;
+    const parentCard = menuButton.closest('.history-card');
+    if (!parentCard) return;
 
     const editButton = document.createElement('button');
     editButton.className = 'history-menu-item';
@@ -113,7 +111,7 @@ function openHistoryMenuPopup(thread, menuButton) {
         event.stopPropagation();
     });
 
-    document.body.appendChild(popup);
+    parentCard.appendChild(popup);
     activeMenuPopup = popup;
 }
 
@@ -185,16 +183,16 @@ export async function loadThreadList() {
                 const dateSpan = document.createElement('span');
                 const date = new Date(thread.created_at)
                 dateSpan.textContent = date.toISOString().split('T')[0];
-                
-                let iconHTML = '';
-                if (thread.mode === 'rag') {
-                    iconHTML = '<span style="margin-right:4px;">📄</span>';
-                } else {
-                    iconHTML = '<span style="margin-right:4px;">💬</span>';
-                }
 
                 const titleSpan = document.createElement('span');
-                titleSpan.innerHTML = `${iconHTML}${thread.title}`;
+                titleSpan.className = 'history-title';
+
+                const modeIconSpan = document.createElement('span');
+                modeIconSpan.className = 'history-mode-icon';
+                modeIconSpan.textContent = thread.mode === 'rag' ? '📄' : '💬';
+
+                titleSpan.appendChild(modeIconSpan);
+                titleSpan.appendChild(document.createTextNode(thread.title));
                 leftDiv.appendChild(dateSpan);
                 leftDiv.appendChild(titleSpan);
 

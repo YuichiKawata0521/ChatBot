@@ -144,8 +144,7 @@ export function clearInput() {
 }
 
 export function resetInputHeight() {
-    const input = dom.messageInput;
-    input.style.height = '';
+    // style-src 'self' 運用では element.style の更新を行わない
 }
 
 export function clearChatMessages() {
@@ -210,7 +209,7 @@ export function renderDocumentsList(documents, onDocumentClick) {
     container.innerHTML = '';
 
     if (documents.length === 0) {
-        container.innerHTML = '<div style="padding:10px; color:#888">ドキュメントがありません</div>';
+        container.innerHTML = '<div class="documents-empty-message">ドキュメントがありません</div>';
         return;
     }
 

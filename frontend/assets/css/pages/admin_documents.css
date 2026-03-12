@@ -39,6 +39,30 @@
     background-color: #fafafa;
 }
 
+.docs-title-break {
+    word-break: break-all;
+}
+
+.docs-col-title {
+    width: 35%;
+}
+
+.docs-col-type {
+    width: 10%;
+}
+
+.docs-col-status {
+    width: 15%;
+}
+
+.docs-col-uploaded {
+    width: 15%;
+}
+
+.docs-col-actions {
+    width: 20%;
+}
+
 .status-badge {
     padding: 5px 10px;
     border-radius: 20px;
@@ -82,4 +106,9 @@
 .modal-lg {
     max-width: 800px;
     width: 90%;
+}
+
+.docs-reupload-note {
+    margin-bottom: 15px;
+    font-size: 0.9em;
 }
