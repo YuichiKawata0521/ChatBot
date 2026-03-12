@@ -121,33 +121,68 @@ jobs:
       # Docker Build
       # ----------------
 
-      - name: Build Docker image
-        id: docker_build
-        run: docker build -t security-scan-image .
+      - name: Build backend Docker image
+        id: docker_build_backend
+        working-directory: backend
+        run: docker build -t backend-image .
         continue-on-error: true
+
+      - name: Build frontend Docker image
+        id: docker_build_frontend
+        working-directory: frontend
+        run: docker build -t frontend-image .
+        continue-on-error: true
+
+      - name: Docker images
+        run: docker images
+
+      # ----------------
+      # Start application
+      # ----------------
+
+      - name: Start application
+        id: compose_up
+        run: docker compose up -d --build
 
       # ----------------
       # Trivy filesystem
       # ----------------
 
-      - name: Run Trivy filesystem scan
-        id: trivy_fs
+      - name: Run Trivy backend image scan
+        id: trivy_backend
         uses: aquasecurity/trivy-action@0.30.0
         continue-on-error: true
         with:
-          scan-type: fs
-          scan-ref: .
+          image-ref: backend-image
           format: sarif
-          output: trivy-results.sarif
+          output: trivy-backend-results.sarif
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           exit-code: "0"
 
-      - name: Upload Trivy SARIF
-        if: ${{ always() && hashFiles('trivy-results.sarif') != '' }}
+      - name: Run Trivy frontend image scan
+        id: trivy_frontend
+        uses: aquasecurity/trivy-action@0.30.0
+        continue-on-error: true
+        with:
+          image-ref: frontend-image
+          format: sarif
+          output: trivy-frontend-results.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Upload backend Trivy SARIF
+        if: ${{ always() && hashFiles('trivy-backend-results.sarif') != '' }}
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: trivy-results.sarif
+          sarif_file: trivy-backend-results.sarif
+
+      - name: Upload frontend Trivy SARIF
+        if: ${{ always() && hashFiles('trivy-frontend-results.sarif') != '' }}
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-frontend-results.sarif
 
       # ----------------
       # Container scan
