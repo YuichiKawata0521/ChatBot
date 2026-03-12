@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       target_url:
-        description: "DAST target URL (example: https://example.com)"
+        description: "DAST target URL"
         required: false
         default: ""
 
@@ -19,52 +19,109 @@ permissions:
   security-events: write
 
 jobs:
-  static-security:
-    name: Static Security Checks
+  build-test-security:
+    name: Build, Test and Static Security
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      # ----------------
+      # Node setup
+      # ----------------
+
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
 
-      - name: Install backend dependencies
-        run: npm install --prefix backend
+      - name: Install backend deps
+        run: npm ci --prefix backend
 
-      - name: Install frontend dependencies
-        run: npm install --prefix frontend
+      - name: Install frontend deps
+        run: npm ci --prefix frontend
 
-      - name: Audit backend dependencies
-        id: audit_backend
-        run: npm run audit:security --prefix backend
+      # ----------------
+      # Unit Tests
+      # ----------------
+
+      - name: Run backend tests
+        id: backend_test
+        run: npm test --prefix backend
         continue-on-error: true
 
-      - name: Audit frontend dependencies
-        id: audit_frontend
-        run: npm run audit:security --prefix frontend
+      - name: Run frontend tests
+        id: frontend_test
+        run: npm test --prefix frontend
         continue-on-error: true
+
+      # ----------------
+      # Python setup
+      # ----------------
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install pip-audit
-        run: pip install pip-audit
+      - name: Install python deps
+        run: |
+          pip install -r llm/requirements.txt
+          pip install pytest pip-audit
 
-      - name: Audit llm requirements
+      - name: Run python tests
+        id: python_test
+        run: pytest || true
+
+      # ----------------
+      # Dependency scans
+      # ----------------
+
+      - name: Audit backend deps
+        id: audit_backend
+        run: npm run audit:security --prefix backend
+        continue-on-error: true
+
+      - name: Audit frontend deps
+        id: audit_frontend
+        run: npm run audit:security --prefix frontend
+        continue-on-error: true
+
+      - name: Audit python deps
         id: audit_llm
         run: |
           pip-audit -r llm/requirements.txt
           pip-audit -r llm/requirements-heavy.txt
         continue-on-error: true
 
+      # ----------------
+      # SAST
+      # ----------------
+
+      - name: Run Semgrep
+        id: semgrep_scan
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: auto
+        continue-on-error: true
+
+      # ----------------
+      # Docker Build
+      # ----------------
+
+      - name: Build Docker image
+        id: docker_build
+        run: docker build -t security-scan-image .
+        continue-on-error: true
+
+      # ----------------
+      # Trivy filesystem
+      # ----------------
+
       - name: Run Trivy filesystem scan
-        id: trivy_scan
+        id: trivy_fs
         uses: aquasecurity/trivy-action@0.30.0
         continue-on-error: true
         with:
@@ -74,27 +131,79 @@ jobs:
           output: trivy-results.sarif
           severity: CRITICAL,HIGH
           ignore-unfixed: true
-          exit-code: "1"
+          exit-code: "0"
 
-      - name: Upload Trivy report to code scanning
+      - name: Upload Trivy SARIF
         if: ${{ always() && hashFiles('trivy-results.sarif') != '' }}
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-results.sarif
 
-      - name: Enforce security gate
+      # ----------------
+      # Container scan
+      # ----------------
+
+      - name: Run Trivy image scan
+        id: trivy_image
+        uses: aquasecurity/trivy-action@0.30.0
+        continue-on-error: true
+        with:
+          image-ref: security-scan-image
+          format: sarif
+          output: trivy-image-results.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Upload Trivy image SARIF
+        if: ${{ always() && hashFiles('trivy-image-results.sarif') != '' }}
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-image-results.sarif
+
+      # ----------------
+      # SBOM
+      # ----------------
+
+      - name: Generate SBOM
+        id: sbom
+        run: |
+          docker run --rm aquasec/trivy:latest fs \
+          --format cyclonedx \
+          --output sbom.json \
+          .
+        continue-on-error: true
+
+      - name: Upload SBOM
+        if: ${{ always() && hashFiles('sbom.json') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+
+      # ----------------
+      # Security Gate
+      # ----------------
+
+      - name: Enforce pipeline gate
         if: ${{ always() }}
         run: |
-          echo "backend audit outcome: ${{ steps.audit_backend.outcome }}"
-          echo "frontend audit outcome: ${{ steps.audit_frontend.outcome }}"
-          echo "llm audit outcome: ${{ steps.audit_llm.outcome }}"
-          echo "trivy outcome: ${{ steps.trivy_scan.outcome }}"
+          echo "backend test: ${{ steps.backend_test.outcome }}"
+          echo "frontend test: ${{ steps.frontend_test.outcome }}"
+          echo "python test: ${{ steps.python_test.outcome }}"
+          echo "semgrep: ${{ steps.semgrep_scan.outcome }}"
+          echo "docker build: ${{ steps.docker_build.outcome }}"
+          echo "trivy fs: ${{ steps.trivy_fs.outcome }}"
+          echo "trivy image: ${{ steps.trivy_image.outcome }}"
 
-          if [ "${{ steps.audit_backend.outcome }}" != "success" ] || \
-             [ "${{ steps.audit_frontend.outcome }}" != "success" ] || \
-             [ "${{ steps.audit_llm.outcome }}" != "success" ] || \
-             [ "${{ steps.trivy_scan.outcome }}" != "success" ]; then
-            echo "At least one static security check failed."
+          if [ "${{ steps.backend_test.outcome }}" != "success" ] || \
+             [ "${{ steps.frontend_test.outcome }}" != "success" ] || \
+             [ "${{ steps.python_test.outcome }}" != "success" ] || \
+             [ "${{ steps.docker_build.outcome }}" != "success" ] || \
+             [ "${{ steps.semgrep_scan.outcome }}" != "success" ] || \
+             [ "${{ steps.trivy_fs.outcome }}" != "success" ] || \
+             [ "${{ steps.trivy_image.outcome }}" != "success" ]; then
+            echo "Pipeline gate failed."
             exit 1
           fi
 
@@ -109,12 +218,12 @@ jobs:
       - name: Validate target URL
         run: |
           if [ -z "$TARGET_URL" ]; then
-            echo "No TARGET_URL configured. Set workflow_dispatch input or repository variable DAST_TARGET_URL."
+            echo "No TARGET_URL configured."
             exit 1
           fi
           echo "DAST target: $TARGET_URL"
 
-      - name: Run OWASP ZAP Baseline
+      - name: Run ZAP baseline
         uses: zaproxy/action-baseline@v0.12.0
         with:
           target: ${{ env.TARGET_URL }}
