@@ -320,11 +320,18 @@ export class userModalUI {
             if (isCsvCancelButton) {
                 btn.addEventListener('click', () => {
                     this._resetCsvArea();
+                    this.close();
                 });
                 return;
             }
 
             btn.addEventListener('click', () => this.close());
+        });
+
+        this.modal?.addEventListener('click', (event) => {
+            if (event.target === this.modal) {
+                this.close();
+            }
         });
     }
 

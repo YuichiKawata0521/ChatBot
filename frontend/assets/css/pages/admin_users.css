@@ -170,6 +170,10 @@
     z-index: 1000;
 }
 
+.modal-overlay[hidden] {
+    display: none !important;
+}
+
 .modal-content {
     background: white;
     width: 100%;
