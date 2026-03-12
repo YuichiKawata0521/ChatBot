@@ -1,4 +1,17 @@
 export const chatModel = {
+    async countUserMessagesByUserId(pool, userId) {
+        const sql = `
+            SELECT COUNT(*)::INT AS total
+            FROM messages m
+            INNER JOIN threads t ON t.id = m.thread_id
+            WHERE t.user_id = $1
+              AND t.mode IN ('normal', 'rag')
+              AND m.sender = 'user';
+        `;
+        const result = await pool.query(sql, [userId]);
+        return result.rows[0]?.total ?? 0;
+    },
+
     async createThread(pool, userId, departmentId, title, mode, modelName, documentId) {
         const sql = `
             INSERT INTO threads (user_id, department_id, title, mode, model_name, document_id)

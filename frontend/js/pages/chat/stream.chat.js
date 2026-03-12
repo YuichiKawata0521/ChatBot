@@ -40,7 +40,16 @@ export const ChatStream = {
                 })
             });
 
-            if (!response.ok) throw new AppError('Network response was not ok');
+            if (!response.ok) {
+                let serverMessage = 'メッセージ送信に失敗しました';
+                try {
+                    const errorData = await response.json();
+                    serverMessage = errorData?.message || serverMessage;
+                } catch {
+                    serverMessage = 'メッセージ送信に失敗しました';
+                }
+                throw new AppError(serverMessage, response.status);
+            }
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
@@ -99,7 +108,7 @@ export const ChatStream = {
             ui.switchOverlay('hide');
         } catch (error) {
             console.error('Stream error: ', error);
-            assistantMsgDiv.textContent = 'エラーが発生しました';
+            assistantMsgDiv.textContent = error?.message || 'エラーが発生しました';
             ui.switchOverlay('hide');
         } 
     },

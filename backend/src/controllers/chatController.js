@@ -4,6 +4,17 @@ import { getPool } from '../config/db.js';
 import logger from '../utils/logger.js';
 import { llmService } from '../services/llmService.js';
 import { estimateTokenCount } from '../utils/tokenEstimator.js';
+import AppError from '../utils/appError.js';
+
+const PORTFOLIO_DEPARTMENT_IDS = new Set([1, 2, 3]);
+const PORTFOLIO_CHAT_LIMIT = 10;
+
+function isPortfolioUser(sessionUser) {
+    if (!sessionUser) return false;
+
+    const departmentId = Number.parseInt(sessionUser.department_id, 10);
+    return sessionUser.role === 'admin' && PORTFOLIO_DEPARTMENT_IDS.has(departmentId);
+}
 
 // スレッド作成
 export const createThread = async (req, res, next) => {
@@ -91,10 +102,27 @@ export const sendMessage = async (req, res, next) => {
         const { message, modelName, documentId } = req.body;
         let { threadId } = req.body;
         const userId = req.session.user.id;
+        const pool = getPool();
+
+        if (isPortfolioUser(req.session.user)) {
+            const totalUserMessages = await chatModel.countUserMessagesByUserId(pool, userId);
+
+            if (totalUserMessages >= PORTFOLIO_CHAT_LIMIT) {
+                logger.info('ポートフォリオユーザーのチャット回数上限に達しました', {
+                    option: {
+                        user_id: userId,
+                        total_user_messages: totalUserMessages,
+                        limit: PORTFOLIO_CHAT_LIMIT
+                    }
+                });
+
+                return next(new AppError('ポートフォリオ向けユーザーのチャット上限（10回）に達しました。', 429));
+            }
+        }
 
         if (!threadId) {
             const title = message.replace(/\n/g, ' ').substring(0, 30) + (message.length > 30 ? '...' : '');
-            const thread = await chatService.createThread(getPool(), userId, title, modelName, documentId);
+            const thread = await chatService.createThread(pool, userId, title, modelName, documentId);
             threadId = thread.id;
             logger.info('メッセージ送信時にスレッドを新規作成しました', {
                 option: {
@@ -113,7 +141,7 @@ export const sendMessage = async (req, res, next) => {
         res.write(`data: ${JSON.stringify({ type: 'meta', threadId })}\n\n`);
 
         // ServiceのAsyncGeneratorからデータを受け取り、クライアントへ流す
-        const stream = chatService.processChatStream(getPool(), threadId, userId, message, modelName);
+        const stream = chatService.processChatStream(pool, threadId, userId, message, modelName);
 
         for await (const chunk of stream) {
             res.write(`data: ${JSON.stringify(chunk)}\n\n`);
