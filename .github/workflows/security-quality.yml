@@ -1,0 +1,95 @@
+name: Security and Quality Checks
+
+on:
+  pull_request:
+    branches: ["main", "master"]
+  push:
+    branches: ["main", "master"]
+  schedule:
+    - cron: "0 2 * * 1"
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "DAST target URL (example: https://example.com)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  static-security:
+    name: Static Security Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install backend dependencies
+        run: npm install --prefix backend
+
+      - name: Install frontend dependencies
+        run: npm install --prefix frontend
+
+      - name: Audit backend dependencies
+        run: npm run audit:security --prefix backend
+
+      - name: Audit frontend dependencies
+        run: npm run audit:security --prefix frontend
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Audit llm requirements
+        run: |
+          pip-audit -r llm/requirements.txt
+          pip-audit -r llm/requirements-heavy.txt
+
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Upload Trivy report to code scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+
+  dynamic-security:
+    name: Dynamic Security Scan (DAST)
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.DAST_TARGET_URL != '' }}
+    env:
+      TARGET_URL: ${{ github.event.inputs.target_url != '' && github.event.inputs.target_url || vars.DAST_TARGET_URL }}
+
+    steps:
+      - name: Validate target URL
+        run: |
+          if [ -z "$TARGET_URL" ]; then
+            echo "No TARGET_URL configured. Set workflow_dispatch input or repository variable DAST_TARGET_URL."
+            exit 1
+          fi
+          echo "DAST target: $TARGET_URL"
+
+      - name: Run OWASP ZAP Baseline
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: ${{ env.TARGET_URL }}
+          cmd_options: "-a -j -m 10"
