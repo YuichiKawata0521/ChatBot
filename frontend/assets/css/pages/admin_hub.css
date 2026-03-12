@@ -260,6 +260,10 @@ body {
     word-break: break-all;
 }
 
+.upload-preview-icon-wrap {
+    margin-bottom: 10px;
+}
+
 .upload-preview-clear-btn {
     background-color: #6c757d;
     padding: 5px 15px;

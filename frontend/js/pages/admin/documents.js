@@ -47,6 +47,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewIcon = document.getElementById('preview-icon');
     const previewName = document.getElementById('preview-name');
     const btnClearFile = document.getElementById('btn-clear-file');
+
+    function closeModal() {
+        modal.classList.remove('is-open');
+        modal.hidden = true;
+        titleInput.value = '';
+        contentInput.value = '';
+        updateFilePreview(null);
+    }
+
     function updateFilePreview(file) {
         if (!file) {
             defaultUi.hidden = false;
@@ -130,15 +139,15 @@ document.addEventListener('DOMContentLoaded', () => {
     btnClearFile?.addEventListener('click', () => {
         updateFilePreview(null);
     });
+
     openBtn?.addEventListener('click', () => {
         modal.hidden = false;
+        modal.classList.add('is-open');
         switchMode('text');
     });
 
     closeBtn?.addEventListener('click', () => {
-        modal.hidden = true;
-        titleInput.value = '';
-        contentInput.value = '';
+        closeModal();
     });
 
     tabText?.addEventListener('click', () => switchMode('text'));
@@ -183,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fileInput.value = '';
             }
 
-            modal.hidden = true;
+            closeModal();
         } catch (error) {
             console.error(error);
             alert('保存に失敗しました: ' + error.message);
