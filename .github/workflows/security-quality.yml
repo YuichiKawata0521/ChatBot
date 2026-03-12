@@ -139,10 +139,47 @@ jobs:
       # ----------------
       # Start application
       # ----------------
+      - name: Prepare env
+        run: cp .env.production.example .env
 
       - name: Start application
         id: compose_up
         run: docker compose up -d --build
+
+      - name: Wait for backend
+        run: |
+          for i in {1..30}; do
+            if curl -f http://localhost:3000/api/health; then
+              echo "Backend is ready"
+              break
+            fi
+            echo "Waiting for backend..."
+            sleep 2
+          done
+
+      - name: Wait for frontend
+        run: |
+          for i in {1..30}; do
+            if curl -f http://localhost:8080; then
+              echo "Frontend is ready"
+              break
+            fi
+            echo "Waiting for frontend..."
+            sleep 2
+          done
+      # ----------------
+      # Install Playwright
+      # ----------------
+
+      - name: Install Playwright
+        run: |
+          npm install -D playwright
+          npx playwright install --with-deps
+
+      - name: Run E2E tests
+        id: e2e_test
+        run: npx playwright test
+        continue-on-error: true
 
       # ----------------
       # Trivy filesystem
@@ -240,6 +277,7 @@ jobs:
           echo "docker build: ${{ steps.docker_build.outcome }}"
           echo "trivy fs: ${{ steps.trivy_fs.outcome }}"
           echo "trivy image: ${{ steps.trivy_image.outcome }}"
+          echo "e2e: ${{ steps.e2e_test.outcome }}"
 
           if [ "${{ steps.backend_test.outcome }}" != "success" ] || \
              [ "${{ steps.frontend_test.outcome }}" != "success" ] || \
@@ -247,6 +285,7 @@ jobs:
              [ "${{ steps.docker_build.outcome }}" != "success" ] || \
              [ "${{ steps.semgrep_scan.outcome }}" != "success" ] || \
              [ "${{ steps.trivy_fs.outcome }}" != "success" ] || \
+             [ "${{ steps.e2e_test.outcome }}" != "success" ] || \
              [ "${{ steps.trivy_image.outcome }}" != "success" ]; then
             echo "Pipeline gate failed."
             exit 1
