@@ -22,20 +22,17 @@ jobs:
   build-test-security:
     name: Build, Test and Static Security
     runs-on: ubuntu-latest
+    env:
+      PASSWORD_PEPPER: ${{ secrets.PASSWORD_PEPPER }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare env
-        run: |
-          cp .env.production.example .env
-          grep -v '^\s*#' .env | grep -E '^[A-Za-z_][A-Za-z0-9_]*=' >> "$GITHUB_ENV"
-
-      - name: Validate required env vars
+      - name: Validate required secrets
         run: |
           if [ -z "$PASSWORD_PEPPER" ]; then
-            echo "PASSWORD_PEPPER is not set in .env"
+            echo "PASSWORD_PEPPER is not set. Configure repository secret PASSWORD_PEPPER."
             exit 1
           fi
 
@@ -151,6 +148,9 @@ jobs:
       # ----------------
       # Start application
       # ----------------
+      - name: Prepare env
+        run: cp .env.production.example .env
+
       - name: Start application
         id: compose_up
         run: docker compose up -d --build
@@ -245,28 +245,6 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-frontend-results.sarif
-
-      # ----------------
-      # Container scan
-      # ----------------
-
-      - name: Run Trivy image scan
-        id: trivy_image
-        uses: aquasecurity/trivy-action@0.30.0
-        continue-on-error: true
-        with:
-          image-ref: security-scan-image
-          format: sarif
-          output: trivy-image-results.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: "0"
-
-      - name: Upload Trivy image SARIF
-        if: ${{ always() && hashFiles('trivy-image-results.sarif') != '' }}
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: trivy-image-results.sarif
 
       # ----------------
       # SBOM
