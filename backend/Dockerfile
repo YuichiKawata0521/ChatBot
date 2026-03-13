@@ -15,10 +15,12 @@ USER node
 # キャッシュ利用のために先にpackage*.jsonをコピー
 # --------------------------
 FROM base AS builder
+USER root
 COPY --chown=node:node package*.json ./
 RUN npm ci
 COPY --chown=node:node . .
 RUN npm run build
+USER node
 
 # ---------- dev ----------
 # 開発環境用
@@ -40,11 +42,12 @@ CMD ["sh", "scripts/entrypoint.dev.sh"]
 FROM base AS prod
 ENV NODE_ENV=production
 EXPOSE 3000
-
+USER root
 COPY --from=builder --chown=node:node /app/dist ./dist
 COPY --chown=node:node src ./src
 COPY --chown=node:node scripts ./scripts
 COPY --chown=node:node package*.json ./
 RUN npm ci --omit=dev
+USER node
 
 CMD ["node", "dist/index.js"]

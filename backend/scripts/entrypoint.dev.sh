@@ -11,7 +11,7 @@ fi
 
 if [ ! -d "node_modules" ] || [ "$LOCK_HASH" != "$STORED_HASH" ]; then
 	echo "Installing dependencies..."
-	npm install
+	npm ci
 	mkdir -p node_modules
 	echo "$LOCK_HASH" > "$HASH_FILE"
 fi

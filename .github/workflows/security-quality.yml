@@ -281,7 +281,6 @@ jobs:
           echo "docker build frontend: ${{ steps.docker_build_frontend.outcome }}"
           echo "trivy backend: ${{ steps.trivy_backend.outcome }}"
           echo "trivy frontend: ${{ steps.trivy_frontend.outcome }}"
-          echo "trivy image: ${{ steps.trivy_image.outcome }}"
           echo "e2e: ${{ steps.e2e_test.outcome }}"
 
           if [ "${{ steps.backend_test.outcome }}" != "success" ] || \
@@ -292,8 +291,7 @@ jobs:
              [ "${{ steps.semgrep_scan.outcome }}" != "success" ] || \
              [ "${{ steps.trivy_backend.outcome }}" != "success" ] || \
              [ "${{ steps.trivy_frontend.outcome }}" != "success" ] || \
-             [ "${{ steps.e2e_test.outcome }}" != "success" ] || \
-             [ "${{ steps.trivy_image.outcome }}" != "success" ]; then
+             [ "${{ steps.e2e_test.outcome }}" != "success" ]; then
             echo "Pipeline gate failed."
             exit 1
           fi

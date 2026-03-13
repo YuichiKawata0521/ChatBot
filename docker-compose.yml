@@ -16,6 +16,7 @@ services:
     build:
       context: ./backend
       target: dev
+    user: "0:0"
     env_file:
       - .env
     ports:
