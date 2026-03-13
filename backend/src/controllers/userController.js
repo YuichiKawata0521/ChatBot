@@ -372,22 +372,57 @@ export const updateUser = async (req, res, next) => {
 export const deleteUser = async (req, res, next) => {
     try {
         const { id } = req.params;
+        const mode = String(req.query?.mode || 'soft').toLowerCase();
         if (!id) {
             return next(new AppError('ユーザーIDが欠落しています', 400));
         }
 
+        if (!['soft', 'hard'].includes(mode)) {
+            return next(new AppError('削除モードが不正です', 400));
+        }
+
         const pool = getPool();
 
-        const result = await userModel.softDeleteUserById(pool, id);
+        const result = mode === 'hard'
+            ? await userModel.hardDeleteUserById(pool, id)
+            : await userModel.softDeleteUserById(pool, id);
+
         if (!result.rowCount) {
             logger.warn('削除対象データが見つかりませんでした', {option: {id}});
             return next(new AppError('削除対象ユーザーが見つかりません', 404));
         }
 
-        logger.info('ユーザー削除成功', {option: {id}});
-        res.status(200).json({success: true, message: 'ユーザーの削除に成功'});
+        logger.info('ユーザー削除成功', {option: {id, mode}});
+        res.status(200).json({
+            success: true,
+            message: mode === 'hard' ? 'ユーザーを物理削除しました' : 'ユーザーを無効化しました'
+        });
     } catch (error) {
         logger.error('ユーザー削除時に何かしらのエラーが発生しました', {option: {id: req.params.id, detail: error.message}});
         return next(new AppError('ユーザー削除に失敗', 500));
     }
-}
+};
+
+export const restoreUser = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return next(new AppError('ユーザーIDが欠落しています', 400));
+        }
+
+        const pool = getPool();
+        const result = await userModel.restoreUserById(pool, id);
+        if (!result.rowCount) {
+            return next(new AppError('有効化対象ユーザーが見つからないか、既に有効です', 404));
+        }
+
+        logger.info('ユーザー有効化成功', {option: {id}});
+        res.status(200).json({
+            success: true,
+            message: 'ユーザーを有効化しました'
+        });
+    } catch (error) {
+        logger.error('ユーザー有効化エラー', {option: {id: req.params?.id, detail: error.message}});
+        return next(new AppError('ユーザー有効化に失敗しました', 500));
+    }
+};

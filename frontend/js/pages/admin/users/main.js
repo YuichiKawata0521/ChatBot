@@ -46,14 +46,54 @@ document.addEventListener('DOMContentLoaded', async () => {
             modalUI.open('edit', editUser);
         },
         onDelete: async (userId) => {
-            if (confirm('このユーザーを削除（または無効化）してもよろしいですか？')) {
-                try {
-                    await user_Service.deleteUser(userId);
-                    showToast('ユーザーを削除しました。', 'success');
-                    await loadUsers(); // テーブル再描画
-                } catch (error) {
-                    showToast('削除に失敗しました。', 'error');
-                }
+            const selectedAction = prompt(
+                '操作を選択してください: 「無効化」または「削除」を入力してください（キャンセルは空欄またはキャンセル）',
+                '無効化'
+            );
+
+            if (selectedAction === null) {
+                return;
+            }
+
+            const normalizedAction = String(selectedAction).trim();
+            if (!normalizedAction) {
+                return;
+            }
+
+            const isHardDelete = normalizedAction === '削除';
+            const isSoftDelete = normalizedAction === '無効化';
+
+            if (!isHardDelete && !isSoftDelete) {
+                showToast('「無効化」または「削除」を入力してください。', 'error');
+                return;
+            }
+
+            const confirmed = isHardDelete
+                ? confirm('このユーザーを物理削除します。関連データも削除される可能性があります。実行しますか？')
+                : confirm('このユーザーを無効化（論理削除）しますか？');
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+                await user_Service.deleteUser(userId, isHardDelete ? 'hard' : 'soft');
+                showToast(isHardDelete ? 'ユーザーを物理削除しました。' : 'ユーザーを無効化しました。', 'success');
+                await loadUsers(); // テーブル再描画
+            } catch (error) {
+                showToast(error.message || '削除に失敗しました。', 'error');
+            }
+        },
+        onRestore: async (userId) => {
+            if (!confirm('このユーザーを有効化しますか？')) {
+                return;
+            }
+
+            try {
+                await user_Service.restoreUser(userId);
+                showToast('ユーザーを有効化しました。', 'success');
+                await loadUsers();
+            } catch (error) {
+                showToast(error.message || '有効化に失敗しました。', 'error');
             }
         }
     });

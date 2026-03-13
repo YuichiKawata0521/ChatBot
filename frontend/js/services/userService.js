@@ -20,8 +20,13 @@ export class userService {
         return await ApiClient.put(`/users/${userId}`, userData);
     }
 
-    async deleteUser(userId) {
-        return ApiClient.delete(`/users/${userId}`);
+    async deleteUser(userId, mode = 'soft') {
+        const normalizedMode = mode === 'hard' ? 'hard' : 'soft';
+        return ApiClient.delete(`/users/${userId}?mode=${normalizedMode}`);
+    }
+
+    async restoreUser(userId) {
+        return await ApiClient.post(`/users/${userId}/restore`, {});
     }
 
     async resetPassword(userId) {

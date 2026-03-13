@@ -193,3 +193,41 @@ export const softDeleteUserById = async (pool, userId) => {
     `;
     return await pool.query(sql, [userId]);
 };
+
+export const hardDeleteUserById = async (pool, userId) => {
+    const sql = `
+        WITH target_threads AS (
+            SELECT id
+            FROM threads
+            WHERE user_id = $1
+        ),
+        deleted_messages AS (
+            DELETE FROM messages m
+            USING target_threads tt
+            WHERE m.thread_id = tt.id
+            RETURNING m.id
+        ),
+        deleted_threads AS (
+            DELETE FROM threads
+            WHERE user_id = $1
+            RETURNING id
+        )
+        DELETE FROM users
+        WHERE id = $1
+        RETURNING id;
+    `;
+    return await pool.query(sql, [userId]);
+};
+
+export const restoreUserById = async (pool, userId) => {
+    const sql = `
+        UPDATE users
+        SET
+            deleted_at = NULL,
+            updated_at = now()
+        WHERE id = $1
+          AND deleted_at IS NOT NULL
+        RETURNING id;
+    `;
+    return await pool.query(sql, [userId]);
+};

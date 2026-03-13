@@ -21,5 +21,6 @@ router.route('/:id')
     .delete(userController.deleteUser);
 
 router.post('/:id/reset-password', userController.resetUserPassword);
+router.post('/:id/restore', userController.restoreUser);
 
 export default router;

@@ -130,6 +130,7 @@
 /* 操作アイコン */
 .action-cell {
     display: flex;
+    align-items: center;
     gap: 10px;
 }
 .btn-icon {
@@ -143,6 +144,21 @@
 }
 .btn-icon.edit:hover { color: #3498db; }
 .btn-icon.delete:hover { color: #e74c3c; }
+
+.btn-activate {
+    border: 1px solid #2ecc71;
+    background: #eafaf1;
+    color: #1e8449;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.6rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-activate:hover {
+    background: #d5f5e3;
+}
 
 /* ページネーション */
 .pagination {

@@ -9,7 +9,7 @@ export class userTableUI {
         if (!this.tbody) return;
 
         this.tbody.addEventListener('click', (e) => {
-            const btn = e.target.closest('.btn-icon');
+            const btn = e.target.closest('.btn-icon, .btn-activate');
             if (!btn) return;
 
             const tr = btn.closest('tr');
@@ -17,6 +17,8 @@ export class userTableUI {
 
             if (btn.classList.contains('edit')) {
                 this.callbacks.onEdit(userId);
+            } else if (btn.classList.contains('restore')) {
+                this.callbacks.onRestore(userId);
             } else if (btn.classList.contains('delete')) {
                 this.callbacks.onDelete(userId);
             }
@@ -65,8 +67,11 @@ export class userTableUI {
                 <td><span class="badge ${roleBadgeClass}">${roleText}</span></td>
                 <td><span class="status-dot ${statusClass}"></span> ${statusText}</td>
                 <td>
-                    <button class="btn-icon edit" title="編集"><i class="fas fa-edit"></i></button>
-                    <button class="btn-icon delete" title="削除"><i class="fas fa-trash-alt"></i></button>
+                    <div class="action-cell">
+                        ${isActive ? '<button class="btn-icon edit" title="編集"><i class="fas fa-edit"></i></button>' : ''}
+                        ${!isActive ? '<button class="btn-activate restore" title="有効化">有効化</button>' : ''}
+                        <button class="btn-icon delete" title="削除"><i class="fas fa-trash-alt"></i></button>
+                    </div>
                 </td>
             `;
 
