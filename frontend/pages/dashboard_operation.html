@@ -28,22 +28,50 @@
 
         <div class="kpi-grid">
             <div class="stat-card">
-                <span class="stat-title">DAU (Daily Active Users)</span>
+                <span class="stat-title">
+                    DAU (Daily Active Users)
+                    <span
+                        title="対象日のうち1回以上チャットを利用したユニークユーザー数"
+                        aria-label="DAUの定義"
+                        class="operation-help-icon"
+                    >i</span>
+                </span>
                 <div class="stat-value" id="kpi-dau"></div>
                 <div class="stat-trend" id="kpi-dau-trend">-</div>
             </div>
             <div class="stat-card">
-                <span class="stat-title">RAG利用率</span>
+                <span class="stat-title">
+                    RAG利用率
+                    <span
+                        title="全チャット回答のうち、RAGモードで生成された回答の割合"
+                        aria-label="RAG利用率の定義"
+                        class="operation-help-icon"
+                    >i</span>
+                </span>
                 <div class="stat-value" id="kpi-rag-rate"></div>
                 <div class="stat-trend" id="kpi-rag-rate-trend">-</div>
             </div>
             <div class="stat-card">
-                <span class="stat-title">利用継続率 (7日 / 30日)</span>
+                <span class="stat-title">
+                    利用継続率 (7日 / 30日)
+                    <span
+                        title="初回利用ユーザーのうち、7日以内・30日以内に再利用したユーザーの割合"
+                        aria-label="利用継続率の定義"
+                        class="operation-help-icon"
+                    >i</span>
+                </span>
                 <div class="stat-value" id="kpi-retention"></div>
                 <div class="stat-trend" id="kpi-retention-trend">-</div>
             </div>
             <div class="stat-card">
-                <span class="stat-title">エラー率</span>
+                <span class="stat-title">
+                    エラー率
+                    <span
+                        title="全リクエストのうち、処理が失敗してエラーとなった割合"
+                        aria-label="エラー率の定義"
+                        class="operation-help-icon"
+                    >i</span>
+                </span>
                 <div class="stat-value" id="kpi-error-rate"></div>
                 <div class="stat-trend" id="kpi-error-rate-trend">-</div>
             </div>
