@@ -87,6 +87,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (error) {
                 showToast(error.message || 'CSVアップロードに失敗しました。', 'error');
             }
+        },
+        onResetPassword: async () => {
+            if (!currentEditId) {
+                showToast('編集対象ユーザーが未選択です。', 'error');
+                return;
+            }
+
+            if (!confirm('このユーザーのパスワードを初期パスワードにリセットしますか？')) {
+                return;
+            }
+
+            try {
+                await user_Service.resetPassword(currentEditId);
+                showToast('パスワードを初期パスワードへリセットしました。', 'success');
+            } catch (error) {
+                showToast(error.message || 'パスワードリセットに失敗しました。', 'error');
+            }
         }
     });
 

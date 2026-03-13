@@ -20,4 +20,6 @@ router.route('/:id')
     .put(userController.updateUser)
     .delete(userController.deleteUser);
 
+router.post('/:id/reset-password', userController.resetUserPassword);
+
 export default router;

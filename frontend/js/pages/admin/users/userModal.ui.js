@@ -9,6 +9,7 @@ export class userModalUI {
         this.fileInput = document.getElementById('csv-file-input');
         this.selectedFileName = document.getElementById('selected-file-name');
         this.uploadBtn = document.getElementById('btn-upload-csv');
+        this.resetPasswordBtn = document.getElementById('btn-reset-password');
         this.department1Select = this.singleForm?.elements['department1'];
         this.department2Select = this.singleForm?.elements['department2'];
         this.department3Select = this.singleForm?.elements['department3'];
@@ -29,14 +30,10 @@ export class userModalUI {
     }
 
     open(mode = 'create', userData = null) {
-        const passwordInput = this.singleForm?.elements['password'];
-
         if (mode === 'create') {
             this.modalTitle.textContent = '新規ユーザー登録';
             this.singleForm.reset();
-            if (passwordInput) {
-                passwordInput.required = true;
-            }
+            if (this.resetPasswordBtn) this.resetPasswordBtn.hidden = true;
             this._initializeDepartmentFields();
             this.csvForm.reset();
             this._resetCsvArea();
@@ -45,10 +42,7 @@ export class userModalUI {
             this._switchTab('tab-single');
         } else if (mode === 'edit') {
             this.modalTitle.textContent = 'ユーザー編集';
-            if (passwordInput) {
-                passwordInput.required = false;
-                passwordInput.value = '';
-            }
+            if (this.resetPasswordBtn) this.resetPasswordBtn.hidden = false;
             this.tabContainer.hidden = true;
             this._setCsvTabEnabled(false);
             this._switchTab('tab-single');
@@ -346,6 +340,11 @@ export class userModalUI {
             if (event.target === this.modal) {
                 this.close();
             }
+        });
+
+        this.resetPasswordBtn?.addEventListener('click', async () => {
+            if (!this.callbacks?.onResetPassword) return;
+            await this.callbacks.onResetPassword();
         });
     }
 

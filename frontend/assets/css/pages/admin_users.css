@@ -33,6 +33,16 @@
     background-color: #7f8c8d;
 }
 
+.password-reset:hover {
+    background: red;
+    font: bold;
+}
+
+.reset-message {
+    font-size: 0.8em;
+    color: gray;
+}
+
 /* フィルターエリア調整 */
 .filter-card {
     padding-bottom: 10px; /* 少し詰める */
@@ -181,6 +191,8 @@
     border-radius: 8px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     animation: slideDown 0.3s ease-out;
+    height: 90%;
+    overflow-y: auto;
 }
 
 @keyframes slideDown {

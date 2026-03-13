@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import fs from 'fs/promises';
 import * as userModel from '../models/userModel.js';
 import { getPool } from '../config/db.js';
@@ -16,6 +15,14 @@ import {
     parseCsv,
     normalizeDepartmentValue
 } from '../utils/csvUtils.js';
+
+const INITIAL_USER_PASSWORD = String(process.env.INITIAL_USER_PASSWORD || '');
+
+const ensureInitialPasswordConfigured = () => {
+    if (!INITIAL_USER_PASSWORD.trim()) {
+        throw new AppError('初期パスワードが未設定です。環境変数 INITIAL_USER_PASSWORD を設定してください', 500);
+    }
+};
 
 export const downloadUserCsvTemplate = async (req, res, next) => {
     try {
@@ -63,6 +70,8 @@ export const uploadUsersCsv = async (req, res, next) => {
         let updatedCount = 0;
         let skippedCount = 0;
         const errors = [];
+
+        ensureInitialPasswordConfigured();
 
         await client.query('BEGIN');
 
@@ -133,8 +142,7 @@ export const uploadUsersCsv = async (req, res, next) => {
                 });
                 updatedCount++;
             } else {
-                const dummyPassword = crypto.randomBytes(16).toString('hex');
-                const hashedPassword = await hashPassword(dummyPassword);
+                const hashedPassword = await hashPassword(INITIAL_USER_PASSWORD);
 
                 await userModel.createUser(client, {
                     employee_no,
@@ -233,16 +241,14 @@ export const getUsers = async (req, res, next) => {
 
 export const createUser = async (req, res, next) => {
     try {
-        const { employee_no, username, email, password, department_id, role } = req.body;
+        const { employee_no, username, email, department_id, role } = req.body;
         const pool = getPool();
+
+        ensureInitialPasswordConfigured();
 
         if (!employee_no || !username || !email) {
             logger.warn('社員番号、ユーザー名、メールアドレスのどれかが抜けています', {option: {employee_no, username, email}});
             return next(new AppError('社員番号、ユーザー名、メールアドレスは必須です', 400));
-        }
-
-        if (!password || String(password).trim().length === 0) {
-            return next(new AppError('新規登録時はパスワードが必須です', 400));
         }
 
         const existingUser = await userModel.getUserByEmployeeNoOrEmail(pool, employee_no, email);
@@ -250,7 +256,7 @@ export const createUser = async (req, res, next) => {
             return next(new AppError('指定された社員番号またはメールアドレスはすでに登録されています', 400));
         }
 
-        const hashedPassword = await hashPassword(password);
+        const hashedPassword = await hashPassword(INITIAL_USER_PASSWORD);
 
         const userData = {
             employee_no,
@@ -274,6 +280,44 @@ export const createUser = async (req, res, next) => {
     } catch (error) {
         logger.error('ユーザー登録エラー', {option: {detail: error.message}});
         return next(new AppError('ユーザー登録に失敗しました', 500));
+    }
+};
+
+export const resetUserPassword = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return next(new AppError('ユーザーIDが欠落しています', 400));
+        }
+
+        ensureInitialPasswordConfigured();
+
+        const pool = getPool();
+        const hashedPassword = await hashPassword(INITIAL_USER_PASSWORD);
+        const updatedUser = await userModel.resetUserPasswordById(pool, id, hashedPassword);
+
+        if (!updatedUser) {
+            return next(new AppError('更新対象ユーザーが見つかりません', 404));
+        }
+
+        logger.info('ユーザーパスワードを初期値へリセットしました', {
+            option: {
+                id: updatedUser.id,
+                employee_no: updatedUser.employee_no
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'パスワードを初期値へリセットしました',
+            data: {
+                id: updatedUser.id,
+                employee_no: updatedUser.employee_no
+            }
+        });
+    } catch (error) {
+        logger.error('ユーザーパスワードリセットエラー', {option: {id: req.params?.id, detail: error.message}});
+        return next(new AppError('パスワードリセットに失敗しました', 500));
     }
 };
 

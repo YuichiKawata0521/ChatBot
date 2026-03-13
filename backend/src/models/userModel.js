@@ -169,6 +169,20 @@ export const createUser = async (pool, userData) => {
     return result.rows[0];
 }
 
+export const resetUserPasswordById = async (pool, userId, hashedPassword) => {
+    const sql = `
+        UPDATE users
+        SET
+            password = $1,
+            registered_flag = false,
+            updated_at = now()
+        WHERE id = $2
+        RETURNING id, employee_no, user_name AS username, email;
+    `;
+    const result = await pool.query(sql, [hashedPassword, userId]);
+    return result.rows[0] || null;
+};
+
 export const softDeleteUserById = async (pool, userId) => {
     const sql = `
         UPDATE users

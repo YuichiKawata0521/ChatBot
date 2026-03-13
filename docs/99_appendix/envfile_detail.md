@@ -35,3 +35,9 @@ docker compose -f docker-compose.prod.yml up -d --build
 docker compose down
 docker compose -f docker-compose.prod.yml down
 ```
+
+## ユーザー管理で使用する追加環境変数
+
+- `INITIAL_USER_PASSWORD`
+	- 新規ユーザー登録時の初期パスワード、および管理画面の「パスワードリセット」で再設定するパスワード
+	- 必須項目です。未設定の場合、ユーザー登録/リセットAPIはエラーになります

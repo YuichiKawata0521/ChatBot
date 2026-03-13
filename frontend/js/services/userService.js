@@ -24,6 +24,10 @@ export class userService {
         return ApiClient.delete(`/users/${userId}`);
     }
 
+    async resetPassword(userId) {
+        return await ApiClient.post(`/users/${userId}/reset-password`, {});
+    }
+
     async uploadCsv(file) {
         const formData = new FormData();
         formData.append('file', file);
