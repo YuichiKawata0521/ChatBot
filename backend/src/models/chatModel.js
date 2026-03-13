@@ -97,7 +97,8 @@ export const chatModel = {
     async deleteThreadsByUserId(pool, userId) {
         const sql = `
             UPDATE threads
-            SET show_history = true
+            SET show_history = false,
+                updated_at = NOW()
             WHERE user_id = $1;
         `;
         const result = await pool.query(sql, [userId]);

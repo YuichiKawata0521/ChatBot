@@ -1,7 +1,17 @@
-import { dom, closeSettingsMenu, createAdminMenuItem, clearChatMessages, toggleSettingsMenu } from './ui.chat.js';
+import {
+    dom,
+    closeSettingsMenu,
+    createAdminMenuItem,
+    clearChatMessages,
+    clearInput,
+    hideMessagesContainer,
+    showAgentSelection,
+    toggleSettingsMenu
+} from './ui.chat.js';
 import { showToast } from '../../common/toast.js';
 import { deleteAllThreads, getSessionInfo } from '../../services/chatService.js';
 import { loadThreadList } from './history.chat.js';
+import { ChatStream } from './stream.chat.js';
 
 const ADMIN_PATH = '/admin';
 
@@ -38,9 +48,16 @@ export function initSettingsMenu() {
 
             try {
                 await deleteAllThreads();
-                showToast('履歴を削除しました');
+                showToast('履歴を削除しました', 'success');
+
+                ChatStream.setThreadId(null);
                 clearChatMessages();
-                loadThreadList();
+                clearInput();
+                showAgentSelection();
+                hideMessagesContainer();
+                window.history.pushState({}, '', '/chat');
+
+                await loadThreadList();
                 closeSettingsMenu();
             } catch (error) {
                 console.error('Delete history error:', error);

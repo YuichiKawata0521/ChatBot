@@ -110,7 +110,7 @@ summary {
 
 .history-menu-popup {
     position: absolute;
-    right: -104px;
+    right: 36px;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
@@ -121,6 +121,7 @@ summary {
     border-radius: 8px;
     overflow: hidden;
     z-index: 1200;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .copy-helper-textarea {

@@ -25,6 +25,10 @@ function ensureHistoryMenuListeners() {
     window.addEventListener('resize', () => {
         closeHistoryMenuPopup();
     });
+
+    document.addEventListener('scroll', () => {
+        closeHistoryMenuPopup();
+    }, true);
 }
 
 async function handleThreadRename(thread) {
@@ -112,6 +116,7 @@ function openHistoryMenuPopup(thread, menuButton) {
     });
 
     parentCard.appendChild(popup);
+
     activeMenuPopup = popup;
 }
 
