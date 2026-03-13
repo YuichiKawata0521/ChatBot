@@ -41,7 +41,6 @@ const dom = {
     ragSortScoreToggleButton: document.getElementById('analysis-rag-sort-score-toggle'),
     ragSortDocToggleButton: document.getElementById('analysis-rag-sort-doc-toggle'),
     ragSortClearButton: document.getElementById('analysis-rag-sort-clear'),
-    applyButton: document.getElementById('analysis-btn-apply'),
     clearButton: document.getElementById('analysis-btn-clear'),
     departmentUsageTbody: document.getElementById('analysis-department-usage-tbody')
 };
@@ -283,12 +282,16 @@ const updatePeriodLabel = () => {
 
     const period = dom.periodSelect.value;
     const isCustom = period === 'custom';
-    if (dom.customRange) {
-        dom.customRange.hidden = !isCustom;
-    }
+
+    const setCustomRangeVisibility = (visible) => {
+        if (!dom.customRange) return;
+        dom.customRange.hidden = !visible;
+        dom.customRange.classList.toggle('analysis-hidden', !visible);
+    };
+
+    setCustomRangeVisibility(isCustom);
     
     if (isCustom) {
-        dom.customRange.classList.remove('analysis-hidden');
         const start = dom.customStart?.value || '--';
         const end = dom.customEnd?.value || '--';
         dom.periodLabel.textContent = `対象期間: ${start} 〜 ${end}`;
@@ -759,7 +762,6 @@ const bindEvents = () => {
         renderDepartmentUsageView();
     });
 
-    dom.applyButton?.addEventListener('click', loadCharts);
     dom.clearButton?.addEventListener('click', async () => {
         clearFilters();
         updateDepartmentFilterClearButtonVisibility();
