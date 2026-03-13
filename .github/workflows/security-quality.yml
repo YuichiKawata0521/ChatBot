@@ -210,32 +210,36 @@ jobs:
         continue-on-error: true
 
       # ----------------
-      # Trivy filesystem
+      # Trivy image scan
       # ----------------
 
       - name: Run Trivy backend image scan
         id: trivy_backend
-        uses: aquasecurity/trivy-action@0.30.0
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$PWD":/work \
+            aquasec/trivy:0.60.0 image \
+            --format sarif \
+            --output /work/trivy-backend-results.sarif \
+            --severity CRITICAL,HIGH \
+            --ignore-unfixed \
+            backend-image
         continue-on-error: true
-        with:
-          image-ref: backend-image
-          format: sarif
-          output: trivy-backend-results.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: "0"
 
       - name: Run Trivy frontend image scan
         id: trivy_frontend
-        uses: aquasecurity/trivy-action@0.30.0
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$PWD":/work \
+            aquasec/trivy:0.60.0 image \
+            --format sarif \
+            --output /work/trivy-frontend-results.sarif \
+            --severity CRITICAL,HIGH \
+            --ignore-unfixed \
+            frontend-image
         continue-on-error: true
-        with:
-          image-ref: frontend-image
-          format: sarif
-          output: trivy-frontend-results.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: "0"
 
       - name: Upload backend Trivy SARIF
         if: ${{ always() && hashFiles('trivy-backend-results.sarif') != '' }}
