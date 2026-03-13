@@ -6,12 +6,6 @@ import { getPool } from './db.js';
 const PgSession = pgSession(session);
 
 export const getSessionConfig = () => {
-    const sessionStore = new PgSession({
-        pool: getPool(),
-        tableName: 'sessions',
-        createTableIfMissing: false
-    });
-
     let sessionSecret = process.env.SESSION_SECRET;
     const searchPath = '/run/secrets/session_secret';
     if (!sessionSecret && fs.existsSync(searchPath)) {
@@ -22,6 +16,26 @@ export const getSessionConfig = () => {
         }
     }
     sessionSecret = sessionSecret || 'fallback_secret_key';
+
+    if (process.env.NODE_ENV === 'test') {
+        return {
+            secret: sessionSecret,
+            resave: false,
+            saveUninitialized: false,
+            cookie: {
+                maxAge: 1000 * 60 * 60 * 8,
+                httpOnly: true,
+                secure: false,
+                sameSite: 'lax'
+            }
+        };
+    }
+
+    const sessionStore = new PgSession({
+        pool: getPool(),
+        tableName: 'sessions',
+        createTableIfMissing: false
+    });
 
     return {
         store: sessionStore,

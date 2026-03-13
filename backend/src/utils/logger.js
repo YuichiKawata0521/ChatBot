@@ -112,6 +112,8 @@ function createSystemLog() {
     }
 
     async function saveLogToDB(level, message, safeMeta, module_name, source) {
+        if (process.env.NODE_ENV === 'test') return;
+
         const pool = getPool();
         const ignoreLevels = ['silly', 'debug'];
         if (ignoreLevels.includes(level)) return;
