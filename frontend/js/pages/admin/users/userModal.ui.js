@@ -41,6 +41,7 @@ export class userModalUI {
             this.csvForm.reset();
             this._resetCsvArea();
             this.tabContainer.hidden = false;
+            this._setCsvTabEnabled(true);
             this._switchTab('tab-single');
         } else if (mode === 'edit') {
             this.modalTitle.textContent = 'ユーザー編集';
@@ -49,6 +50,7 @@ export class userModalUI {
                 passwordInput.value = '';
             }
             this.tabContainer.hidden = true;
+            this._setCsvTabEnabled(false);
             this._switchTab('tab-single');
             this._fillFormData(userData);
         }
@@ -87,6 +89,18 @@ export class userModalUI {
         if (!target) return;
         target.hidden = false;
         setTimeout(() => target.classList.add('active'), 10);
+    }
+
+    _setCsvTabEnabled(enabled) {
+        const csvTabButton = this.modal?.querySelector('.tab-btn[data-target="tab-csv"]');
+        const csvTabContent = this.modal?.querySelector('#tab-csv');
+        if (csvTabButton) {
+            csvTabButton.hidden = !enabled;
+        }
+        if (csvTabContent) {
+            csvTabContent.hidden = !enabled;
+            csvTabContent.classList.toggle('active', false);
+        }
     }
 
     _initDragAndDrop() {
