@@ -196,14 +196,17 @@ jobs:
       # Install Playwright
       # ----------------
 
-      - name: Install Playwright
-        run: |
-          npm install -D playwright
-          npx playwright install --with-deps
-
       - name: Run E2E tests
         id: e2e_test
-        run: npx playwright test
+        working-directory: frontend
+        run: |
+          if [ ! -f "playwright.config.ts" ] && [ ! -f "playwright.config.js" ] && [ ! -d "tests/e2e" ] && [ ! -d "e2e" ]; then
+            echo "No Playwright config/tests found in frontend. Skipping E2E."
+            exit 0
+          fi
+          npm install -D playwright
+          npx playwright install --with-deps
+          npx playwright test
         continue-on-error: true
 
       # ----------------
