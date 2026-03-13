@@ -27,6 +27,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Prepare env
+        run: |
+          cp .env.production.example .env
+          grep -v '^\s*#' .env | grep -E '^[A-Za-z_][A-Za-z0-9_]*=' >> "$GITHUB_ENV"
+
+      - name: Validate required env vars
+        run: |
+          if [ -z "$PASSWORD_PEPPER" ]; then
+            echo "PASSWORD_PEPPER is not set in .env"
+            exit 1
+          fi
+
       # ----------------
       # Node setup
       # ----------------
@@ -139,34 +151,47 @@ jobs:
       # ----------------
       # Start application
       # ----------------
-      - name: Prepare env
-        run: cp .env.production.example .env
-
       - name: Start application
         id: compose_up
         run: docker compose up -d --build
 
       - name: Wait for backend
         run: |
+          ready=false
           for i in {1..30}; do
             if curl -f http://localhost:3000/api/health; then
               echo "Backend is ready"
+              ready=true
               break
             fi
             echo "Waiting for backend..."
             sleep 2
           done
+          if [ "$ready" != "true" ]; then
+            echo "Backend did not become ready in time"
+            docker compose ps
+            docker compose logs backend --tail=200
+            exit 1
+          fi
 
       - name: Wait for frontend
         run: |
+          ready=false
           for i in {1..30}; do
             if curl -f http://localhost:8080; then
               echo "Frontend is ready"
+              ready=true
               break
             fi
             echo "Waiting for frontend..."
             sleep 2
           done
+          if [ "$ready" != "true" ]; then
+            echo "Frontend did not become ready in time"
+            docker compose ps
+            docker compose logs frontend --tail=200
+            exit 1
+          fi
       # ----------------
       # Install Playwright
       # ----------------
@@ -274,17 +299,21 @@ jobs:
           echo "frontend test: ${{ steps.frontend_test.outcome }}"
           echo "python test: ${{ steps.python_test.outcome }}"
           echo "semgrep: ${{ steps.semgrep_scan.outcome }}"
-          echo "docker build: ${{ steps.docker_build.outcome }}"
-          echo "trivy fs: ${{ steps.trivy_fs.outcome }}"
+          echo "docker build backend: ${{ steps.docker_build_backend.outcome }}"
+          echo "docker build frontend: ${{ steps.docker_build_frontend.outcome }}"
+          echo "trivy backend: ${{ steps.trivy_backend.outcome }}"
+          echo "trivy frontend: ${{ steps.trivy_frontend.outcome }}"
           echo "trivy image: ${{ steps.trivy_image.outcome }}"
           echo "e2e: ${{ steps.e2e_test.outcome }}"
 
           if [ "${{ steps.backend_test.outcome }}" != "success" ] || \
              [ "${{ steps.frontend_test.outcome }}" != "success" ] || \
              [ "${{ steps.python_test.outcome }}" != "success" ] || \
-             [ "${{ steps.docker_build.outcome }}" != "success" ] || \
+             [ "${{ steps.docker_build_backend.outcome }}" != "success" ] || \
+             [ "${{ steps.docker_build_frontend.outcome }}" != "success" ] || \
              [ "${{ steps.semgrep_scan.outcome }}" != "success" ] || \
-             [ "${{ steps.trivy_fs.outcome }}" != "success" ] || \
+             [ "${{ steps.trivy_backend.outcome }}" != "success" ] || \
+             [ "${{ steps.trivy_frontend.outcome }}" != "success" ] || \
              [ "${{ steps.e2e_test.outcome }}" != "success" ] || \
              [ "${{ steps.trivy_image.outcome }}" != "success" ]; then
             echo "Pipeline gate failed."
