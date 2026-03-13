@@ -645,6 +645,10 @@ body {
     display: flex;
 }
 
+body.operation-modal-open {
+    overflow: hidden;
+}
+
 .operation-modal-panel {
     width: min(900px, 92vw);
     max-height: 80vh;

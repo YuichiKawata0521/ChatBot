@@ -126,10 +126,12 @@ const setupDepartmentRankingModal = (() => {
             updateCascadeFilters();
             applyModalFilter();
             modal.classList.add('is-open');
+            document.body.classList.add('operation-modal-open');
         });
 
         const closeModal = () => {
             modal.classList.remove('is-open');
+            document.body.classList.remove('operation-modal-open');
         };
 
         closeBtn.addEventListener('click', closeModal);
