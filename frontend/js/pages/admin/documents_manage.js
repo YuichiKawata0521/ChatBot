@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const res = await ApiClient.get(`/documents/${id}`);
                     document.getElementById('preview-content').value = res.content || 'テキストがありません。';
                     modalPreview.hidden = false;
+                    modalPreview.classList.add('is-open');
                 } catch (error) {
                     showToast('プレビューの取得に失敗しました', 'error');
                 }
@@ -92,6 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('rename-doc-id').value = id;
                 document.getElementById('rename-title-input').value = title;
                 modalRename.hidden = false;
+                modalRename.classList.add('is-open');
             });
         });
 
@@ -101,6 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('reupload-doc-id').value = e.currentTarget.dataset.id;
                 document.getElementById('reupload-file-input').value = '';
                 modalReupload.hidden = false;
+                modalReupload.classList.add('is-open');
             });
         });
 
@@ -134,6 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await ApiClient.post(`/documents/rename/${id}`, { title: newTitle });
             showToast('タイトルを変更しました', 'success');
             modalRename.hidden = true;
+            modalRename.classList.remove('is-open');
             loadDocuments();
         } catch (error) {
             showToast('タイトルの変更に失敗しました', 'error');
@@ -160,6 +164,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             showToast('再アップロードと解析が完了しました', 'success');
             modalReupload.hidden = true;
+            modalReupload.classList.remove('is-open');
             loadDocuments();
         } catch (error) {
             console.error(error);
@@ -173,7 +178,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // モーダルを閉じる処理
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            e.target.closest('.modal-overlay').hidden = true;
+            const overlay = e.target.closest('.modal-overlay');
+            overlay.hidden = true;
+            overlay.classList.remove('is-open');
         });
     });
 });
