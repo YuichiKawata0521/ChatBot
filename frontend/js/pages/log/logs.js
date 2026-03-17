@@ -49,6 +49,16 @@ const dom = {
     closeBtns: [document.getElementById('modal-close-icon'), document.getElementById('modal-close-btn')]
 };
 
+function isAuthGuardWarning(log) {
+    const message = String(log?.message || '');
+    const level = String(log?.level || '').toLowerCase();
+    const option = log?.context?.option || {};
+
+    return level === 'warn'
+        && message === 'ログイン認証が必要です。'
+        && Number(option.statusCode) === 401;
+}
+
 function initEvents() {
     dom.searchBtn?.addEventListener('click', applyFilters);
     dom.clearBtn?.addEventListener('click', resetFilters);
@@ -99,6 +109,8 @@ function applyFilters() {
     const keyword = (dom.filterKeyword?.value || '').toLowerCase();
 
     state.filteredLogs = state.allLogs.filter(log => {
+        if (isAuthGuardWarning(log)) return false;
+
         const logDate = new Date(log.created_at);
         if (Number.isNaN(logDate.getTime())) return false;
         const logLevel = (log.level || '').toLowerCase();
